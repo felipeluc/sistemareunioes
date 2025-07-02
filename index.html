@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Reuniões</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-container" id="login">
+    <h2>Login</h2>
+    <select id="usuario">
+      <option value="">Selecione seu nome</option>
+      <option value="Ana Carolina">Ana Carolina</option>
+      <option value="Felipe">Felipe</option>
+      <option value="Leticia">Leticia</option>
+      <option value="Glaucia">Glaucia</option>
+      <option value="Marcelo">Marcelo</option>
+      <option value="Gabriel">Gabriel</option>
+      <option value="Angela">Angela</option>
+    </select>
+    <input type="password" id="senha" placeholder="Digite sua senha" />
+    <button onclick="fazerLogin()">Entrar</button>
+    <p id="login-erro"></p>
+  </div>
+
+  <div class="dashboard hidden" id="dashboard">
+    <aside>
+      <h3 id="bem-vindo"></h3>
+      <nav>
+        <button onclick="mostrarAba('aba-angela')" class="angela">Agendamentos</button>
+        <button onclick="mostrarAba('aba-consultor')" class="consultor">Minhas Reuniões</button>
+        <button onclick="mostrarAba('aba-fechamentos')" class="consultor">Meus Fechamentos</button>
+        <button onclick="mostrarAba('aba-gerente')" class="gerente">Painel Geral</button>
+        <button onclick="mostrarAba('aba-senhas')" class="gerente">Gerenciar Senhas</button>
+      </nav>
+    </aside>
+
+    <main>
+      <section id="aba-angela" class="aba hidden">
+        <h2>Agenda da Ângela</h2>
+      </section>
+      <section id="aba-consultor" class="aba hidden">
+        <h2>Minhas Reuniões</h2>
+      </section>
+      <section id="aba-fechamentos" class="aba hidden">
+        <h2>Meus Fechamentos</h2>
+      </section>
+      <section id="aba-gerente" class="aba hidden">
+        <h2>Painel Gerencial</h2>
+      </section>
+      <section id="aba-senhas" class="aba hidden">
+        <h2>Gerenciar Senhas</h2>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
