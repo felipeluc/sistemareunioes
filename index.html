@@ -38,7 +38,70 @@
 
     <main>
       <section id="aba-angela" class="aba hidden">
-        <h2>Agenda da Ângela</h2>
+        <h2>Agenda da Ângela</h2>,<section id="aba-angela" class="aba hidden">
+  <h2>Agenda da Ângela</h2>
+
+  <form id="form-agendamento">
+    <h3>Agendar nova reunião</h3>
+
+    <label>Para qual consultor:</label>
+    <select id="agendar-consultor" required>
+      <option value="">Selecione</option>
+      <option value="Leticia">Leticia</option>
+      <option value="Marcelo">Marcelo</option>
+      <option value="Gabriel">Gabriel</option>
+      <option value="Glaucia">Glaucia</option>
+    </select>
+
+    <label>Horário:</label>
+    <input type="datetime-local" id="agendar-horario" required />
+
+    <label>Nome do lojista:</label>
+    <input type="text" id="agendar-nome" required />
+
+    <label>Cidade:</label>
+    <input type="text" id="agendar-cidade" required />
+
+    <label>Estado:</label>
+    <input type="text" id="agendar-estado" required />
+
+    <label>Link da reunião:</label>
+    <input type="url" id="agendar-link" />
+
+    <label>Quantidade de lojas:</label>
+    <input type="number" id="agendar-quantidade" required />
+
+    <label>CNPJ:</label>
+    <input type="text" id="agendar-cnpj" required />
+
+    <label>Segmento da loja:</label>
+    <input type="text" id="agendar-segmento" required />
+
+    <label>Por onde prospectou:</label>
+    <input type="text" id="agendar-prospeccao" />
+
+    <label>Por onde será a reunião:</label>
+    <select id="agendar-meio" required>
+      <option value="Meet">Meet</option>
+      <option value="Ligação">Ligação</option>
+      <option value="WhatsApp">WhatsApp</option>
+    </select>
+
+    <label>Contato do lojista:</label>
+    <input type="text" id="agendar-contato" required />
+
+    <label>Vai falar com:</label>
+    <select id="agendar-comquem" required>
+      <option value="Proprietário">Proprietário</option>
+      <option value="Gerente">Gerente</option>
+      <option value="Funcionário">Funcionário</option>
+    </select>
+
+    <button type="submit">Agendar Reunião</button>
+    <p id="mensagem-sucesso" style="color: green;"></p>
+  </form>
+
+</section>
       </section>
       <section id="aba-consultor" class="aba hidden">
         <h2>Minhas Reuniões</h2>
