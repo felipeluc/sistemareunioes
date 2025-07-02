@@ -105,6 +105,49 @@
       <!-- Tela do Consultor -->
       <section id="aba-consultor" class="aba hidden">
         <h2>Minhas Reuniões</h2>
+
+        <div id="reunioes-consultor"></div>
+
+        <div id="acoes-consultor" class="hidden">
+          <h3>Detalhes da Reunião</h3>
+          <p><strong>Nome:</strong> <span id="det-nome"></span></p>
+          <p><strong>Cidade/Estado:</strong> <span id="det-cidade-estado"></span></p>
+          <p><strong>CNPJ:</strong> <span id="det-cnpj"></span></p>
+          <p><strong>Contato:</strong> <span id="det-contato"></span></p>
+          <p><strong>Segmento:</strong> <span id="det-segmento"></span></p>
+          <p><strong>Meio:</strong> <span id="det-meio"></span></p>
+          <p><strong>Link:</strong> <span id="det-link"></span></p>
+          <p><strong>Quem vai atender:</strong> <span id="det-comquem"></span></p>
+          <p><strong>Data e Hora:</strong> <span id="det-horario"></span></p>
+
+          <button id="btn-aceitar">✅ Aceitar</button>
+          <button id="btn-transferir">🔁 Transferir</button>
+        </div>
+
+        <div class="filtros-status hidden" id="status-consultor">
+          <h3>Status da Reunião</h3>
+          <select id="status-opcao">
+            <option value="">Selecione</option>
+            <option value="Se interessou">Se interessou</option>
+            <option value="Aguardando pagamento">Aguardando pagamento</option>
+            <option value="Aguardando documentação">Aguardando documentação</option>
+            <option value="Não teve interesse">Não teve interesse</option>
+          </select>
+          <input
+            type="text"
+            id="motivo-sem-interesse"
+            placeholder="Por que não teve interesse?"
+            class="hidden"
+          />
+          <button id="btn-enviar-status">Salvar Status</button>
+        </div>
+
+        <hr />
+        <h3>Hoje</h3>
+        <ul id="reunioes-hoje"></ul>
+
+        <h3>Próximos dias</h3>
+        <ul id="reunioes-futuras"></ul>
       </section>
 
       <!-- Tela de Fechamentos -->
