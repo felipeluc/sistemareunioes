@@ -64,7 +64,8 @@ function mostrarDashboard() {
 
   // Exibir menus e abas conforme perfil
   mostrarMenuPorPerfil(papel);
-  mostrarAbaPadrao(papel);
+  mostrarAbaPadrao(papel);if (papel === "consultor") carregarReunioesConsultor();
+
 }
 
 function mostrarMenuPorPerfil(papel) {
