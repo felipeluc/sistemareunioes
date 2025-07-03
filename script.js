@@ -20,6 +20,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// ----------- LOGIN E CONTROLE DE ACESSO -----------
 const senhas = {
   "Ana Carolina": "Ana1234",
   "Felipe": "Felipe1515",
@@ -32,6 +33,7 @@ const senhas = {
 
 let usuarioLogado = "";
 let agendamentoSelecionado = null;
+let abaAnterior = null;
 
 window.fazerLogin = function () {
   const usuario = document.getElementById("usuario").value;
@@ -45,11 +47,11 @@ window.fazerLogin = function () {
     usuarioLogado = usuario;
 
     if (usuario === "Angela") {
-      document.querySelector(".angela").style.display = "block";
+      document.querySelector(".angela").classList.remove("hidden");
     } else if (usuario === "Felipe" || usuario === "Ana Carolina") {
-      document.querySelector(".gerente").style.display = "block";
+      document.querySelector(".gerente").classList.remove("hidden");
     } else {
-      document.querySelectorAll(".consultor").forEach(btn => btn.style.display = "block");
+      document.querySelectorAll(".consultor").forEach(btn => btn.classList.remove("hidden"));
       carregarReunioesConsultor();
     }
   } else {
@@ -58,14 +60,19 @@ window.fazerLogin = function () {
 };
 
 window.mostrarAba = function (id) {
-  document.querySelectorAll(".aba").forEach(aba => aba.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll(".aba, .hidden-tab").forEach(aba => aba.classList.add("hidden"));
+  document.getElementById(id)?.classList.remove("hidden");
+  abaAnterior = id;
 
-  if (id === "aba-consultor") {
-    carregarReunioesConsultor();
-  }
+  if (id === "aba-consultor") carregarReunioesConsultor();
 };
 
+window.mostrarAbaAnterior = function () {
+  document.querySelectorAll(".aba, .hidden-tab").forEach(aba => aba.classList.add("hidden"));
+  abaAnterior && document.getElementById(abaAnterior).classList.remove("hidden");
+};
+
+// ----------- AGENDAMENTO -----------
 const form = document.getElementById("form-agendamento");
 const sucesso = document.getElementById("mensagem-sucesso");
 
@@ -105,14 +112,17 @@ if (form) {
   });
 }
 
+// ----------- CONSULTOR - REUNIÕES -----------
 async function carregarReunioesConsultor() {
   const pendentesDiv = document.getElementById("reunioes-pendentes");
   const hojeUl = document.getElementById("reunioes-hoje");
   const futurasUl = document.getElementById("reunioes-futuras");
+  const realizadasUl = document.getElementById("reunioes-realizadas");
 
   pendentesDiv.innerHTML = "";
   hojeUl.innerHTML = "";
   futurasUl.innerHTML = "";
+  realizadasUl.innerHTML = "";
 
   const snapshot = await getDocs(collection(db, "agendamentos"));
   const hoje = new Date();
@@ -129,12 +139,16 @@ async function carregarReunioesConsultor() {
     const dataComparar = new Date(dataHora);
     dataComparar.setHours(0, 0, 0, 0);
 
-    const btn = document.createElement("button");
-    btn.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
-    btn.style.marginBottom = "6px";
+    if (agendamento.status !== "pendente" && agendamento.respostaConsultor === "aceito") {
+      const li = document.createElement("li");
+      li.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
+      realizadasUl.appendChild(li);
+      return;
+    }
 
     if (agendamento.respostaConsultor !== "aceito") {
-      btn.style.background = "#f9e79f";
+      const btn = document.createElement("button");
+      btn.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
       btn.onclick = () => mostrarDetalhesReuniao(agendamento);
       pendentesDiv.appendChild(btn);
     } else {
@@ -166,10 +180,10 @@ function mostrarDetalhesReuniao(agendamento) {
   document.getElementById("det-horario").innerText = new Date(agendamento.horario).toLocaleString();
 
   const statusBox = document.getElementById("status-consultor");
-  statusBox.classList.add("hidden");
-
   if (agendamento.respostaConsultor === "aceito") {
     statusBox.classList.remove("hidden");
+  } else {
+    statusBox.classList.add("hidden");
   }
 }
 
@@ -196,6 +210,7 @@ document.getElementById("btn-transferir").onclick = async () => {
   document.getElementById("acoes-consultor").classList.add("hidden");
 };
 
+// ----------- STATUS E MOTIVO -----------
 document.getElementById("status-opcao").onchange = (e) => {
   const motivo = document.getElementById("motivo-sem-interesse");
   motivo.classList.toggle("hidden", e.target.value !== "Não teve interesse");
