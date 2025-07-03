@@ -143,33 +143,32 @@
       <button onclick="abrirFormFechamento()">Novo Fechamento</button>
       <div id="formFechamento" style="margin-top: 1rem; display: none;">
         <form class="form-grid" onsubmit="salvarFechamento(event)">
-          <input type="text" placeholder="Nome do Lojista" required />
-          <input type="text" placeholder="Contato" required />
-          <input type="text" placeholder="Cidade" required />
-          <select required>
+          <input type="text" id="lojista" placeholder="Nome do Lojista" required />
+          <input type="text" id="contato" placeholder="Contato" required />
+          <input type="text" id="cidade" placeholder="Cidade" required />
+          <select id="estado" required>
             <option value="">Estado</option>
             <option value="SP">SP</option>
             <option value="RJ">RJ</option>
             <option value="MG">MG</option>
             <option value="BA">BA</option>
-            <!-- Adicione mais estados conforme necessidade -->
           </select>
-          <input type="number" placeholder="Quantidade de Lojas" required />
-          <input type="text" placeholder="CNPJ" required />
-          <input type="number" placeholder="Faturamento Bruto" required />
-          <select required>
+          <input type="number" id="qtdLojas" placeholder="Quantidade de Lojas" required />
+          <input type="text" id="cnpj" placeholder="CNPJ" required />
+          <input type="number" id="faturamento" placeholder="Faturamento Bruto" required />
+          <select id="crediario" required>
             <option value="">Tem Crediário?</option>
             <option value="Sim">Sim</option>
             <option value="Não">Não</option>
           </select>
-          <input type="number" placeholder="Valor do Crediário (0 se não tiver)" required />
-          <select required>
+          <input type="number" id="valorCrediario" placeholder="Valor do Crediário (0 se não tiver)" required />
+          <select id="origem" required>
             <option value="">Veio por onde?</option>
             <option value="Própria">Prospecção Própria</option>
             <option value="Angela">Angela</option>
             <option value="Indicação">Indicação</option>
           </select>
-          <input type="number" placeholder="Valor de Adesão Cobrado" required />
+          <input type="number" id="adesao" placeholder="Valor de Adesão Cobrado" required />
           <button type="submit">Salvar Fechamento</button>
         </form>
       </div>
@@ -177,8 +176,40 @@
     </section>
   </div>
 
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="consultor.js"></script>
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    window.salvarFechamento = async function(event) {
+      event.preventDefault();
+
+      const data = {
+        lojista: document.getElementById('lojista').value,
+        contato: document.getElementById('contato').value,
+        cidade: document.getElementById('cidade').value,
+        estado: document.getElementById('estado').value,
+        qtdLojas: parseInt(document.getElementById('qtdLojas').value),
+        cnpj: document.getElementById('cnpj').value,
+        faturamento: parseFloat(document.getElementById('faturamento').value),
+        crediario: document.getElementById('crediario').value,
+        valorCrediario: parseFloat(document.getElementById('valorCrediario').value),
+        origem: document.getElementById('origem').value,
+        adesao: parseFloat(document.getElementById('adesao').value),
+        criadoEm: Timestamp.now()
+      };
+
+      try {
+        await addDoc(collection(db, "fechamentos"), data);
+        alert("Fechamento salvo com sucesso!");
+        document.querySelector('#formFechamento form').reset();
+        document.getElementById("formFechamento").style.display = "none";
+      } catch (err) {
+        console.error("Erro ao salvar:", err);
+        alert("Erro ao salvar fechamento.");
+      }
+    }
+  </script>
+
   <script>
     function mostrarSecao(id) {
       document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
@@ -192,11 +223,9 @@
     function abrirFormFechamento() {
       document.getElementById("formFechamento").style.display = "block";
     }
-
-    function salvarFechamento(event) {
-      event.preventDefault();
-      alert("Funcionalidade de salvar ainda não implementada no consultor.js");
-    }
   </script>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="consultor.js"></script>
 </body>
 </html>
