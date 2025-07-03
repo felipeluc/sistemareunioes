@@ -23,10 +23,10 @@ function login() {
     return;
   }
 
-  // Salvar nome do usuário no localStorage para uso nas próximas telas
+  // 👉 Aqui salvamos o usuário no localStorage:
   localStorage.setItem("user", username);
 
-  // Redirecionar com base no tipo de usuário
+  // Redirecionamento por tipo de usuário
   if (["Leticia", "Glaucia", "Marcelo", "Gabriel"].includes(username)) {
     window.location.href = "consultor.html";
   } else if (username === "Angela") {
