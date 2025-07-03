@@ -23,6 +23,7 @@
     .btn:hover { background: #005fd0; }
     .form-section { margin-top: 20px; }
     .form-section input, .form-section select { display: block; width: 100%; margin-bottom: 10px; }
+    .details { margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 8px; display: none; }
   </style>
 </head>
 <body>
@@ -103,16 +104,5 @@
       <div id="infoDashboard" class="card"></div>
     </div>
   </div>
-
-  <script>
-    function showSection(id) {
-      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById("userName").textContent = localStorage.getItem("user") || "Consultor";
-    });
-  </script>
-  <script type="module" src="consultor.js"></script>
 </body>
 </html>
