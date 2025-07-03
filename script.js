@@ -9,9 +9,11 @@ const users = {
 };
 
 function login() {
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
+  const username = document.getElementById("user").value;
+  const password = document.getElementById("senha").value;
   const errorEl = document.getElementById("login-error");
+
+  errorEl.textContent = "";
 
   if (!username || !password) {
     errorEl.textContent = "Preencha todos os campos.";
@@ -23,15 +25,13 @@ function login() {
     return;
   }
 
-  // 👉 Aqui salvamos o usuário no localStorage:
-  localStorage.setItem("user", username);
+  localStorage.setItem("usuarioLogado", username);
 
-  // Redirecionamento por tipo de usuário
   if (["Leticia", "Glaucia", "Marcelo", "Gabriel"].includes(username)) {
     window.location.href = "consultor.html";
   } else if (username === "Angela") {
     window.location.href = "angela.html";
-  } else if (["Felipe", "Ana Carolina"].includes(username)) {
+  } else {
     window.location.href = "gerente.html";
   }
 }
