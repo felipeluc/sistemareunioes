@@ -1,3 +1,4 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import {
   getFirestore,
   collection,
@@ -6,7 +7,18 @@ import {
   doc,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-import { db } from "./firebase-config.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA82SCTdpkMEAnir63lwuEf0A2Wu2dAhAQ",
+  authDomain: "sistemareuniao.firebaseapp.com",
+  projectId: "sistemareuniao",
+  storageBucket: "sistemareuniao.appspot.com",
+  messagingSenderId: "509650784087",
+  appId: "1:509650784087:web:140e26fd7dcc2ef89df812"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const senhas = {
   "Ana Carolina": "Ana1234",
@@ -21,7 +33,7 @@ const senhas = {
 let usuarioLogado = "";
 let agendamentoSelecionado = null;
 
-document.getElementById("btn-login").addEventListener("click", () => {
+window.fazerLogin = function () {
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
   const erro = document.getElementById("login-erro");
@@ -33,7 +45,9 @@ document.getElementById("btn-login").addEventListener("click", () => {
     usuarioLogado = usuario;
 
     if (usuario === "Angela") {
-      document.querySelector(".angela").classList.remove("hidden");
+      document.querySelectorAll(".angela").forEach(btn => btn.classList.remove("hidden"));
+      carregarDashboardAngela();
+      carregarTransferencias();
     } else if (usuario === "Felipe" || usuario === "Ana Carolina") {
       document.querySelector(".gerente").classList.remove("hidden");
     } else {
@@ -43,15 +57,80 @@ document.getElementById("btn-login").addEventListener("click", () => {
   } else {
     erro.innerText = "Usuário ou senha inválidos!";
   }
-});
+};
 
-window.mostrarAba = (id) => {
+window.mostrarAba = function (id) {
   document.querySelectorAll(".aba").forEach(aba => aba.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
 
-  if (id === "aba-consultor") carregarReunioesConsultor();
+  if (id === "aba-consultor") {
+    carregarReunioesConsultor();
+  } else if (id === "aba-dashboard-angela") {
+    carregarDashboardAngela();
+    carregarTransferencias();
+  }
 };
 
+// Angela
+async function carregarTransferencias() {
+  const div = document.getElementById("transferencias-angela");
+  div.innerHTML = "";
+
+  const snapshot = await getDocs(collection(db, "agendamentos"));
+  snapshot.forEach((docSnap) => {
+    const agendamento = { id: docSnap.id, ...docSnap.data() };
+    if (agendamento.respostaConsultor === "transferir") {
+      const p = document.createElement("p");
+      p.innerHTML = `
+        <strong>${agendamento.consultor}</strong> solicitou transferência para reunião com <strong>${agendamento.nome}</strong>.
+        <button onclick="reatribuirReuniao('${agendamento.id}')">Transferir para outro</button>
+      `;
+      div.appendChild(p);
+    }
+  });
+}
+
+window.reatribuirReuniao = async function (id) {
+  const novo = prompt("Para qual consultor deseja transferir?");
+  if (novo) {
+    await updateDoc(doc(db, "agendamentos", id), {
+      consultor: novo,
+      respostaConsultor: ""
+    });
+    alert("Reunião transferida com sucesso.");
+    carregarTransferencias();
+  }
+};
+
+async function carregarDashboardAngela() {
+  const container = document.getElementById("historico-angela");
+  container.innerHTML = "";
+
+  const consultorFiltro = document.getElementById("filter-consultor-angela").value;
+  const dataFiltro = document.getElementById("filter-data-angela").value;
+
+  const snapshot = await getDocs(collection(db, "agendamentos"));
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const horario = new Date(data.horario);
+    const diaFormatado = horario.toISOString().split("T")[0];
+
+    if (
+      (consultorFiltro === "" || data.consultor === consultorFiltro) &&
+      (dataFiltro === "" || diaFormatado === dataFiltro) &&
+      data.status &&
+      data.status !== "pendente"
+    ) {
+      const p = document.createElement("p");
+      p.innerHTML = `<strong>${data.consultor}</strong> - ${data.nome} - ${data.status}`;
+      container.appendChild(p);
+    }
+  });
+}
+
+document.getElementById("btn-filtrar-angela").onclick = carregarDashboardAngela;
+
+// Angela - Agendamento
 const form = document.getElementById("form-agendamento");
 const sucesso = document.getElementById("mensagem-sucesso");
 
@@ -91,6 +170,7 @@ if (form) {
   });
 }
 
+// Consultor
 async function carregarReunioesConsultor() {
   const pendentesDiv = document.getElementById("reunioes-pendentes");
   const hojeUl = document.getElementById("reunioes-hoje");
@@ -102,54 +182,49 @@ async function carregarReunioesConsultor() {
   futurasUl.innerHTML = "";
   realizadasUl.innerHTML = "";
 
+  const filtroRealizadas = document.getElementById("filter-realizadas-consultor")?.value;
+
   const snapshot = await getDocs(collection(db, "agendamentos"));
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
 
   snapshot.forEach((docSnap) => {
     const data = docSnap.data();
-    const agendamento = { id: docSnap.id, ...data };
+    if (data.consultor !== usuarioLogado) return;
 
-    if (agendamento.consultor !== usuarioLogado) return;
+    const dataHora = new Date(data.horario);
+    const diaComparar = new Date(dataHora);
+    diaComparar.setHours(0, 0, 0, 0);
 
-    const dataHora = new Date(agendamento.horario);
-    const dataComparar = new Date(dataHora);
-    dataComparar.setHours(0, 0, 0, 0);
+    const item = document.createElement("li");
+    item.textContent = `${data.nome} - ${dataHora.toLocaleString()}`;
+    if (data.status && data.status !== "pendente") {
+      item.textContent = `[${data.status}] ` + item.textContent;
+    }
+    item.onclick = () => mostrarDetalhesReuniao({ ...data, id: docSnap.id });
 
-    // Se ainda não aceitou
-    if (agendamento.respostaConsultor !== "aceito") {
+    if (data.respostaConsultor !== "aceito") {
       const btn = document.createElement("button");
-      btn.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
-      btn.onclick = () => mostrarDetalhesReuniao(agendamento);
+      btn.textContent = `${data.nome} - ${dataHora.toLocaleString()}`;
+      btn.onclick = () => mostrarDetalhesReuniao({ ...data, id: docSnap.id });
       pendentesDiv.appendChild(btn);
-      return;
-    }
-
-    // Se aceitou e já tem status => vai para realizadas
-    if (agendamento.status && agendamento.status !== "pendente") {
-      const li = document.createElement("li");
-      li.textContent = `[${agendamento.status}] ${agendamento.nome} - ${dataHora.toLocaleString()}`;
-      realizadasUl.appendChild(li);
-      return;
-    }
-
-    // Se aceitou e ainda está para hoje/futuro
-    const li = document.createElement("li");
-    li.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
-    li.onclick = () => mostrarDetalhesReuniao(agendamento);
-
-    if (dataComparar.getTime() === hoje.getTime()) {
-      hojeUl.appendChild(li);
-    } else if (dataComparar.getTime() > hoje.getTime()) {
-      futurasUl.appendChild(li);
+    } else if (data.status && data.status !== "pendente") {
+      if (!filtroRealizadas || filtroRealizadas === data.status) {
+        realizadasUl.appendChild(item);
+      }
+    } else if (diaComparar.getTime() === hoje.getTime()) {
+      hojeUl.appendChild(item);
+    } else if (diaComparar.getTime() > hoje.getTime()) {
+      futurasUl.appendChild(item);
     }
   });
 }
 
 function mostrarDetalhesReuniao(agendamento) {
   agendamentoSelecionado = agendamento;
-
   document.getElementById("acoes-consultor").classList.remove("hidden");
+  document.getElementById("status-consultor").classList.add("hidden");
+
   document.getElementById("det-nome").innerText = agendamento.nome;
   document.getElementById("det-cidade-estado").innerText = `${agendamento.cidade} / ${agendamento.estado}`;
   document.getElementById("det-cnpj").innerText = agendamento.cnpj;
@@ -160,56 +235,40 @@ function mostrarDetalhesReuniao(agendamento) {
   document.getElementById("det-comquem").innerText = agendamento.comQuem;
   document.getElementById("det-horario").innerText = new Date(agendamento.horario).toLocaleString();
 
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  const data = new Date(agendamento.horario);
-  data.setHours(0, 0, 0, 0);
-
-  const statusBox = document.getElementById("status-consultor");
-  statusBox.classList.add("hidden");
-
-  if (
-    agendamento.respostaConsultor === "aceito" &&
-    (data.getTime() === hoje.getTime() || data > hoje)
-  ) {
-    statusBox.classList.remove("hidden");
+  if (agendamento.respostaConsultor === "aceito") {
+    document.getElementById("status-consultor").classList.remove("hidden");
   }
 }
 
-document.getElementById("btn-aceitar").addEventListener("click", async () => {
+document.getElementById("btn-aceitar").onclick = async () => {
   if (!agendamentoSelecionado) return;
-
   await updateDoc(doc(db, "agendamentos", agendamentoSelecionado.id), {
     respostaConsultor: "aceito"
   });
-
   carregarReunioesConsultor();
   document.getElementById("acoes-consultor").classList.add("hidden");
-});
+};
 
-document.getElementById("btn-transferir").addEventListener("click", async () => {
+document.getElementById("btn-transferir").onclick = async () => {
   if (!agendamentoSelecionado) return;
-
   await updateDoc(doc(db, "agendamentos", agendamentoSelecionado.id), {
     respostaConsultor: "transferir"
   });
-
-  alert("Solicitado transferência para a Angela.");
+  alert("Solicitado transferência para Angela.");
   carregarReunioesConsultor();
   document.getElementById("acoes-consultor").classList.add("hidden");
-});
+};
 
-document.getElementById("status-opcao").addEventListener("change", (e) => {
+document.getElementById("status-opcao").onchange = (e) => {
   const motivo = document.getElementById("motivo-sem-interesse");
   motivo.classList.toggle("hidden", e.target.value !== "Não teve interesse");
-});
+};
 
-document.getElementById("btn-enviar-status").addEventListener("click", async () => {
+document.getElementById("btn-enviar-status").onclick = async () => {
   if (!agendamentoSelecionado) return;
 
   const status = document.getElementById("status-opcao").value;
   const motivo = document.getElementById("motivo-sem-interesse").value;
-
   const update = { status };
 
   if (status === "Não teve interesse") {
@@ -217,8 +276,7 @@ document.getElementById("btn-enviar-status").addEventListener("click", async () 
   }
 
   await updateDoc(doc(db, "agendamentos", agendamentoSelecionado.id), update);
-
   alert("Status atualizado com sucesso!");
   carregarReunioesConsultor();
   document.getElementById("acoes-consultor").classList.add("hidden");
-});
+};
