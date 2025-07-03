@@ -5,7 +5,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyA82SCTdpkMEAnir63lwuEf0A2Wu2dAhAQ",
   authDomain: "sistemareuniao.firebaseapp.com",
   projectId: "sistemareuniao",
-  storageBucket: "sistemareuniao.firebasestorage.app",
+  storageBucket: "sistemareuniao.appspot.com",
   messagingSenderId: "509650784087",
   appId: "1:509650784087:web:140e26fd7dcc2ef89df812"
 };
