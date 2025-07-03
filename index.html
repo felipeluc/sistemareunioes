@@ -1,59 +1,177 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sistema de Reuniões</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="login-container" id="login">
-    <h2>Login</h2>
-    <select id="usuario">
-      <option value="">Selecione seu nome</option>
-      <option value="Ana Carolina">Ana Carolina</option>
-      <option value="Felipe">Felipe</option>
-      <option value="Leticia">Leticia</option>
-      <option value="Glaucia">Glaucia</option>
-      <option value="Marcelo">Marcelo</option>
-      <option value="Gabriel">Gabriel</option>
-      <option value="Angela">Angela</option>
-    </select>
-    <input type="password" id="senha" placeholder="Digite sua senha" />
-    <button onclick="fazerLogin()">Entrar</button>
-    <p id="login-erro"></p>
-  </div>
 
-  <div class="dashboard hidden" id="dashboard">
-    <aside>
-      <h3 id="bem-vindo"></h3>
-      <nav>
-        <button onclick="mostrarAba('aba-angela')" class="angela">Agendamentos</button>
-        <button onclick="mostrarAba('aba-consultor')" class="consultor">Minhas Reuniões</button>
-        <button onclick="mostrarAba('aba-fechamentos')" class="consultor">Meus Fechamentos</button>
-        <button onclick="mostrarAba('aba-gerente')" class="gerente">Painel Geral</button>
-        <button onclick="mostrarAba('aba-senhas')" class="gerente">Gerenciar Senhas</button>
-      </nav>
+  <!-- TELA DE LOGIN -->
+  <section id="login" class="login-container">
+    <h2>Sistema de Reuniões</h2>
+    <label for="usuario">Usuário</label>
+    <select id="usuario">
+      <option value="" disabled selected>Selecione o usuário</option>
+      <option>Ana Carolina</option>
+      <option>Felipe</option>
+      <option>Glaucia</option>
+      <option>Leticia</option>
+      <option>Marcelo</option>
+      <option>Gabriel</option>
+      <option>Angela</option>
+    </select>
+
+    <label for="senha">Senha</label>
+    <input type="password" id="senha" placeholder="Digite sua senha" />
+
+    <button id="btn-login" onclick="fazerLogin()">Entrar</button>
+    <p id="login-erro" class="erro-msg"></p>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="hidden">
+    <header>
+      <button id="btn-menu" onclick="toggleMenu()">☰</button>
+      <h1 id="bem-vindo"></h1>
+      <button id="btn-logout" onclick="logout()">Sair</button>
+    </header>
+
+    <aside id="menu-lateral" class="menu-lateral hidden">
+      <ul>
+        <li class="menu-angela hidden"><button onclick="mostrarAba('aba-dashboard-angela')">Dashboard Angela</button></li>
+        <li class="menu-angela hidden"><button onclick="mostrarAba('aba-transferencias')">Transferências</button></li>
+        <li class="menu-angela hidden"><button onclick="mostrarAba('aba-agendar')">Agendar Reunião</button></li>
+
+        <li class="menu-gerente hidden"><button onclick="mostrarAba('aba-painel-gerente')">Painel Gerente</button></li>
+
+        <li class="menu-consultor hidden"><button onclick="mostrarAba('aba-minhas-reunioes')">Minhas Reuniões</button></li>
+        <li class="menu-consultor hidden"><button onclick="mostrarAba('aba-fechamentos')">Meus Fechamentos</button></li>
+      </ul>
     </aside>
 
     <main>
-      <section id="aba-angela" class="aba hidden">
-        <h2>Agenda da Ângela</h2>
+      <!-- Abas de conteúdo -->
+      <section id="aba-dashboard-angela" class="aba hidden">
+        <h2>Dashboard Angela</h2>
+        <div class="filtros">
+          <label>Filtrar por Data: <input type="date" id="filtro-data-angela" /></label>
+          <label>Filtrar por Consultor:
+            <select id="filtro-consultor-angela">
+              <option value="">Todos</option>
+              <option>Leticia</option>
+              <option>Gabriel</option>
+              <option>Glaucia</option>
+              <option>Marcelo</option>
+            </select>
+          </label>
+          <button onclick="filtrarDashboardAngela()">Filtrar</button>
+        </div>
+        <div id="dashboard-angela-conteudo"></div>
       </section>
-      <section id="aba-consultor" class="aba hidden">
+
+      <section id="aba-transferencias" class="aba hidden">
+        <h2>Solicitações de Transferência</h2>
+        <div id="lista-transferencias"></div>
+      </section>
+
+      <section id="aba-agendar" class="aba hidden">
+        <h2>Agendar Reunião</h2>
+        <form id="form-agendamento">
+          <select id="agendar-consultor" required>
+            <option value="" disabled selected>Selecione o consultor</option>
+            <option>Leticia</option>
+            <option>Gabriel</option>
+            <option>Glaucia</option>
+            <option>Marcelo</option>
+          </select>
+          <input id="agendar-horario" type="datetime-local" required />
+          <input id="agendar-nome" placeholder="Nome" required />
+          <input id="agendar-cidade" placeholder="Cidade" required />
+          <input id="agendar-estado" placeholder="Estado" required />
+          <input id="agendar-link" placeholder="Link da Reunião" required />
+          <input id="agendar-quantidade" placeholder="Quantidade de lojas" required />
+          <input id="agendar-cnpj" placeholder="CNPJ" required />
+          <input id="agendar-segmento" placeholder="Segmento da loja" required />
+          <input id="agendar-prospeccao" placeholder="Por onde prospectou?" required />
+          <input id="agendar-meio" placeholder="Reunião por (Meet, Ligação...)" required />
+          <input id="agendar-contato" placeholder="Contato do lojista" required />
+          <input id="agendar-comquem" placeholder="Conversar com (Dono, gerente...)" required />
+          <button type="submit">Agendar</button>
+        </form>
+        <p id="mensagem-sucesso" class="sucesso-msg"></p>
+      </section>
+
+      <section id="aba-painel-gerente" class="aba hidden">
+        <h2>Painel dos Gerentes</h2>
+        <p>Em construção... 🚧</p>
+      </section>
+
+      <section id="aba-minhas-reunioes" class="aba hidden">
         <h2>Minhas Reuniões</h2>
+        <div class="filtros">
+          <label>Filtrar realizadas por status:
+            <select id="filtro-status-realizadas">
+              <option value="">Todos</option>
+              <option>Se interessou</option>
+              <option>Aguardando pagamento</option>
+              <option>Aguardando documentação</option>
+              <option>Não teve interesse</option>
+            </select>
+          </label>
+        </div>
+
+        <h3>🔶 Pendentes</h3>
+        <div id="reunioes-pendentes"></div>
+
+        <h3>✅ Hoje</h3>
+        <ul id="reunioes-hoje"></ul>
+
+        <h3>📆 Próximos Dias</h3>
+        <ul id="reunioes-futuras"></ul>
+
+        <h3>✅ Realizadas</h3>
+        <ul id="reunioes-realizadas"></ul>
+
+        <div id="acoes-consultor" class="hidden">
+          <h3>Detalhes da Reunião</h3>
+          <p><strong>Nome:</strong> <span id="det-nome"></span></p>
+          <p><strong>Cidade/Estado:</strong> <span id="det-cidade-estado"></span></p>
+          <p><strong>CNPJ:</strong> <span id="det-cnpj"></span></p>
+          <p><strong>Contato:</strong> <span id="det-contato"></span></p>
+          <p><strong>Segmento:</strong> <span id="det-segmento"></span></p>
+          <p><strong>Meio:</strong> <span id="det-meio"></span></p>
+          <p><strong>Link:</strong> <span id="det-link"></span></p>
+          <p><strong>Quem vai atender:</strong> <span id="det-comquem"></span></p>
+          <p><strong>Data e Hora:</strong> <span id="det-horario"></span></p>
+
+          <button id="btn-aceitar">✅ Aceitar</button>
+          <button id="btn-transferir">🔁 Transferir</button>
+        </div>
+
+        <div id="status-consultor" class="filtros hidden">
+          <h3>Status da Reunião</h3>
+          <select id="status-opcao">
+            <option value="">Selecione</option>
+            <option>Se interessou</option>
+            <option>Aguardando pagamento</option>
+            <option>Aguardando documentação</option>
+            <option>Não teve interesse</option>
+          </select>
+          <input type="text" id="motivo-sem-interesse" placeholder="Por que não teve interesse?" class="hidden" />
+          <button id="btn-enviar-status">Salvar Status</button>
+        </div>
       </section>
+
       <section id="aba-fechamentos" class="aba hidden">
         <h2>Meus Fechamentos</h2>
-      </section>
-      <section id="aba-gerente" class="aba hidden">
-        <h2>Painel Gerencial</h2>
-      </section>
-      <section id="aba-senhas" class="aba hidden">
-        <h2>Gerenciar Senhas</h2>
+        <p>Em breve você poderá registrar seus fechamentos aqui. 💰</p>
       </section>
     </main>
-  </div>
+  </section>
+
+  <!-- Importar o script -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
