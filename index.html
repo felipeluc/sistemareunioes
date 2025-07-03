@@ -4,209 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sistema de Reuniões</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f3f4f6;
-      height: 100vh;
-      overflow: hidden;
-    }
-    aside.menu {
-      width: 240px;
-      background: #1f2937;
-      color: #fff;
-      padding: 30px 20px;
-      height: 100vh;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-      display: none;
-      flex-direction: column;
-      justify-content: space-between;
-      position: fixed;
-      left: 0;
-      top: 0;
-    }
-    .menu-item {
-      list-style: none;
-      margin-bottom: 20px;
-    }
-    .menu-item button {
-      width: 100%;
-      padding: 12px 10px;
-      border: none;
-      background: #374151;
-      color: #fff;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .menu-item button:hover {
-      background: #10b981;
-    }
-    main {
-      margin-left: 240px;
-      padding: 30px;
-      background: #f9fafb;
-      overflow-y: auto;
-      height: 100vh;
-      display: none;
-    }
-    .hidden {
-      display: none;
-    }
-    .aba {
-      background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-      margin-bottom: 20px;
-    }
-    input, select, button {
-      font-size: 16px;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 6px;
-      border: 1px solid #d1d5db;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    button[type="submit"], .aba button {
-      background: #2563eb;
-      color: white;
-      border: none;
-    }
-    button[type="submit"]:hover, .aba button:hover {
-      background: #1e40af;
-    }
-    .reuniao-box {
-      border: 1px solid #e5e7eb;
-      background: #f9fafb;
-      border-left: 4px solid #3b82f6;
-      padding: 12px 15px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      cursor: pointer;
-    }
-    .reuniao-pendente {
-      border-left-color: #facc15;
-      background: #fefce8;
-    }
-    .reuniao-realizada {
-      border-left-color: #10b981;
-      background: #ecfdf5;
-      cursor: default;
-    }
-    h2, h3 {
-      margin-top: 0;
-    }
-    #login {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      width: 100vw;
-      background: #f3f4f6;
-      position: fixed;
-      top: 0; left: 0;
-      z-index: 10;
-    }
-    #login > div {
-      max-width: 400px;
-      width: 100%;
-      background: #fff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- MENU -->
-<aside class="menu" id="menu">
-  <div>
-    <h2>Menu</h2>
-    <li class="menu-item angela" style="display: none;">
-      <button onclick="mostrarAba('agendar')">📅 Agendar Reunião</button>
-    </li>
-    <li class="menu-item gerente" style="display: none;">
-      <button onclick="mostrarAba('gerente')">📊 Painel Gerente</button>
-    </li>
-    <li class="menu-item consultor" style="display: none;">
-      <button onclick="mostrarAba('consultor')">👥 Minhas Reuniões</button>
-    </li>
-    <li class="menu-item consultor" style="display: none;">
-      <button onclick="mostrarAba('fechamentos')">💰 Meus Fechamentos</button>
-    </li>
-    <li class="menu-item">
-      <button onclick="logout()">🚪 Sair</button>
-    </li>
-    <li class="menu-item">
-      <button onclick="voltarAba()">⬅ Voltar</button>
-    </li>
-  </div>
-</aside>
-
-<!-- CONTEÚDO -->
-<main id="dashboard">
-  <h1 id="bem-vindo"></h1>
-
-  <!-- Agendar -->
-  <section id="aba-agendar" class="aba hidden">
-    <h2>Agendar Reunião</h2>
-    <!-- FORMULÁRIO AQUI -->
-    <form id="form-agendamento">
-      <!-- inputs do agendamento... -->
-      <input id="agendar-nome" placeholder="Nome" required />
-      <!-- ... (adicione os outros inputs como antes) -->
-      <button type="submit">Agendar</button>
-    </form>
-  </section>
-
-  <!-- Painel Gerente -->
-  <section id="aba-gerente" class="aba hidden">
-    <h2>Painel dos Gerentes</h2>
-    <p>Conteúdo do painel aqui.</p>
-  </section>
-
-  <!-- Minhas Reuniões -->
-  <section id="aba-consultor" class="aba hidden">
-    <h2>Minhas Reuniões</h2>
-    <div id="reunioes-pendentes"></div>
-    <div id="acoes-consultor" class="hidden">
-      <p><strong>Nome:</strong> <span id="det-nome"></span></p>
-      <button onclick="aceitarReuniao()">✅ Aceitar</button>
-    </div>
-    <div id="status-consultor" class="hidden">
-      <select id="status-opcao">
-        <option value="">Status</option>
-        <option value="Se interessou">Se interessou</option>
-        <option value="Aguardando pagamento">Aguardando pagamento</option>
-        <option value="Aguardando documentação">Aguardando documentação</option>
-        <option value="Não teve interesse">Não teve interesse</option>
-      </select>
-      <input type="text" id="motivo-sem-interesse" class="hidden" placeholder="Por que não teve interesse?" />
-      <button onclick="salvarStatus()">Salvar Status</button>
-    </div>
-    <h3>Hoje</h3>
-    <ul id="reunioes-hoje"></ul>
-    <h3>Próximos Dias</h3>
-    <ul id="reunioes-futuras"></ul>
-    <h3>Realizadas</h3>
-    <ul id="reunioes-realizadas"></ul>
-  </section>
-
-  <!-- Fechamentos -->
-  <section id="aba-fechamentos" class="aba hidden">
-    <h2>Meus Fechamentos</h2>
-    <p>Área para lançar fechamentos.</p>
-  </section>
-</main>
-
-<!-- LOGIN -->
+<!-- TELA DE LOGIN -->
 <section id="login">
-  <div>
+  <div class="login-container">
     <h2 style="text-align: center;">Login</h2>
     <select id="usuario">
       <option value="Angela">Angela</option>
@@ -216,86 +20,120 @@
       <option value="Gabriel">Gabriel</option>
       <option value="Glaucia">Glaucia</option>
       <option value="Marcelo">Marcelo</option>
-    </select><br/><br/>
-    <input type="password" id="senha" placeholder="Digite sua senha" /><br/><br/>
+    </select><br/>
+    <input type="password" id="senha" placeholder="Digite sua senha" /><br/>
     <button onclick="fazerLogin()">Entrar</button>
     <p id="login-erro" style="color: red; text-align: center;"></p>
   </div>
 </section>
 
-<!-- SCRIPT -->
-<script>
-  const usuarios = {
-    Angela: { senha: "123", perfil: "angela" },
-    Felipe: { senha: "123", perfil: "gerente" },
-    "Ana Carolina": { senha: "123", perfil: "gerente" },
-    Leticia: { senha: "123", perfil: "consultor" },
-    Gabriel: { senha: "123", perfil: "consultor" },
-    Glaucia: { senha: "123", perfil: "consultor" },
-    Marcelo: { senha: "123", perfil: "consultor" }
-  };
+<!-- DASHBOARD PRINCIPAL -->
+<main id="dashboard" class="hidden">
+  <aside>
+    <h3>Menu</h3>
+    <nav>
+      <button onclick="mostrarAba('aba-agendar')" class="angela hidden">📅 Agendar Reunião</button>
+      <button onclick="mostrarAba('aba-gerente')" class="gerente hidden">📊 Painel Gerente</button>
+      <button onclick="mostrarAba('aba-consultor')" class="consultor hidden">👥 Minhas Reuniões</button>
+      <button onclick="mostrarAba('aba-fechamentos')" class="consultor hidden">💰 Meus Fechamentos</button>
+      <button onclick="location.reload()">🚪 Sair</button>
+    </nav>
+  </aside>
 
-  let usuarioLogado = null;
-  let abaAtual = null;
-  let historicoAbas = [];
+  <section>
+    <h1 id="bem-vindo"></h1>
 
-  function fazerLogin() {
-    const nome = document.getElementById("usuario").value;
-    const senha = document.getElementById("senha").value;
-    const erro = document.getElementById("login-erro");
+    <!-- ABA ÂNGELA -->
+    <div id="aba-agendar" class="hidden">
+      <h2>Agendar Reunião</h2>
+      <form id="form-agendamento">
+        <select id="agendar-consultor" required>
+          <option value="">Selecione</option>
+          <option value="Leticia">Leticia</option>
+          <option value="Gabriel">Gabriel</option>
+          <option value="Glaucia">Glaucia</option>
+          <option value="Marcelo">Marcelo</option>
+        </select>
+        <input id="agendar-horario" type="datetime-local" required />
+        <input id="agendar-nome" placeholder="Nome" required />
+        <input id="agendar-cidade" placeholder="Cidade" required />
+        <input id="agendar-estado" placeholder="Estado" required />
+        <input id="agendar-link" placeholder="Link da Reunião" required />
+        <input id="agendar-quantidade" placeholder="Quantidade de lojas" required />
+        <input id="agendar-cnpj" placeholder="CNPJ" required />
+        <input id="agendar-segmento" placeholder="Segmento da loja" required />
+        <input id="agendar-prospeccao" placeholder="Por onde prospectou?" required />
+        <input id="agendar-meio" placeholder="Reunião por (Meet, Ligação...)" required />
+        <input id="agendar-contato" placeholder="Contato do lojista" required />
+        <input id="agendar-comquem" placeholder="Conversar com (Dono, gerente...)" required />
+        <button type="submit">Agendar</button>
+      </form>
+      <p id="mensagem-sucesso" style="color: green;"></p>
+      <button onclick="mostrarAbaAnterior()">🔙 Voltar</button>
+    </div>
 
-    if (usuarios[nome] && usuarios[nome].senha === senha) {
-      usuarioLogado = { nome, perfil: usuarios[nome].perfil };
-      erro.textContent = "";
-      document.getElementById("login").style.display = "none";
-      document.getElementById("menu").style.display = "flex";
-      document.getElementById("dashboard").style.display = "block";
-      document.getElementById("bem-vindo").textContent = `Olá, ${nome}!`;
+    <!-- ABA GERENTE -->
+    <div id="aba-gerente" class="hidden">
+      <h2>Painel do Gerente</h2>
+      <p>Aqui ficará a visão geral das reuniões agendadas.</p>
+      <button onclick="mostrarAbaAnterior()">🔙 Voltar</button>
+    </div>
 
-      if (usuarioLogado.perfil === "angela") {
-        document.querySelector(".menu-item.angela").style.display = "block";
-        mostrarAba("agendar");
-      } else if (usuarioLogado.perfil === "gerente") {
-        document.querySelector(".menu-item.gerente").style.display = "block";
-        mostrarAba("gerente");
-      } else if (usuarioLogado.perfil === "consultor") {
-        document.querySelectorAll(".menu-item.consultor").forEach(el => el.style.display = "block");
-        mostrarAba("consultor");
-      }
-    } else {
-      erro.textContent = "Usuário ou senha incorretos";
-    }
-  }
+    <!-- ABA CONSULTOR -->
+    <div id="aba-consultor" class="hidden">
+      <h2>Minhas Reuniões</h2>
 
-  function mostrarAba(id) {
-    if (abaAtual) historicoAbas.push(abaAtual);
-    document.querySelectorAll(".aba").forEach((aba) => aba.classList.add("hidden"));
-    document.getElementById("aba-" + id).classList.remove("hidden");
-    abaAtual = id;
-  }
+      <h3 style="color: #f59e0b;">🔶 Pendentes</h3>
+      <div id="reunioes-pendentes"></div>
 
-  function voltarAba() {
-    if (historicoAbas.length > 0) {
-      const ultima = historicoAbas.pop();
-      mostrarAba(ultima);
-    }
-  }
+      <div id="acoes-consultor" class="hidden">
+        <h3>Detalhes da Reunião</h3>
+        <p><strong>Nome:</strong> <span id="det-nome"></span></p>
+        <p><strong>Cidade/Estado:</strong> <span id="det-cidade-estado"></span></p>
+        <p><strong>CNPJ:</strong> <span id="det-cnpj"></span></p>
+        <p><strong>Contato:</strong> <span id="det-contato"></span></p>
+        <p><strong>Segmento:</strong> <span id="det-segmento"></span></p>
+        <p><strong>Meio:</strong> <span id="det-meio"></span></p>
+        <p><strong>Link:</strong> <span id="det-link"></span></p>
+        <p><strong>Quem vai atender:</strong> <span id="det-comquem"></span></p>
+        <p><strong>Data e Hora:</strong> <span id="det-horario"></span></p>
+        <button id="btn-aceitar">✅ Aceitar</button>
+        <button id="btn-transferir">🔁 Transferir</button>
+      </div>
 
-  function logout() {
-    location.reload();
-  }
+      <div class="hidden" id="status-consultor">
+        <h3>Status da Reunião</h3>
+        <select id="status-opcao">
+          <option value="">Selecione</option>
+          <option value="Se interessou">Se interessou</option>
+          <option value="Aguardando pagamento">Aguardando pagamento</option>
+          <option value="Aguardando documentação">Aguardando documentação</option>
+          <option value="Não teve interesse">Não teve interesse</option>
+        </select>
+        <input type="text" id="motivo-sem-interesse" placeholder="Por que não teve interesse?" class="hidden" />
+        <button id="btn-enviar-status">Salvar Status</button>
+      </div>
 
-  function aceitarReuniao() {
-    document.getElementById("status-consultor").classList.remove("hidden");
-  }
+      <hr />
+      <h3>✅ Hoje</h3>
+      <ul id="reunioes-hoje"></ul>
 
-  function salvarStatus() {
-    // Aqui você pode mover a reunião para "realizadas" e esconder o painel de status
-    document.getElementById("status-consultor").classList.add("hidden");
-    alert("Status salvo! Reunião marcada como realizada.");
-    mostrarAba("consultor");
-  }
-</script>
+      <h3>📆 Próximos Dias</h3>
+      <ul id="reunioes-futuras"></ul>
 
-</body>
-</html>
+      <h3>✅ Realizadas</h3>
+      <ul id="reunioes-realizadas"></ul>
+
+      <button onclick="mostrarAbaAnterior()">🔙 Voltar</button>
+    </div>
+
+    <!-- ABA FECHAMENTOS -->
+    <div id="aba-fechamentos" class="hidden">
+      <h2>Meus Fechamentos</h2>
+      <p>Tela onde o consultor vai adicionar os fechamentos realizados.</p>
+      <button onclick="mostrarAbaAnterior()">🔙 Voltar</button>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="script.js"></script>
