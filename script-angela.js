@@ -1,15 +1,14 @@
 // script-angela.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import {
-  getFirestore,
   collection,
   addDoc,
   getDocs,
   query,
   where,
   Timestamp,
-  onSnapshot
-} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+  updateDoc,
+  doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { db } from './firebase-config.js';
 
@@ -50,20 +49,19 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// Carregar transferências
 async function carregarTransferencias() {
   listaTransferencias.innerHTML = "<p>Carregando...</p>";
   const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
   const snapshot = await getDocs(q);
 
   let html = "";
-  snapshot.forEach((doc) => {
-    const dados = doc.data();
+  snapshot.forEach((docSnap) => {
+    const dados = docSnap.data();
     html += `<div style="border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 12px;">
       <strong>${dados.nomeLoja}</strong><br/>
       ${dados.cidade} - ${dados.estado}<br/>
       <small>${dados.horario}</small><br/>
-      <button onclick="transferirOutro('${doc.id}')">Transferir para outro</button>
+      <button onclick="transferirOutro('${docSnap.id}')">Transferir para outro</button>
     </div>`;
   });
 
@@ -74,20 +72,14 @@ window.transferirOutro = async (idDoc) => {
   const novo = prompt("Para qual consultor transferir?");
   if (!novo) return;
 
-  const docRef = collection(db, "reunioes");
-  const snapshot = await getDocs(query(docRef, where("status", "==", "transferencia")));
-  const docToUpdate = snapshot.docs.find(doc => doc.id === idDoc);
-
-  if (docToUpdate) {
-    await docToUpdate.ref.update({ consultor: novo, status: "pendente" });
-    alert("Transferido com sucesso!");
-    carregarTransferencias();
-  }
+  const docRef = doc(db, "reunioes", idDoc);
+  await updateDoc(docRef, { consultor: novo, status: "pendente" });
+  alert("Transferido com sucesso!");
+  carregarTransferencias();
 };
 
 carregarTransferencias();
 
-// Filtro por data
 function filtrarPorPeriodo(dias) {
   const agora = new Date();
   const inicio = new Date();
@@ -95,7 +87,6 @@ function filtrarPorPeriodo(dias) {
   atualizarDashboard(inicio, agora);
 }
 
-// Atualiza dashboard com ou sem filtro de data
 async function atualizarDashboard(inicioData = null, fimData = null) {
   const snapshot = await getDocs(collection(db, "reunioes"));
 
@@ -106,12 +97,7 @@ async function atualizarDashboard(inicioData = null, fimData = null) {
     const dados = doc.data();
     const criado = dados.criadoEm?.toDate();
 
-    if (inicioData && fimData) {
-      if (criado >= inicioData && criado <= fimData) {
-        totalReunioes++;
-        totalLojas += parseInt(dados.qtdLojas || 0);
-      }
-    } else {
+    if (!inicioData || (criado >= inicioData && criado <= fimData)) {
       totalReunioes++;
       totalLojas += parseInt(dados.qtdLojas || 0);
     }
