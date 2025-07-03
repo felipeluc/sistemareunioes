@@ -6,125 +6,55 @@
   <title>Consultores - SouFácil</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-    }
-    body {
-      display: flex;
-      height: 100vh;
-      background-color: #f5f5f7;
-    }
-    .sidebar {
-      width: 250px;
-      background-color: #ffffff;
-      padding: 20px;
-      border-right: 1px solid #ddd;
-    }
-    .sidebar h2 {
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
-    .sidebar button {
-      display: block;
-      width: 100%;
-      padding: 10px 15px;
-      margin-bottom: 10px;
-      border: none;
-      background-color: #f1f1f1;
-      border-radius: 8px;
-      text-align: left;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .sidebar button:hover {
-      background-color: #e0e0e0;
-    }
-    .content {
-      flex: 1;
-      padding: 30px;
-    }
-    .header {
-      font-size: 24px;
-      margin-bottom: 30px;
-    }
-    .section {
-      display: none;
-    }
-    .section.active {
-      display: block;
-    }
-    .card {
-      background: #fff;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 16px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.05);
-    }
-    .card h3 {
-      margin-bottom: 10px;
-    }
-    .status-select, .filter-date {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      margin-right: 10px;
-    }
-    .btn {
-      padding: 10px 15px;
-      background: #007aff;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background: #005fd0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { display: flex; height: 100vh; background-color: #f5f5f7; }
+    .sidebar { width: 250px; background-color: #ffffff; padding: 20px; border-right: 1px solid #ddd; }
+    .sidebar h2 { font-size: 20px; margin-bottom: 20px; }
+    .sidebar button { display: block; width: 100%; padding: 10px 15px; margin-bottom: 10px; border: none; background-color: #f1f1f1; border-radius: 8px; text-align: left; cursor: pointer; transition: 0.3s; }
+    .sidebar button:hover { background-color: #e0e0e0; }
+    .content { flex: 1; padding: 30px; overflow-y: auto; }
+    .header { font-size: 24px; margin-bottom: 30px; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .card { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 16px; box-shadow: 0 0 15px rgba(0,0,0,0.05); }
+    .card h3 { margin-bottom: 10px; }
+    .status-select, .filter-date, .input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin: 5px 10px 10px 0; }
+    .btn { padding: 10px 15px; background: #007aff; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    .btn:hover { background: #005fd0; }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <h2>Bem-vindo(a) <span id="userName">Consultor</span></h2>
-    <button onclick="showSection('pendentes')">Pendentes</button>
-    <button onclick="showSection('agendadas')">Hoje / Próximos Dias</button>
-    <button onclick="showSection('realizadas')">Realizadas</button>
-    <button onclick="showSection('fechamentos')">Meus Fechamentos</button>
-    <button onclick="showSection('dashboard')">Dashboard</button>
+    <button id="btnPendentes">Pendentes</button>
+    <button id="btnAgendadas">Hoje / Próximos Dias</button>
+    <button id="btnRealizadas">Realizadas</button>
+    <button id="btnFechamentos">Meus Fechamentos</button>
+    <button id="btnDashboard">Dashboard</button>
   </div>
   <div class="content">
     <div id="pendentes" class="section active">
       <div class="header">Reuniões Pendentes</div>
       <div id="reunioesPendentes"></div>
     </div>
-
     <div id="agendadas" class="section">
       <div class="header">Hoje / Próximos Dias</div>
-      <!-- Conteúdo dinâmico -->
     </div>
-
     <div id="realizadas" class="section">
       <div class="header">Reuniões Realizadas</div>
-      <!-- Conteúdo dinâmico -->
     </div>
-
     <div id="fechamentos" class="section">
       <div class="header">Meus Fechamentos</div>
-      <!-- Conteúdo dinâmico -->
     </div>
-
     <div id="dashboard" class="section">
       <div class="header">Dashboard</div>
-      <!-- Conteúdo dinâmico -->
     </div>
   </div>
 
-  <!-- Firebase + Lógica -->
+  <!-- Firebase + Funções -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA8RN8vcrLZGGmwCXx8ng4GaUZDSo_SSfg",
@@ -138,29 +68,33 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    document.getElementById("userName").textContent = localStorage.getItem("user") || "Consultor";
+    const user = localStorage.getItem("user") || "Consultor";
+    document.getElementById("userName").textContent = user;
 
     function showSection(id) {
-      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
     }
 
+    document.getElementById("btnPendentes").addEventListener("click", () => showSection("pendentes"));
+    document.getElementById("btnAgendadas").addEventListener("click", () => showSection("agendadas"));
+    document.getElementById("btnRealizadas").addEventListener("click", () => showSection("realizadas"));
+    document.getElementById("btnFechamentos").addEventListener("click", () => showSection("fechamentos"));
+    document.getElementById("btnDashboard").addEventListener("click", () => showSection("dashboard"));
+
     async function carregarReunioesPendentes() {
-      const usuario = localStorage.getItem("user");
       const container = document.getElementById("reunioesPendentes");
-
-      const q = query(collection(db, "reunioes"), where("consultor", "==", usuario), where("status", "==", "pendente"));
+      const q = query(collection(db, "reunioes"), where("consultor", "==", user), where("status", "==", "pendente"));
       const snapshot = await getDocs(q);
-
       container.innerHTML = "";
       snapshot.forEach(doc => {
-        const dados = doc.data();
+        const d = doc.data();
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-          <h3>${dados.nome}</h3>
-          <p>Segmento: ${dados.segmento}</p>
-          <p>Horário: ${dados.horario}</p>
+          <h3>${d.nome}</h3>
+          <p>Segmento: ${d.segmento}</p>
+          <p>Horário: ${d.horario}</p>
           <button class="btn">Aceitar</button>
           <button class="btn">Transferir</button>
         `;
