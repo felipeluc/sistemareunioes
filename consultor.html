@@ -23,25 +23,6 @@
     .btn:hover { background: #005fd0; }
     .form-section { margin-top: 20px; }
     .form-section input, .form-section select { display: block; width: 100%; margin-bottom: 10px; }
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-    }
-    .modal-content {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 500px;
-      width: 90%;
-    }
   </style>
 </head>
 <body>
@@ -58,10 +39,12 @@
       <div class="header">Reuniões Pendentes</div>
       <div id="reunioesPendentes"></div>
     </div>
+
     <div id="agendadas" class="section">
       <div class="header">Hoje / Próximos Dias</div>
       <div id="reunioesAgendadas"></div>
     </div>
+
     <div id="realizadas" class="section">
       <div class="header">Reuniões Realizadas</div>
       <input type="date" id="filtroDataRealizadas" class="filter-date" />
@@ -74,6 +57,7 @@
       </select>
       <div id="reunioesRealizadas"></div>
     </div>
+
     <div id="fechamentos" class="section">
       <div class="header">Meus Fechamentos</div>
       <div class="form-section">
@@ -110,6 +94,7 @@
       </div>
       <div id="listaFechamentos"></div>
     </div>
+
     <div id="dashboard" class="section">
       <div class="header">Dashboard</div>
       <input type="date" id="dataInicio" class="filter-date" />
@@ -118,36 +103,16 @@
       <div id="infoDashboard" class="card"></div>
     </div>
   </div>
-  <!-- Modal -->
-  <div id="modalCard" class="modal">
-    <div class="modal-content" id="modalContent"></div>
-  </div>
+
   <script>
     function showSection(id) {
       document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(id).classList.add('active');
     }
-    function abrirModalCard(dados) {
-      const modal = document.getElementById('modalCard');
-      const modalContent = document.getElementById('modalContent');
-      modalContent.innerHTML = `
-        <h2>${dados.nomeLoja}</h2>
-        <p><strong>Segmento:</strong> ${dados.segmento}</p>
-        <p><strong>Data:</strong> ${dados.data}</p>
-        <p><strong>Hora:</strong> ${dados.hora}</p>
-        <p><strong>Cidade:</strong> ${dados.cidade}</p>
-        <p><strong>Observações:</strong> ${dados.observacoes || 'Nenhuma'}</p>
-        <br><button class="btn" onclick="fecharModal()">Fechar</button>
-      `;
-      modal.style.display = 'flex';
-    }
-    function fecharModal() {
-      document.getElementById('modalCard').style.display = 'none';
-    }
-    window.onclick = function(event) {
-      const modal = document.getElementById('modalCard');
-      if (event.target == modal) modal.style.display = 'none';
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById("userName").textContent = localStorage.getItem("user") || "Consultor";
+    });
   </script>
+  <script type="module" src="consultor.js"></script>
 </body>
 </html>
