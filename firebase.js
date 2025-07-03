@@ -1,20 +1,31 @@
-// Importar Firebase via CDN (modular)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<script type="module">
+  import { db, collection, getDocs } from "./firebase.js";
 
-// Suas credenciais reais do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyA8RN8vcrLZGGmwCXx8ng4GaUZDSo_SSfg",
-  authDomain: "reunioes-sistema.firebaseapp.com",
-  projectId: "reunioes-sistema",
-  storageBucket: "reunioes-sistema.firebasestorage.app",
-  messagingSenderId: "591533232683",
-  appId: "1:591533232683:web:a2aaeddac1d6c4e3a7906e"
-};
+  async function carregarReunioes() {
+    const usuario = localStorage.getItem("user");
 
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    const q = collection(db, "reunioes");
+    const snapshot = await getDocs(q);
 
-// Exportar para usar nos outros arquivos
-export { db, collection, addDoc, getDocs, query, where, updateDoc, doc };
+    const container = document.getElementById("pendentes");
+    container.innerHTML = "<div class='header'>Reuniões Pendentes</div>";
+
+    snapshot.forEach(doc => {
+      const dados = doc.data();
+      if (dados.consultor === usuario && dados.status === "pendente") {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${dados.nome}</h3>
+          <p>Segmento: ${dados.segmento}</p>
+          <p>Horário: ${dados.horario}</p>
+          <button class="btn">Aceitar</button>
+          <button class="btn">Transferir</button>
+        `;
+        container.appendChild(card);
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", carregarReunioes);
+</script>
