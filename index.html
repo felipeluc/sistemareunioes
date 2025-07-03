@@ -1,16 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login - Sistema de Reuniões</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="login-body">
   <div class="login-container">
-    <h2>Bem-vindo</h2>
-    <select id="userSelect">
+    <h1>Bem-vindo</h1>
+    <select id="username">
       <option value="">Selecione seu nome</option>
       <option value="Ana Carolina">Ana Carolina</option>
       <option value="Felipe">Felipe</option>
@@ -22,11 +21,8 @@
     </select>
     <input type="password" id="password" placeholder="Senha" />
     <button onclick="login()">Entrar</button>
-    <p id="loginError" class="error"></p>
+    <p id="login-error" class="error-msg"></p>
   </div>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

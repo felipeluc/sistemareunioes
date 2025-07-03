@@ -1,4 +1,3 @@
-
 const users = {
   "Ana Carolina": "Ana1234",
   "Felipe": "Felipe1515",
@@ -10,28 +9,26 @@ const users = {
 };
 
 function login() {
-  const user = document.getElementById("userSelect").value;
+  const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
-  const errorEl = document.getElementById("loginError");
+  const errorEl = document.getElementById("login-error");
 
-  if (!user || !password) {
+  if (!username || !password) {
     errorEl.textContent = "Preencha todos os campos.";
     return;
   }
 
-  if (users[user] === password) {
-    switch (user) {
-      case "Angela":
-        window.location.href = "angela.html";
-        break;
-      case "Felipe":
-      case "Ana Carolina":
-        window.location.href = "gerente.html";
-        break;
-      default:
-        window.location.href = "consultor.html";
-    }
-  } else {
-    errorEl.textContent = "Usuário ou senha inválidos.";
+  if (users[username] !== password) {
+    errorEl.textContent = "Usuário ou senha incorretos.";
+    return;
+  }
+
+  // Redirecionamento por tipo de usuário
+  if (["Leticia", "Glaucia", "Marcelo", "Gabriel"].includes(username)) {
+    window.location.href = "consultor.html";
+  } else if (username === "Angela") {
+    window.location.href = "angela.html";
+  } else if (["Felipe", "Ana Carolina"].includes(username)) {
+    window.location.href = "gerente.html";
   }
 }
