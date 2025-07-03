@@ -1,28 +1,35 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - Sistema de Reuniões</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SouFácil | Login</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="login-body">
+<body>
   <div class="login-container">
-    <h1>Bem-vindo</h1>
-    <select id="username">
-      <option value="">Selecione seu nome</option>
-      <option value="Ana Carolina">Ana Carolina</option>
-      <option value="Felipe">Felipe</option>
-      <option value="Leticia">Leticia</option>
-      <option value="Glaucia">Glaucia</option>
-      <option value="Marcelo">Marcelo</option>
-      <option value="Gabriel">Gabriel</option>
-      <option value="Angela">Angela</option>
-    </select>
-    <input type="password" id="password" placeholder="Senha" />
-    <button onclick="login()">Entrar</button>
-    <p id="login-error" class="error-msg"></p>
+    <h1>SouFácil</h1>
+    <div class="login-box">
+      <label for="user">Usuário:</label>
+      <select id="user">
+        <option value="">Selecione</option>
+        <option value="Angela">Angela</option>
+        <option value="Leticia">Leticia</option>
+        <option value="Glaucia">Glaucia</option>
+        <option value="Marcelo">Marcelo</option>
+        <option value="Gabriel">Gabriel</option>
+        <option value="Felipe">Felipe</option>
+        <option value="Ana Carolina">Ana Carolina</option>
+      </select>
+
+      <label for="senha">Senha:</label>
+      <input type="password" id="senha" />
+
+      <button onclick="login()">Entrar</button>
+    </div>
   </div>
-  <script src="script.js"></script>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="script-index.js"></script>
 </body>
 </html>
