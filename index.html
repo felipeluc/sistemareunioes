@@ -3,33 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SouFácil | Login</title>
+  <title>SouFácil • Login</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <div class="login-container">
-    <h1>SouFácil</h1>
-    <div class="login-box">
-      <label for="user">Usuário:</label>
+<body class="login-page">
+  <div class="login-box glass">
+    <h1 class="title">SouFácil</h1>
+    <div class="login-form">
+      <label for="user">Usuário</label>
       <select id="user">
         <option value="">Selecione</option>
-        <option value="Angela">Angela</option>
+        <option value="Ana Carolina">Ana Carolina</option>
+        <option value="Felipe">Felipe</option>
         <option value="Leticia">Leticia</option>
         <option value="Glaucia">Glaucia</option>
         <option value="Marcelo">Marcelo</option>
         <option value="Gabriel">Gabriel</option>
-        <option value="Felipe">Felipe</option>
-        <option value="Ana Carolina">Ana Carolina</option>
+        <option value="Angela">Angela</option>
       </select>
 
-      <label for="senha">Senha:</label>
-      <input type="password" id="senha" />
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" placeholder="Digite sua senha" />
 
       <button onclick="login()">Entrar</button>
     </div>
   </div>
 
   <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="script-index.js"></script>
+  <script src="script-index.js"></script>
 </body>
 </html>
