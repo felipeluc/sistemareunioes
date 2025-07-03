@@ -23,7 +23,10 @@ function login() {
     return;
   }
 
-  // Redirecionamento por tipo de usuário
+  // Salvar nome do usuário no localStorage para uso nas próximas telas
+  localStorage.setItem("user", username);
+
+  // Redirecionar com base no tipo de usuário
   if (["Leticia", "Glaucia", "Marcelo", "Gabriel"].includes(username)) {
     window.location.href = "consultor.html";
   } else if (username === "Angela") {
