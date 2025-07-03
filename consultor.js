@@ -24,25 +24,24 @@ async function carregarPendentes() {
     card.innerHTML = `
       <h3>${r.nomeLoja || 'Sem nome'}</h3>
       <p><strong>Segmento:</strong> ${r.segmento}</p>
-      <p><strong>Data:</strong> ${r.data}</p>
-      <p><strong>Horário:</strong> ${r.hora}</p>
+      <p><strong>Data:</strong> ${r.data || ''}</p>
+      <p><strong>Horário:</strong> ${r.hora || ''}</p>
       <button class="btn" onclick="aceitarReuniao('${docSnap.id}')">Aceitar</button>
       <select class="transfer-select" onchange="transferirReuniao('${docSnap.id}', this)">
         <option value="">Transferir para...</option>
         ${selectTransferir}
       </select>
       <button class="btn" onclick="abrirCard(this)">Ver Detalhes</button>
-      <div class="card-details">
+      <div class="card-details" style="display:none">
         <p><strong>Cidade:</strong> ${r.cidade || ''}</p>
+        <p><strong>Link:</strong> ${r.link || ''}</p>
         <p><strong>Estado:</strong> ${r.estado || ''}</p>
-        <p><strong>Contato:</strong> ${r.contato || ''}</p>
-        <p><strong>Link:</strong> <a href="${r.linkReuniao}" target="_blank">Acessar reunião</a></p>
-        <p><strong>Responsável Conversa:</strong> ${r.responsavelConversa || ''}</p>
-        <p><strong>Prospecção:</strong> ${r.prospeccao || ''}</p>
-        <p><strong>Canal:</strong> ${r.canal || ''}</p>
         <p><strong>Qtd Lojas:</strong> ${r.qtdLojas || ''}</p>
         <p><strong>CNPJ:</strong> ${r.cnpj || ''}</p>
-        <p><strong>Criado em:</strong> ${new Date(r.criadoEm?.seconds * 1000).toLocaleString()}</p>
+        <p><strong>Origem:</strong> ${r.origem || ''}</p>
+        <p><strong>Canal:</strong> ${r.canal || ''}</p>
+        <p><strong>Contato:</strong> ${r.contato || ''}</p>
+        <p><strong>Responsável:</strong> ${r.responsavelConversa || ''}</p>
       </div>
     `;
     container.appendChild(card);
@@ -50,8 +49,8 @@ async function carregarPendentes() {
 }
 
 window.abrirCard = (btn) => {
-  const card = btn.closest('.card');
-  card.classList.toggle('open');
+  const cardDetails = btn.closest('.card').querySelector('.card-details');
+  cardDetails.style.display = cardDetails.style.display === 'none' ? 'block' : 'none';
 };
 
 window.aceitarReuniao = async (id) => {
@@ -116,10 +115,17 @@ async function carregarRealizadas() {
         <p><strong>Data:</strong> ${r.data}</p>
         <p><strong>Status:</strong> ${r.status}</p>
         <button class="btn" onclick="abrirCard(this)">Ver Detalhes</button>
-        <div class="card-details">
+        <div class="card-details" style="display:none">
           <p><strong>Segmento:</strong> ${r.segmento}</p>
           <p><strong>Cidade:</strong> ${r.cidade}</p>
-          <p><strong>Observações:</strong> ${r.observacoes}</p>
+          <p><strong>Observações:</strong> ${r.observacoes || ''}</p>
+          <select onchange="alterarStatus('${docSnap.id}', this.value)" class="status-select">
+            <option value="">Editar status</option>
+            <option value="fechou">Fechou</option>
+            <option value="nao_interesse">Não teve interesse</option>
+            <option value="aguardando_pagamento">Aguardando pagamento</option>
+            <option value="aguardando_documentacao">Aguardando documentação</option>
+          </select>
         </div>
       `;
       container.appendChild(card);
