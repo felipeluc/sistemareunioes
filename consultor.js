@@ -24,9 +24,9 @@ async function carregarPendentes() {
     card.innerHTML = `
       <h3>${r.nomeLoja || 'Sem nome'}</h3>
       <p><strong>Segmento:</strong> ${r.segmento}</p>
-      <p><strong>Data:</strong> ${r.data}</p>
+      <p><strong>Data:</strong> ${r.data || 'Sem data'}</p>
       <p><strong>Horário:</strong> ${r.hora}</p>
-      <button class="btn" onclick="aceitarReuniao('${docSnap.id}')">Aceitar</button>
+      <button class="btn" onclick="aceitarReuniao('${docSnap.id}', '${r.data}')">Aceitar</button>
       <select class="transfer-select" onchange="transferirReuniao('${docSnap.id}', this)">
         <option value="">Transferir para...</option>
         ${selectTransferir}
@@ -35,9 +35,10 @@ async function carregarPendentes() {
       <div class="card-details">
         <p><strong>Cidade:</strong> ${r.cidade || ''}</p>
         <p><strong>Estado:</strong> ${r.estado || ''}</p>
-        <p><strong>Link:</strong> <a href="${r.link}" target="_blank">${r.link}</a></p>
-        <p><strong>Contato:</strong> ${r.contato || ''}</p>
-        <p><strong>Responsável:</strong> ${r.responsavelConversa || ''}</p>
+        <p><strong>Link:</strong> <a href="${r.link}" target="_blank">Abrir Reunião</a></p>
+        <p><strong>Contato:</strong> ${r.contato}</p>
+        <p><strong>Responsável pela conversa:</strong> ${r.responsavelConversa}</p>
+        <p><strong>Origem:</strong> ${r.origem || ''}</p>
         <p><strong>Criado em:</strong> ${new Date(r.criadoEm?.seconds * 1000).toLocaleString()}</p>
       </div>
     `;
@@ -50,9 +51,17 @@ window.abrirCard = (btn) => {
   card.classList.toggle('open');
 };
 
-window.aceitarReuniao = async (id) => {
+window.aceitarReuniao = async (id, data) => {
+  const hoje = new Date();
+  const dataReuniao = new Date(data);
+  let status = 'agendado';
+  if (dataReuniao.toDateString() === hoje.toDateString()) {
+    status = 'dia';
+  } else if (dataReuniao > hoje) {
+    status = 'proximos';
+  }
   const ref = doc(db, 'reunioes', id);
-  await updateDoc(ref, { status: 'agendado' });
+  await updateDoc(ref, { status });
   carregarPendentes();
   carregarAgendadas();
 };
@@ -67,14 +76,9 @@ window.transferirReuniao = async (id, selectElement) => {
 };
 
 async function carregarAgendadas() {
-  const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName), where("status", "==", "agendado")));
-  const containerHoje = document.getElementById('reunioesDia');
-  const containerProximas = document.getElementById('reunioesProximas');
-  containerHoje.innerHTML = '';
-  containerProximas.innerHTML = '';
-
-  const hoje = new Date().toISOString().split('T')[0];
-
+  const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName), where("status", "in", ["agendado", "dia", "proximos"])));
+  const container = document.getElementById('reunioesAgendadas');
+  container.innerHTML = '';
   snapshot.forEach(docSnap => {
     const r = docSnap.data();
     const card = document.createElement('div');
@@ -92,12 +96,7 @@ async function carregarAgendadas() {
         <option value="aguardando_documentacao">Aguardando documentação</option>
       </select>
     `;
-
-    if (r.data === hoje) {
-      containerHoje.appendChild(card);
-    } else {
-      containerProximas.appendChild(card);
-    }
+    container.appendChild(card);
   });
 }
 
@@ -121,7 +120,7 @@ async function carregarRealizadas() {
         <h3>${r.nomeLoja}</h3>
         <p><strong>Data:</strong> ${r.data}</p>
         <p><strong>Status:</strong> ${r.status}</p>
-        <button class="btn" onclick="abrirCard(this)">Abrir Card</button>
+        <button class="btn" onclick="abrirCard(this)">Ver Detalhes</button>
         <div class="card-details">
           <p><strong>Segmento:</strong> ${r.segmento}</p>
           <p><strong>Cidade:</strong> ${r.cidade}</p>
