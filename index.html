@@ -109,3 +109,116 @@
     <button onclick="location.reload()">🚪 Sair</button>
   </li>
 </aside>
+
+<main id="dashboard" class="hidden">
+  <h1 id="bem-vindo"></h1>
+
+  <!-- TELA ÂNGELA -->
+  <section id="aba-agendar" class="aba hidden">
+    <h2>Agendar Reunião</h2>
+    <form id="form-agendamento">
+      <select id="agendar-consultor" required>
+        <option value="">Selecione</option>
+        <option value="Leticia">Leticia</option>
+        <option value="Gabriel">Gabriel</option>
+        <option value="Glaucia">Glaucia</option>
+        <option value="Marcelo">Marcelo</option>
+      </select>
+      <input id="agendar-horario" type="datetime-local" required />
+      <input id="agendar-nome" placeholder="Nome" required />
+      <input id="agendar-cidade" placeholder="Cidade" required />
+      <input id="agendar-estado" placeholder="Estado" required />
+      <input id="agendar-link" placeholder="Link da Reunião" required />
+      <input id="agendar-quantidade" placeholder="Quantidade de lojas" required />
+      <input id="agendar-cnpj" placeholder="CNPJ" required />
+      <input id="agendar-segmento" placeholder="Segmento da loja" required />
+      <input id="agendar-prospeccao" placeholder="Por onde prospectou?" required />
+      <input id="agendar-meio" placeholder="Reunião por (Meet, Ligação...)" required />
+      <input id="agendar-contato" placeholder="Contato do lojista" required />
+      <input id="agendar-comquem" placeholder="Conversar com (Dono, gerente...)" required />
+      <button type="submit">Agendar</button>
+    </form>
+    <p id="mensagem-sucesso" style="color: green;"></p>
+  </section>
+
+  <!-- TELA GERENTE -->
+  <section id="aba-gerente" class="aba hidden">
+    <h2>Painel dos Gerentes</h2>
+    <p>Aqui vai o painel com filtros e visualização geral de todas as reuniões.</p>
+  </section>
+
+  <!-- TELA CONSULTOR -->
+  <section id="aba-consultor" class="aba hidden">
+    <h2>Minhas Reuniões</h2>
+
+    <h3 style="color: #f59e0b;">🔶 Pendentes</h3>
+    <div id="reunioes-pendentes"></div>
+
+    <div id="acoes-consultor" class="hidden">
+      <h3>Detalhes da Reunião</h3>
+      <p><strong>Nome:</strong> <span id="det-nome"></span></p>
+      <p><strong>Cidade/Estado:</strong> <span id="det-cidade-estado"></span></p>
+      <p><strong>CNPJ:</strong> <span id="det-cnpj"></span></p>
+      <p><strong>Contato:</strong> <span id="det-contato"></span></p>
+      <p><strong>Segmento:</strong> <span id="det-segmento"></span></p>
+      <p><strong>Meio:</strong> <span id="det-meio"></span></p>
+      <p><strong>Link:</strong> <span id="det-link"></span></p>
+      <p><strong>Quem vai atender:</strong> <span id="det-comquem"></span></p>
+      <p><strong>Data e Hora:</strong> <span id="det-horario"></span></p>
+      <button id="btn-aceitar">✅ Aceitar</button>
+      <button id="btn-transferir">🔁 Transferir</button>
+    </div>
+
+    <div class="filtros-status hidden" id="status-consultor">
+      <h3>Status da Reunião</h3>
+      <select id="status-opcao">
+        <option value="">Selecione</option>
+        <option value="Se interessou">Se interessou</option>
+        <option value="Aguardando pagamento">Aguardando pagamento</option>
+        <option value="Aguardando documentação">Aguardando documentação</option>
+        <option value="Não teve interesse">Não teve interesse</option>
+      </select>
+      <input type="text" id="motivo-sem-interesse" placeholder="Por que não teve interesse?" class="hidden" />
+      <button id="btn-enviar-status">Salvar Status</button>
+    </div>
+
+    <hr />
+    <h3>✅ Hoje</h3>
+    <ul id="reunioes-hoje"></ul>
+
+    <h3>📆 Próximos Dias</h3>
+    <ul id="reunioes-futuras"></ul>
+
+    <h3>✅ Realizadas</h3>
+    <ul id="reunioes-realizadas"></ul>
+  </section>
+
+  <!-- TELA FECHAMENTOS -->
+  <section id="aba-fechamentos" class="aba hidden">
+    <h2>Meus Fechamentos</h2>
+    <p>Tela onde o consultor vai adicionar os fechamentos realizados.</p>
+  </section>
+</main>
+
+<!-- LOGIN -->
+<section id="login">
+  <div style="max-width: 400px; margin: 80px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+    <h2 style="text-align: center;">Login</h2>
+    <select id="usuario">
+      <option value="Angela">Angela</option>
+      <option value="Felipe">Felipe</option>
+      <option value="Ana Carolina">Ana Carolina</option>
+      <option value="Leticia">Leticia</option>
+      <option value="Gabriel">Gabriel</option>
+      <option value="Glaucia">Glaucia</option>
+      <option value="Marcelo">Marcelo</option>
+    </select><br/><br/>
+    <input type="password" id="senha" placeholder="Digite sua senha" /><br/><br/>
+    <button onclick="fazerLogin()">Entrar</button>
+    <p id="login-erro" style="color: red; text-align: center;"></p>
+  </div>
+</section>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
