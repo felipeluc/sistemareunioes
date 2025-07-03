@@ -1,142 +1,44 @@
-import { auth, db, signInWithEmailAndPassword, onAuthStateChanged, logoutUser } from './firebase.js';
+import { db } from './firebase-config.js';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-const usuarios = {
-  "Angela": "angela123",
-  "Leticia": "leticia123",
-  "Gabriel": "gabriel123",
-  "Glaucia": "glaucia123",
-  "Marcelo": "marcelo123",
-  "Felipe": "felipe123",
-  "Ana Carolina": "ana123"
+const usuariosSenha = {
+  "Ana Carolina": "Ana1234",
+  "Felipe": "Felipe1515",
+  "Leticia": "Le1234",
+  "Glaucia": "Glaucia1234",
+  "Marcelo": "Marcelo1234",
+  "Gabriel": "Gabriel1234",
+  "Angela": "Angela1234"
 };
 
-const papeis = {
-  "Angela": "angela",
-  "Leticia": "consultor",
-  "Gabriel": "consultor",
-  "Glaucia": "consultor",
-  "Marcelo": "consultor",
-  "Felipe": "gerente",
-  "Ana Carolina": "gerente"
-};
+function fazerLogin() {
+  const usuario = document.getElementById('usuario').value;
+  const senha = document.getElementById('senha').value;
+  const erro = document.getElementById('login-erro');
 
-let usuarioLogado = "";
-
-document.addEventListener("DOMContentLoaded", () => {
-  if (auth) {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        usuarioLogado = user.displayName || user.email;
-        mostrarDashboard();
-      }
-    });
-  }
-
-  document.getElementById("form-agendamento").addEventListener("submit", agendarReuniao);
-  document.getElementById("btn-enviar-status").addEventListener("click", salvarStatus);
-  document.getElementById("status-opcao").addEventListener("change", toggleMotivo);
-});
-
-window.fazerLogin = function () {
-  const usuario = document.getElementById("usuario").value;
-  const senha = document.getElementById("senha").value;
-  const erroMsg = document.getElementById("login-erro");
-
-  if (!usuario || !senha) {
-    erroMsg.textContent = "Preencha todos os campos.";
-    return;
-  }
-
-  if (usuarios[usuario] && usuarios[usuario] === senha) {
-    usuarioLogado = usuario;
-    mostrarDashboard();
+  if (usuariosSenha[usuario] && usuariosSenha[usuario] === senha) {
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('bem-vindo').innerText = `Bem-vindo(a), ${usuario}!`;
+    configurarAbas(usuario);
   } else {
-    erroMsg.textContent = "Usuário ou senha incorretos.";
-  }
-};
-
-function mostrarDashboard() {
-  const papel = papeis[usuarioLogado];
-
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("dashboard").classList.remove("hidden");
-  document.getElementById("bem-vindo").textContent = `Bem-vindo(a), ${usuarioLogado}`;
-
-  // Exibir menus e abas conforme perfil
-  mostrarMenuPorPerfil(papel);
-  mostrarAbaPadrao(papel);
-}
-
-function mostrarMenuPorPerfil(papel) {
-  document.querySelectorAll(".menu-angela").forEach(el => el.classList.toggle("hidden", papel !== "angela"));
-  document.querySelectorAll(".menu-gerente").forEach(el => el.classList.toggle("hidden", papel !== "gerente"));
-  document.querySelectorAll(".menu-consultor").forEach(el => el.classList.toggle("hidden", papel !== "consultor"));
-}
-
-function mostrarAba(id) {
-  document.querySelectorAll(".aba").forEach(el => el.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
-}
-
-function mostrarAbaPadrao(papel) {
-  if (papel === "angela") mostrarAba("aba-dashboard-angela");
-  else if (papel === "gerente") mostrarAba("aba-painel-gerente");
-  else if (papel === "consultor") mostrarAba("aba-minhas-reunioes");
-}
-
-window.toggleMenu = function () {
-  document.getElementById("menu-lateral").classList.toggle("hidden");
-};
-
-window.logout = function () {
-  usuarioLogado = "";
-  document.getElementById("login").classList.remove("hidden");
-  document.getElementById("dashboard").classList.add("hidden");
-  document.getElementById("senha").value = "";
-};
-
-async function agendarReuniao(event) {
-  event.preventDefault();
-  const form = document.getElementById("form-agendamento");
-  const dados = {
-    consultor: form["agendar-consultor"].value,
-    horario: form["agendar-horario"].value,
-    nome: form["agendar-nome"].value,
-    cidade: form["agendar-cidade"].value,
-    estado: form["agendar-estado"].value,
-    link: form["agendar-link"].value,
-    quantidade: form["agendar-quantidade"].value,
-    cnpj: form["agendar-cnpj"].value,
-    segmento: form["agendar-segmento"].value,
-    prospeccao: form["agendar-prospeccao"].value,
-    meio: form["agendar-meio"].value,
-    contato: form["agendar-contato"].value,
-    comquem: form["agendar-comquem"].value,
-    status: "pendente",
-    criadoPor: usuarioLogado,
-    criadoEm: new Date().toISOString()
-  };
-
-  try {
-    await db.collection("reunioes").add(dados);
-    form.reset();
-    document.getElementById("mensagem-sucesso").textContent = "Reunião agendada com sucesso!";
-    setTimeout(() => document.getElementById("mensagem-sucesso").textContent = "", 3000);
-  } catch (error) {
-    console.error("Erro ao agendar:", error);
+    erro.innerText = "Nome ou senha inválidos.";
   }
 }
 
-function toggleMotivo() {
-  const valor = document.getElementById("status-opcao").value;
-  document.getElementById("motivo-sem-interesse").classList.toggle("hidden", valor !== "Não teve interesse");
+window.fazerLogin = fazerLogin;
+
+function configurarAbas(usuario) {
+  if (usuario === "Angela") {
+    document.querySelectorAll('.angela').forEach(btn => btn.style.display = 'block');
+  } else if (["Leticia", "Marcelo", "Gabriel", "Glaucia"].includes(usuario)) {
+    document.querySelectorAll('.consultor').forEach(btn => btn.style.display = 'block');
+  } else if (["Felipe", "Ana Carolina"].includes(usuario)) {
+    document.querySelectorAll('.gerente').forEach(btn => btn.style.display = 'block');
+  }
 }
 
-function salvarStatus() {
-  // Você pode implementar lógica de salvar no Firestore aqui
-  alert("Status salvo (ainda será implementado no Firebase)");
-}
-
-window.filtrarDashboardAngela = function () {
-  alert("Filtro aplicado (implementar Firebase)");
+window.mostrarAba = function(abaId) {
+  document.querySelectorAll('.aba').forEach(sec => sec.classList.add('hidden'));
+  document.getElementById(abaId).classList.remove('hidden');
 };
