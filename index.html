@@ -8,11 +8,11 @@
 </head>
 <body>
 
-<!-- Tela de Login -->
-<section id="login" class="tela-login">
+<!-- TELA DE LOGIN -->
+<section class="tela-login" id="login">
   <div class="login-box">
     <h2>Login</h2>
-    <select id="usuario">
+    <select id="usuario" aria-label="Selecione usuário">
       <option value="">Selecione o usuário</option>
       <option value="Angela">Angela</option>
       <option value="Felipe">Felipe</option>
@@ -22,157 +22,172 @@
       <option value="Glaucia">Glaucia</option>
       <option value="Marcelo">Marcelo</option>
     </select>
-    <input type="password" id="senha" placeholder="Digite sua senha" />
-    <button id="btn-login">Entrar</button>
-    <p id="login-erro" class="erro-login"></p>
+    <input type="password" id="senha" placeholder="Digite sua senha" aria-label="Senha" />
+    <p id="login-erro" class="erro-msg"></p>
+    <button onclick="fazerLogin()">Entrar</button>
   </div>
 </section>
 
-<!-- Dashboard -->
-<section id="dashboard" class="hidden">
-  <header class="topo-dashboard">
-    <button id="menu-toggle">☰</button>
-    <h1 id="bem-vindo"></h1>
-    <button id="btn-logout">Sair</button>
-  </header>
+<!-- MENU LATERAL -->
+<aside class="menu hidden" id="menu-lateral" aria-label="Menu lateral">
+  <div class="menu-header">
+    <span id="bem-vindo"></span>
+    <button onclick="toggleMenu()" class="menu-toggle" aria-label="Abrir/fechar menu">☰</button>
+  </div>
+  <ul>
+    <li id="menu-angela" class="hidden">
+      <button onclick="mostrarAba('aba-agendar')">📅 Agendar Reunião</button>
+      <button onclick="mostrarAba('aba-dashboard-angela')">📊 Dashboard</button>
+      <button onclick="mostrarAba('aba-transferencias')">🔁 Transferências</button>
+    </li>
+    <li id="menu-gerente" class="hidden">
+      <button onclick="mostrarAba('aba-gerente')">📊 Painel Gerente</button>
+    </li>
+    <li id="menu-consultor" class="hidden">
+      <button onclick="mostrarAba('aba-consultor')">👥 Minhas Reuniões</button>
+      <button onclick="mostrarAba('aba-fechamentos')">💰 Meus Fechamentos</button>
+    </li>
+    <li>
+      <button onclick="logout()">🚪 Sair</button>
+    </li>
+  </ul>
+</aside>
 
-  <!-- Menu Lateral -->
-  <aside id="menu" class="menu-lateral hidden">
-    <ul>
-      <li class="menu-item angela hidden" data-target="aba-agendar">📅 Agendar Reunião</li>
-      <li class="menu-item angela hidden" data-target="aba-transferencias">🔁 Transferências</li>
-      <li class="menu-item angela hidden" data-target="aba-dashboard-angela">📊 Dashboard</li>
-      <li class="menu-item gerente hidden" data-target="aba-gerente">📊 Painel Gerente</li>
-      <li class="menu-item consultor hidden" data-target="aba-consultor">👥 Minhas Reuniões</li>
-      <li class="menu-item consultor hidden" data-target="aba-fechamentos">💰 Meus Fechamentos</li>
-    </ul>
-  </aside>
+<!-- DASHBOARD PRINCIPAL -->
+<main id="dashboard" class="hidden" tabindex="0">
 
-  <!-- Áreas de Conteúdo -->
-  <main id="conteudo">
-    <!-- Aba Ângela: Agendar -->
-    <section id="aba-agendar" class="aba hidden">
-      <h2>Agendar Reunião</h2>
-      <form id="form-agendamento">
-        <select id="agendar-consultor" required>
-          <option value="">Selecione</option>
-          <option value="Leticia">Leticia</option>
-          <option value="Gabriel">Gabriel</option>
-          <option value="Glaucia">Glaucia</option>
-          <option value="Marcelo">Marcelo</option>
-        </select>
-        <input id="agendar-horario" type="datetime-local" required />
-        <input id="agendar-nome" placeholder="Nome" required />
-        <input id="agendar-cidade" placeholder="Cidade" required />
-        <input id="agendar-estado" placeholder="Estado" required />
-        <input id="agendar-link" placeholder="Link da Reunião" required />
-        <input id="agendar-quantidade" placeholder="Quantidade de lojas" required />
-        <input id="agendar-cnpj" placeholder="CNPJ" required />
-        <input id="agendar-segmento" placeholder="Segmento da loja" required />
-        <input id="agendar-prospeccao" placeholder="Por onde prospectou?" required />
-        <input id="agendar-meio" placeholder="Reunião por (Meet, Ligação...)" required />
-        <input id="agendar-contato" placeholder="Contato do lojista" required />
-        <input id="agendar-comquem" placeholder="Conversar com (Dono, gerente...)" required />
-        <button type="submit">Agendar</button>
-        <p id="mensagem-sucesso" class="mensagem-sucesso"></p>
-      </form>
-    </section>
+  <!-- ÁBAS -->
 
-    <!-- Aba Ângela: Transferências -->
-    <section id="aba-transferencias" class="aba hidden">
-      <h2>Transferências Solicitadas</h2>
-      <ul id="lista-transferencias"></ul>
-    </section>
-
-    <!-- Aba Ângela: Dashboard -->
-    <section id="aba-dashboard-angela" class="aba hidden">
-      <h2>Dashboard de Reuniões</h2>
-      <label>Filtrar por data:</label>
-      <input type="date" id="filtro-data-angela" />
-      <label>Filtrar por consultor:</label>
-      <select id="filtro-consultor-angela">
-        <option value="">Todos</option>
+  <!-- Tela Agendar - Ângela -->
+  <section id="aba-agendar" class="aba hidden" aria-label="Agendar reunião">
+    <h2>Agendar Reunião</h2>
+    <form id="form-agendamento">
+      <select id="agendar-consultor" required>
+        <option value="">Selecione Consultor</option>
         <option value="Leticia">Leticia</option>
         <option value="Gabriel">Gabriel</option>
         <option value="Glaucia">Glaucia</option>
         <option value="Marcelo">Marcelo</option>
       </select>
-      <button id="filtrar-dashboard-angela">Filtrar</button>
-      <div id="resultados-dashboard-angela"></div>
-    </section>
+      <input id="agendar-horario" type="datetime-local" required />
+      <input id="agendar-nome" placeholder="Nome" required />
+      <input id="agendar-cidade" placeholder="Cidade" required />
+      <input id="agendar-estado" placeholder="Estado" required />
+      <input id="agendar-link" placeholder="Link da Reunião" required />
+      <input id="agendar-quantidade" placeholder="Quantidade de lojas" required />
+      <input id="agendar-cnpj" placeholder="CNPJ" required />
+      <input id="agendar-segmento" placeholder="Segmento da loja" required />
+      <input id="agendar-prospeccao" placeholder="Por onde prospectou?" required />
+      <input id="agendar-meio" placeholder="Reunião por (Meet, Ligação...)" required />
+      <input id="agendar-contato" placeholder="Contato do lojista" required />
+      <input id="agendar-comquem" placeholder="Conversar com (Dono, gerente...)" required />
+      <button type="submit">Agendar</button>
+    </form>
+    <p id="mensagem-sucesso" style="color: green;"></p>
+  </section>
 
-    <!-- Aba Gerente -->
-    <section id="aba-gerente" class="aba hidden">
-      <h2>Painel dos Gerentes</h2>
-      <p>Visualização geral de todas as reuniões.</p>
-    </section>
-
-    <!-- Aba Consultor: Minhas Reuniões -->
-    <section id="aba-consultor" class="aba hidden">
-      <h2>Minhas Reuniões</h2>
-      <div id="filtros-reunioes">
-        <label>Status:</label>
-        <select id="filtro-status-realizadas">
+  <!-- Tela Dashboard Angela -->
+  <section id="aba-dashboard-angela" class="aba hidden" aria-label="Dashboard da Angela">
+    <h2>Dashboard da Ângela</h2>
+    <div class="filtros-dashboard">
+      <label>Filtrar por Consultor:
+        <select id="filtro-consultor-angela">
           <option value="">Todos</option>
+          <option value="Leticia">Leticia</option>
+          <option value="Gabriel">Gabriel</option>
+          <option value="Glaucia">Glaucia</option>
+          <option value="Marcelo">Marcelo</option>
+        </select>
+      </label>
+      <label>Filtrar por Data:
+        <input type="date" id="filtro-data-angela" />
+      </label>
+      <button onclick="carregarDashboardAngela()">Filtrar</button>
+    </div>
+    <ul id="lista-dashboard-angela"></ul>
+  </section>
+
+  <!-- Tela Transferencias Angela -->
+  <section id="aba-transferencias" class="aba hidden" aria-label="Transferências">
+    <h2>Reuniões Transferidas</h2>
+    <ul id="lista-transferencias"></ul>
+  </section>
+
+  <!-- Tela Consultor -->
+  <section id="aba-consultor" class="aba hidden" aria-label="Minhas reuniões">
+    <h2>Minhas Reuniões</h2>
+
+    <div class="filtros-consultor">
+      <label>Filtrar realizadas por status:
+        <select id="filtro-status-realizadas">
+          <option value="">Todas</option>
           <option value="Se interessou">Se interessou</option>
           <option value="Aguardando pagamento">Aguardando pagamento</option>
           <option value="Aguardando documentação">Aguardando documentação</option>
           <option value="Não teve interesse">Não teve interesse</option>
         </select>
-        <label>Data:</label>
+      </label>
+      <label>Filtrar realizadas por data:
         <input type="date" id="filtro-data-realizadas" />
-        <button id="btn-filtrar-realizadas">Filtrar</button>
-      </div>
+      </label>
+      <button onclick="carregarReunioesConsultor()">Filtrar</button>
+    </div>
 
-      <h3>🔶 Pendentes</h3>
-      <div id="reunioes-pendentes"></div>
+    <h3 style="color: #f59e0b;">🔶 Pendentes</h3>
+    <div id="reunioes-pendentes"></div>
 
-      <div id="acoes-consultor" class="hidden">
-        <h3>Detalhes da Reunião</h3>
-        <p><strong>Nome:</strong> <span id="det-nome"></span></p>
-        <p><strong>Cidade/Estado:</strong> <span id="det-cidade-estado"></span></p>
-        <p><strong>CNPJ:</strong> <span id="det-cnpj"></span></p>
-        <p><strong>Contato:</strong> <span id="det-contato"></span></p>
-        <p><strong>Segmento:</strong> <span id="det-segmento"></span></p>
-        <p><strong>Meio:</strong> <span id="det-meio"></span></p>
-        <p><strong>Link:</strong> <span id="det-link"></span></p>
-        <p><strong>Quem vai atender:</strong> <span id="det-comquem"></span></p>
-        <p><strong>Data e Hora:</strong> <span id="det-horario"></span></p>
-        <button id="btn-aceitar">✅ Aceitar</button>
-        <button id="btn-transferir">🔁 Transferir</button>
-      </div>
+    <h3>✅ Hoje</h3>
+    <ul id="reunioes-hoje"></ul>
 
-      <div id="status-consultor" class="hidden">
+    <h3>📆 Próximos Dias</h3>
+    <ul id="reunioes-futuras"></ul>
+
+    <h3>✅ Realizadas</h3>
+    <ul id="reunioes-realizadas"></ul>
+
+    <div id="acoes-consultor" class="hidden" aria-live="polite">
+      <h3>Detalhes da Reunião</h3>
+      <p><strong>Nome:</strong> <span id="det-nome"></span></p>
+      <p><strong>Cidade/Estado:</strong> <span id="det-cidade-estado"></span></p>
+      <p><strong>CNPJ:</strong> <span id="det-cnpj"></span></p>
+      <p><strong>Contato:</strong> <span id="det-contato"></span></p>
+      <p><strong>Segmento:</strong> <span id="det-segmento"></span></p>
+      <p><strong>Meio:</strong> <span id="det-meio"></span></p>
+      <p><strong>Link:</strong> <span id="det-link"></span></p>
+      <p><strong>Quem vai atender:</strong> <span id="det-comquem"></span></p>
+      <p><strong>Data e Hora:</strong> <span id="det-horario"></span></p>
+
+      <button id="btn-aceitar">✅ Aceitar</button>
+      <button id="btn-transferir">🔁 Transferir</button>
+
+      <div id="status-consultor" class="hidden" aria-label="Status da reunião">
         <h3>Status da Reunião</h3>
-        <select id="status-opcao">
+        <select id="status-opcao" aria-label="Opções de status">
           <option value="">Selecione</option>
           <option value="Se interessou">Se interessou</option>
           <option value="Aguardando pagamento">Aguardando pagamento</option>
           <option value="Aguardando documentação">Aguardando documentação</option>
           <option value="Não teve interesse">Não teve interesse</option>
         </select>
-        <input type="text" id="motivo-sem-interesse" placeholder="Motivo (se não teve interesse)" class="hidden" />
+        <input type="text" id="motivo-sem-interesse" placeholder="Por que não teve interesse?" class="hidden" aria-label="Motivo sem interesse"/>
         <button id="btn-enviar-status">Salvar Status</button>
       </div>
+    </div>
+  </section>
 
-      <hr/>
-      <h3>✅ Hoje</h3>
-      <ul id="reunioes-hoje"></ul>
+  <!-- Tela Gerente -->
+  <section id="aba-gerente" class="aba hidden" aria-label="Painel do gerente">
+    <h2>Painel dos Gerentes</h2>
+    <p>Aqui vai o painel com filtros e visualização geral de todas as reuniões.</p>
+  </section>
 
-      <h3>📆 Próximos Dias</h3>
-      <ul id="reunioes-futuras"></ul>
+  <!-- Tela Fechamentos -->
+  <section id="aba-fechamentos" class="aba hidden" aria-label="Fechamentos">
+    <h2>Meus Fechamentos</h2>
+    <p>Tela onde o consultor vai adicionar os fechamentos realizados.</p>
+  </section>
 
-      <h3>✅ Realizadas</h3>
-      <ul id="reunioes-realizadas"></ul>
-    </section>
-
-    <!-- Aba Consultor: Fechamentos -->
-    <section id="aba-fechamentos" class="aba hidden">
-      <h2>Meus Fechamentos</h2>
-      <p>Área para registrar fechamentos realizados.</p>
-    </section>
-  </main>
-</section>
+</main>
 
 <script type="module" src="script.js"></script>
 </body>
