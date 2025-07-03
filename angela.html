@@ -40,7 +40,10 @@
       transition: background 0.2s ease;
     }
 
-    .sidebar button:hover,
+    .sidebar button:hover {
+      background: #007aff20;
+    }
+
     .sidebar button.active {
       background: #007aff;
       color: white;
@@ -109,13 +112,6 @@
     <section id="agendar" class="content-section active">
       <h2>Agendar Reunião</h2>
       <form id="formAgendamento" class="form-grid">
-        <input type="text" id="nomeLoja" placeholder="Nome da Loja" required />
-        <input type="text" id="segmento" placeholder="Segmento" required />
-        <input type="text" id="cidade" placeholder="Cidade" required />
-        <input type="text" id="estado" placeholder="Estado" required />
-        <input type="date" id="data" required />
-        <input type="time" id="hora" required />
-        <textarea id="observacoes" placeholder="Observações"></textarea>
         <select id="consultor" required>
           <option value="">Selecionar Consultor</option>
           <option value="Leticia">Leticia</option>
@@ -123,6 +119,18 @@
           <option value="Marcelo">Marcelo</option>
           <option value="Gabriel">Gabriel</option>
         </select>
+        <input type="time" id="hora" placeholder="Horário" required />
+        <input type="text" id="nomeLoja" placeholder="Nome da Loja" required />
+        <input type="text" id="cidade" placeholder="Cidade" required />
+        <input type="url" id="linkReuniao" placeholder="Link da Reunião" required />
+        <input type="text" id="estado" placeholder="Estado" required />
+        <input type="number" id="qtdLojas" placeholder="Quantidade de Lojas" required />
+        <input type="text" id="cnpj" placeholder="CNPJ" required />
+        <input type="text" id="segmento" placeholder="Segmento da Loja" required />
+        <input type="text" id="prospeccao" placeholder="Origem da Prospecção" required />
+        <input type="text" id="canal" placeholder="Canal da Reunião (meet, ligação)" required />
+        <input type="text" id="contato" placeholder="Contato do Lojista" required />
+        <input type="text" id="responsavelConversa" placeholder="Vai conversar com: Proprietário, Gerente..." required />
         <button type="submit">Agendar</button>
       </form>
     </section>
@@ -138,7 +146,6 @@
       <h2>Dashboard</h2>
       <div id="graficoReunioes"></div>
       <div id="graficoLojas"></div>
-      <!-- Mais gráficos futuramente -->
     </section>
   </div>
 
@@ -150,8 +157,10 @@
       document.getElementById(id).classList.add('active');
 
       document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
-      const btn = Array.from(document.querySelectorAll('.sidebar button')).find(b => b.textContent.includes(id.charAt(0).toUpperCase() + id.slice(1)));
-      if (btn) btn.classList.add('active');
+      const buttons = document.querySelectorAll('.sidebar button');
+      if (id === 'agendar') buttons[0].classList.add('active');
+      if (id === 'transferencias') buttons[1].classList.add('active');
+      if (id === 'dashboard') buttons[2].classList.add('active');
     }
   </script>
 </body>
