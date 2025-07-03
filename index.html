@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Comercial SouFacil</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       margin: 0;
@@ -56,13 +56,6 @@
       appearance: none;
     }
 
-    .login-form input:focus,
-    .login-form select:focus {
-      outline: none;
-      border-color: #007aff;
-      background-color: #fff;
-    }
-
     .login-form button {
       margin-top: 1rem;
       padding: 0.9rem;
@@ -79,12 +72,18 @@
     .login-form button:hover {
       background: #005dd9;
     }
+
+    .error {
+      color: red;
+      font-size: 0.9rem;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="login-container">
     <h1 class="login-title">Comercial SouFacil</h1>
-    <form class="login-form">
+    <form class="login-form" onsubmit="login(); return false;">
       <label for="user">Usuário</label>
       <select id="user">
         <option value="">Selecione</option>
@@ -100,11 +99,54 @@
       <label for="senha">Senha</label>
       <input type="password" id="senha" placeholder="Digite sua senha" />
 
-      <button type="button" onclick="login()">Entrar</button>
+      <div id="login-error" class="error"></div>
+
+      <button type="submit">Entrar</button>
     </form>
   </div>
 
-  <script src="script-index.js"></script>
+  <script>
+    const users = {
+      "Ana Carolina": "Ana1234",
+      "Felipe": "Felipe1515",
+      "Glaucia": "Glaucia1234",
+      "Leticia": "Le1234",
+      "Marcelo": "Marcelo1234",
+      "Gabriel": "Gabriel1234",
+      "Angela": "Angela1234"
+    };
+
+    function login() {
+      const username = document.getElementById("user").value;
+      const password = document.getElementById("senha").value;
+      const errorEl = document.getElementById("login-error");
+
+      errorEl.textContent = "";
+
+      if (!username || !password) {
+        errorEl.textContent = "Preencha todos os campos.";
+        return;
+      }
+
+      if (users[username] !== password) {
+        errorEl.textContent = "Usuário ou senha incorretos.";
+        return;
+      }
+
+      // ✅ Salvar no localStorage com chave padrão
+      localStorage.setItem("usuarioLogado", username);
+
+      // ✅ Redirecionar para a tela correta
+      if (["Leticia", "Glaucia", "Marcelo", "Gabriel"].includes(username)) {
+        window.location.href = "consultor.html";
+      } else if (username === "Angela") {
+        window.location.href = "angela.html";
+      } else {
+        window.location.href = "gerente.html";
+      }
+    }
+  </script>
+
   <script type="module" src="firebase-config.js"></script>
 </body>
 </html>
