@@ -5,54 +5,60 @@ import {
   addDoc,
   getDocs,
   doc,
-  updateDoc
+  updateDoc,
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
+// Config Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyA82SCTdpkMEAnir63lwuEf0A2Wu2dAhAQ",
   authDomain: "sistemareuniao.firebaseapp.com",
   projectId: "sistemareuniao",
   storageBucket: "sistemareuniao.appspot.com",
   messagingSenderId: "509650784087",
-  appId: "1:509650784087:web:140e26fd7dcc2ef89df812"
+  appId: "1:509650784087:web:140e26fd7dcc2ef89df812",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Senhas fixas para login
 const senhas = {
   "Ana Carolina": "Ana1234",
-  "Felipe": "Felipe1515",
-  "Glaucia": "Glaucia1234",
-  "Leticia": "Le1234",
-  "Marcelo": "Marcelo1234",
-  "Gabriel": "Gabriel1234",
-  "Angela": "Angela1234"
+  Felipe: "Felipe1515",
+  Glaucia: "Glaucia1234",
+  Leticia: "Le1234",
+  Marcelo: "Marcelo1234",
+  Gabriel: "Gabriel1234",
+  Angela: "Angela1234",
 };
 
 let usuarioLogado = "";
 let agendamentoSelecionado = null;
 
-window.fazerLogin = function () {
+// Função para login
+window.fazerLogin = () => {
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
   const erro = document.getElementById("login-erro");
 
   if (senhas[usuario] && senhas[usuario] === senha) {
+    erro.innerText = "";
     document.getElementById("login").classList.add("hidden");
     document.getElementById("dashboard").classList.remove("hidden");
     document.getElementById("bem-vindo").innerText = `Bem-vindo(a), ${usuario}!`;
     usuarioLogado = usuario;
 
-    // Mostrar menu conforme perfil
+    // Exibe menus conforme usuário
     document.querySelectorAll(".angela").forEach(el => el.classList.add("hidden"));
     document.querySelectorAll(".gerente").forEach(el => el.classList.add("hidden"));
     document.querySelectorAll(".consultor").forEach(el => el.classList.add("hidden"));
 
     if (usuario === "Angela") {
       document.querySelectorAll(".angela").forEach(el => el.classList.remove("hidden"));
+      mostrarAba("aba-agendar");
     } else if (usuario === "Felipe" || usuario === "Ana Carolina") {
       document.querySelectorAll(".gerente").forEach(el => el.classList.remove("hidden"));
+      mostrarAba("aba-gerente");
     } else {
       document.querySelectorAll(".consultor").forEach(el => el.classList.remove("hidden"));
       mostrarAba("aba-consultor");
@@ -63,18 +69,19 @@ window.fazerLogin = function () {
   }
 };
 
-window.mostrarAba = function (id) {
-  document.querySelectorAll(".aba").forEach(aba => aba.classList.add("hidden"));
+// Botão login com listener (para evitar onclick inline)
+document.getElementById("btn-login").addEventListener("click", window.fazerLogin);
+
+// Função para trocar abas no dashboard
+window.mostrarAba = (id) => {
+  document.querySelectorAll(".aba").forEach((aba) => aba.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
-  
-  if (id === "aba-consultor") {
-    carregarReunioesConsultor();
-    esconderDetalhes();
-  } else {
-    esconderDetalhes();
-  }
+
+  // Carregar dados conforme aba
+  if (id === "aba-consultor") carregarReunioesConsultor();
 };
 
+// Formulário de agendamento
 const form = document.getElementById("form-agendamento");
 const sucesso = document.getElementById("mensagem-sucesso");
 
@@ -99,14 +106,14 @@ if (form) {
       status: "pendente",
       respostaConsultor: "",
       criadoPor: usuarioLogado,
-      criadoEm: new Date().toISOString()
+      criadoEm: new Date().toISOString(),
     };
 
     try {
       await addDoc(collection(db, "agendamentos"), dados);
       sucesso.innerText = "✅ Reunião agendada com sucesso!";
       form.reset();
-      setTimeout(() => sucesso.innerText = "", 3000);
+      setTimeout(() => (sucesso.innerText = ""), 3500);
     } catch (error) {
       console.error("Erro ao agendar:", error);
       sucesso.innerText = "❌ Erro ao agendar reunião.";
@@ -114,16 +121,17 @@ if (form) {
   });
 }
 
+// Carregar reuniões do consultor logado
 async function carregarReunioesConsultor() {
   const pendentesDiv = document.getElementById("reunioes-pendentes");
-  const hojeUl = document.getElementById("reunioes-hoje");
-  const futurasUl = document.getElementById("reunioes-futuras");
-  const realizadasUl = document.getElementById("reunioes-realizadas");
+  const hojeDiv = document.getElementById("reunioes-hoje");
+  const futurasDiv = document.getElementById("reunioes-futuras");
+  const realizadasDiv = document.getElementById("reunioes-realizadas");
 
   pendentesDiv.innerHTML = "";
-  hojeUl.innerHTML = "";
-  futurasUl.innerHTML = "";
-  realizadasUl.innerHTML = "";
+  hojeDiv.innerHTML = "";
+  futurasDiv.innerHTML = "";
+  realizadasDiv.innerHTML = "";
 
   const snapshot = await getDocs(collection(db, "agendamentos"));
   const hoje = new Date();
@@ -136,61 +144,54 @@ async function carregarReunioesConsultor() {
     if (agendamento.consultor !== usuarioLogado) return;
 
     const dataHora = new Date(agendamento.horario);
+    dataHora.setSeconds(0, 0);
     const dataComparar = new Date(dataHora);
     dataComparar.setHours(0, 0, 0, 0);
 
-    // Botão pendente (não aceito ainda)
     if (agendamento.respostaConsultor !== "aceito") {
+      // Pendentes (sem resposta ou recusados)
       const btn = document.createElement("button");
+      btn.className = "reuniao-box reuniao-pendente";
       btn.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
-      btn.style.marginBottom = "6px";
-      btn.style.width = "100%";
-      btn.style.padding = "8px";
-      btn.style.borderRadius = "6px";
-      btn.style.border = "1px solid #f59e0b";
-      btn.style.background = "#fef3c7";
-      btn.onclick = () => mostrarDetalhesReuniao(agendamento, "pendente");
+      btn.onclick = () => mostrarDetalhesReuniao(agendamento);
       pendentesDiv.appendChild(btn);
-      return;
-    }
+    } else {
+      // Aceitas (realizadas, hoje ou futuras)
+      const div = document.createElement("div");
+      div.className = "reuniao-box reuniao-realizada";
 
-    // Se aceito, separar em hoje, futuros e realizados
+      // Texto com nome + data
+      const texto = document.createElement("span");
+      texto.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
 
-    // Realizadas = status diferente de pendente e com status definido
-    if (agendamento.status && agendamento.status !== "pendente") {
-      // Reuniões realizadas aparecem com status à frente
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <span>${agendamento.nome} - ${dataHora.toLocaleString()}</span>
-        <span class="status">${agendamento.status}</span>
-      `;
-      li.style.cursor = "pointer";
-      li.onclick = () => mostrarDetalhesReuniao(agendamento, "realizada");
-      realizadasUl.appendChild(li);
-      return;
-    }
+      // Status estilizado na frente
+      const statusSpan = document.createElement("span");
+      statusSpan.className = "reuniao-status";
+      statusSpan.textContent = agendamento.status || "Sem status";
+      // Adiciona classe para cor se quiser (exemplo abaixo)
+      statusSpan.classList.add(`status-${(agendamento.status || "").replace(/\s/g, "\\ ")}`);
 
-    // Hoje ou próximos dias sem status ainda
-    if (dataComparar.getTime() === hoje.getTime()) {
-      const li = document.createElement("li");
-      li.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
-      li.style.cursor = "pointer";
-      li.onclick = () => mostrarDetalhesReuniao(agendamento, "hoje");
-      hojeUl.appendChild(li);
-    } else if (dataComparar.getTime() > hoje.getTime()) {
-      const li = document.createElement("li");
-      li.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
-      li.style.cursor = "pointer";
-      li.onclick = () => mostrarDetalhesReuniao(agendamento, "futuro");
-      futurasUl.appendChild(li);
+      div.appendChild(texto);
+      div.appendChild(statusSpan);
+
+      div.onclick = () => mostrarDetalhesReuniao(agendamento);
+
+      if (dataComparar.getTime() === hoje.getTime()) {
+        hojeDiv.appendChild(div);
+      } else if (dataComparar.getTime() > hoje.getTime()) {
+        futurasDiv.appendChild(div);
+      } else {
+        // Passado e realizado - colocar em realizadas
+        realizadasDiv.appendChild(div);
+      }
     }
   });
 }
 
-function mostrarDetalhesReuniao(agendamento, aba) {
+// Mostrar detalhes da reunião clicada
+function mostrarDetalhesReuniao(agendamento) {
   agendamentoSelecionado = agendamento;
 
-  // Exibir detalhes
   document.getElementById("acoes-consultor").classList.remove("hidden");
   document.getElementById("det-nome").innerText = agendamento.nome;
   document.getElementById("det-cidade-estado").innerText = `${agendamento.cidade} / ${agendamento.estado}`;
@@ -202,61 +203,78 @@ function mostrarDetalhesReuniao(agendamento, aba) {
   document.getElementById("det-comquem").innerText = agendamento.comQuem;
   document.getElementById("det-horario").innerText = new Date(agendamento.horario).toLocaleString();
 
-  // Mostrar ou esconder o status conforme regras:
   const statusBox = document.getElementById("status-consultor");
-  if (aba === "hoje" || aba === "futuro") {
-    if (agendamento.respostaConsultor === "aceito") {
-      statusBox.classList.remove("hidden");
-    } else {
-      statusBox.classList.add("hidden");
-    }
+  statusBox.classList.remove("hidden");
+  // Preenche o select com o status atual (se houver)
+  const statusSelect = document.getElementById("status-opcao");
+  statusSelect.value = agendamento.status || "";
+
+  // Mostrar campo motivo se status for "Não teve interesse"
+  const motivoInput = document.getElementById("motivo-sem-interesse");
+  if (agendamento.status === "Não teve interesse") {
+    motivoInput.classList.remove("hidden");
+    motivoInput.value = agendamento.motivo || "";
   } else {
-    statusBox.classList.add("hidden");
+    motivoInput.classList.add("hidden");
+    motivoInput.value = "";
   }
 }
 
-function esconderDetalhes() {
-  document.getElementById("acoes-consultor").classList.add("hidden");
-  document.getElementById("status-consultor").classList.add("hidden");
-  agendamentoSelecionado = null;
-}
-
-// Botões aceitar e transferir
+// Aceitar reunião
 document.getElementById("btn-aceitar").onclick = async () => {
   if (!agendamentoSelecionado) return;
 
   await updateDoc(doc(db, "agendamentos", agendamentoSelecionado.id), {
-    respostaConsultor: "aceito"
+    respostaConsultor: "aceito",
   });
 
-  alert("Reunião aceita!");
   carregarReunioesConsultor();
-  esconderDetalhes();
+  document.getElementById("acoes-consultor").classList.add("hidden");
 };
 
+// Transferir reunião para Angela
 document.getElementById("btn-transferir").onclick = async () => {
   if (!agendamentoSelecionado) return;
 
   await updateDoc(doc(db, "agendamentos", agendamentoSelecionado.id), {
-    respostaConsultor: "transferir"
+    respostaConsultor: "transferir",
   });
 
-  alert("Solicitada transferência para a Angela.");
+  alert("Solicitado transferência para a Angela.");
   carregarReunioesConsultor();
-  esconderDetalhes();
+  document.getElementById("acoes-consultor").classList.add("hidden");
 };
 
-// Mostrar input motivo só se "Não teve interesse"
+// Mostrar campo motivo conforme seleção status
 document.getElementById("status-opcao").onchange = (e) => {
   const motivo = document.getElementById("motivo-sem-interesse");
   motivo.classList.toggle("hidden", e.target.value !== "Não teve interesse");
+  if (e.target.value !== "Não teve interesse") motivo.value = "";
 };
 
-// Salvar status e mover reunião para realizadas
+// Enviar status atualizado
 document.getElementById("btn-enviar-status").onclick = async () => {
   if (!agendamentoSelecionado) return;
 
   const status = document.getElementById("status-opcao").value;
+  const motivo = document.getElementById("motivo-sem-interesse").value.trim();
+
   if (!status) {
     alert("Selecione um status para a reunião.");
-    return
+    return;
+  }
+
+  const update = { status };
+
+  if (status === "Não teve interesse") {
+    update.motivo = motivo || "Motivo não informado";
+  } else {
+    update.motivo = "";
+  }
+
+  await updateDoc(doc(db, "agendamentos", agendamentoSelecionado.id), update);
+
+  alert("Status atualizado com sucesso!");
+  carregarReunioesConsultor();
+  document.getElementById("acoes-consultor").classList.add("hidden");
+};
