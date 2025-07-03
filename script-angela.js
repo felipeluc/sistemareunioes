@@ -7,14 +7,16 @@ import {
   getDocs,
   query,
   where,
-  Timestamp
+  Timestamp,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-// Configuração Firebase (já deve estar no firebase-config.js)
 import { db } from './firebase-config.js';
 
 const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
+const graficoReunioes = document.getElementById("graficoReunioes");
+const graficoLojas = document.getElementById("graficoLojas");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -26,7 +28,7 @@ form.addEventListener("submit", async (e) => {
     cidade: form.cidade.value,
     link: form.linkReuniao.value,
     estado: form.estado.value,
-    qtdLojas: form.qtdLojas.value,
+    qtdLojas: parseInt(form.qtdLojas.value),
     cnpj: form.cnpj.value,
     segmento: form.segmento.value,
     origem: form.prospeccao.value,
@@ -41,6 +43,7 @@ form.addEventListener("submit", async (e) => {
     await addDoc(collection(db, "reunioes"), data);
     alert("Reunião agendada com sucesso!");
     form.reset();
+    atualizarDashboard();
   } catch (err) {
     console.error("Erro ao salvar:", err);
     alert("Erro ao agendar reunião");
@@ -83,3 +86,47 @@ window.transferirOutro = async (idDoc) => {
 };
 
 carregarTransferencias();
+
+// Filtro por data
+function filtrarPorPeriodo(dias) {
+  const agora = new Date();
+  const inicio = new Date();
+  inicio.setDate(agora.getDate() - dias);
+  atualizarDashboard(inicio, agora);
+}
+
+// Atualiza dashboard com ou sem filtro de data
+async function atualizarDashboard(inicioData = null, fimData = null) {
+  const snapshot = await getDocs(collection(db, "reunioes"));
+
+  let totalReunioes = 0;
+  let totalLojas = 0;
+
+  snapshot.forEach(doc => {
+    const dados = doc.data();
+    const criado = dados.criadoEm?.toDate();
+
+    if (inicioData && fimData) {
+      if (criado >= inicioData && criado <= fimData) {
+        totalReunioes++;
+        totalLojas += parseInt(dados.qtdLojas || 0);
+      }
+    } else {
+      totalReunioes++;
+      totalLojas += parseInt(dados.qtdLojas || 0);
+    }
+  });
+
+  graficoReunioes.innerHTML = `<div style="padding:1rem; border-radius:12px; background:#fff; margin-bottom:1rem;">
+    <h3>Total de Reuniões: ${totalReunioes}</h3>
+    <button onclick="filtrarPorPeriodo(1)">Hoje</button>
+    <button onclick="filtrarPorPeriodo(7)">Últimos 7 dias</button>
+    <button onclick="filtrarPorPeriodo(30)">Últimos 30 dias</button>
+  </div>`;
+
+  graficoLojas.innerHTML = `<div style="padding:1rem; border-radius:12px; background:#fff;">
+    <h3>Total de Lojas: ${totalLojas}</h3>
+  </div>`;
+}
+
+atualizarDashboard();
