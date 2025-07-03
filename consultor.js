@@ -1,123 +1,180 @@
-import { db } from './firebase-config.js';
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-  onSnapshot,
-  addDoc,
-  Timestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { db } from './firebase.js';
+import { collection, getDocs, doc, updateDoc, addDoc, query, where, Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-lite.js';
 
-// 🔒 Captura o nome do consultor (ex: via localStorage após login)
-const consultorLogado = localStorage.getItem("usuarioLogado") || "Gabriel"; // fallback para Gabriel
+const userName = localStorage.getItem('userName') || 'Consultor';
+document.getElementById('userName').textContent = userName;
 
-document.getElementById("boasVindas").textContent = `Bem-vindo(a), ${consultorLogado}`;
-
-const listaReunioes = document.getElementById("listaReunioes");
-const reunioesDia = document.getElementById("reunioesDia");
-const reunioesProximas = document.getElementById("reunioesProximas");
-const listaFechamentos = document.getElementById("listaFechamentos");
-
-// 📦 Função para carregar reuniões pendentes
-async function carregarReunioesPendentes() {
-  listaReunioes.innerHTML = "<p>Carregando...</p>";
-  const q = query(collection(db, "reunioes"), where("consultor", "==", consultorLogado), where("status", "==", "pendente"));
-  const snapshot = await getDocs(q);
-
-  if (snapshot.empty) {
-    listaReunioes.innerHTML = "<p>Nenhuma reunião pendente.</p>";
-    return;
-  }
-
-  let html = "";
-  snapshot.forEach(docSnap => {
-    const r = docSnap.data();
-    html += `
-      <div class="card">
-        <h4>${r.nomeLoja || "Loja sem nome"}</h4>
-        <p><strong>Segmento:</strong> ${r.segmento || "-"}</p>
-        <p><strong>Horário:</strong> ${r.horario || "-"}</p>
-        <p><strong>Cidade:</strong> ${r.cidade || "-"} - ${r.estado || "-"}</p>
-        <button onclick="mostrarDetalhes('${docSnap.id}')">Ver Detalhes</button>
-        <button onclick="aceitarReuniao('${docSnap.id}')">Aceitar</button>
-        <button onclick="transferirReuniao('${docSnap.id}')">Solicitar Transferência</button>
-      </div>
-    `;
-  });
-
-  listaReunioes.innerHTML = html;
-}
-
-// 👀 Mostrar todos os dados da reunião
-window.mostrarDetalhes = async function(id) {
-  const docRef = doc(db, "reunioes", id);
-  const snap = await getDocs(query(collection(db, "reunioes"), where("__name__", "==", id)));
-  const r = snap.docs[0].data();
-
-  alert(`
-Loja: ${r.nomeLoja}
-Cidade: ${r.cidade} - ${r.estado}
-Horário: ${r.horario}
-Segmento: ${r.segmento}
-CNPJ: ${r.cnpj}
-Qtd Lojas: ${r.qtdLojas}
-Link: ${r.link}
-Origem: ${r.origem}
-Canal: ${r.canal}
-Contato: ${r.contato}
-Conversa com: ${r.responsavelConversa}
-  `);
+const showSection = (id) => {
+  document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 };
 
-// ✅ Aceitar reunião
-window.aceitarReuniao = async function(id) {
-  const status = prompt("Status: interessado, aguardando pagamento, aguardando documentação, não teve interesse");
-  if (!status) return;
+const reunioesRef = collection(db, 'reunioes');
+const consultoresDisponiveis = ["Leticia", "Glaucia", "Marcelo", "Gabriel"];
 
-  const update = { status };
-  if (status === "não teve interesse") {
-    const motivo = prompt("Motivo:");
-    if (!motivo) return;
-    update.motivo = motivo;
-  }
-
-  await updateDoc(doc(db, "reunioes", id), update);
-  alert("Reunião atualizada.");
-  carregarReunioesPendentes();
-}
-
-// 🔁 Solicitar transferência
-window.transferirReuniao = async function(id) {
-  await updateDoc(doc(db, "reunioes", id), { status: "transferencia" });
-  alert("Transferência solicitada.");
-  carregarReunioesPendentes();
-}
-
-// 📋 Carregar fechamentos
-async function carregarFechamentos() {
-  listaFechamentos.innerHTML = "<p>Carregando...</p>";
-  const q = query(collection(db, "fechamentos"));
-  const snap = await getDocs(q);
-
-  let html = "";
-  snap.forEach(doc => {
-    const f = doc.data();
-    html += `
-      <div class="card">
-        <strong>${f.lojista}</strong><br/>
-        ${f.cidade} - ${f.estado} | Lojas: ${f.qtdLojas}<br/>
-        Faturamento: R$ ${f.faturamento} | Crediário: ${f.crediario} (R$ ${f.valorCrediario})<br/>
-        Origem: ${f.origem} | Adesão: R$ ${f.adesao}
+async function carregarPendentes() {
+  const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName), where("status", "==", "pendente")));
+  const container = document.getElementById('reunioesPendentes');
+  container.innerHTML = '';
+  snapshot.forEach(docSnap => {
+    const r = docSnap.data();
+    const card = document.createElement('div');
+    card.className = 'card';
+    const selectTransferir = consultoresDisponiveis.map(c => `<option value="${c}">${c}</option>`).join('');
+    card.innerHTML = `
+      <h3>${r.nomeLoja || 'Sem nome'}</h3>
+      <p><strong>Segmento:</strong> ${r.segmento}</p>
+      <p><strong>Data:</strong> ${r.data}</p>
+      <p><strong>Horário:</strong> ${r.hora}</p>
+      <button class="btn" onclick="aceitarReuniao('${docSnap.id}')">Aceitar</button>
+      <select class="transfer-select" onchange="transferirReuniao('${docSnap.id}', this)">
+        <option value="">Transferir para...</option>
+        ${selectTransferir}
+      </select>
+      <button class="btn" onclick="abrirCard(this)">Ver Detalhes</button>
+      <div class="card-details">
+        <p><strong>Cidade:</strong> ${r.cidade || ''}</p>
+        <p><strong>Estado:</strong> ${r.estado || ''}</p>
+        <p><strong>Link:</strong> <a href="${r.link}" target="_blank">${r.link}</a></p>
+        <p><strong>Contato:</strong> ${r.contato || ''}</p>
+        <p><strong>Responsável:</strong> ${r.responsavelConversa || ''}</p>
+        <p><strong>Criado em:</strong> ${new Date(r.criadoEm?.seconds * 1000).toLocaleString()}</p>
       </div>
     `;
+    container.appendChild(card);
   });
-
-  listaFechamentos.innerHTML = html || "<p>Nenhum fechamento encontrado.</p>";
 }
 
-// Inicialização
-carregarReunioesPendentes();
-carregarFechamentos();
+window.abrirCard = (btn) => {
+  const card = btn.closest('.card');
+  card.classList.toggle('open');
+};
+
+window.aceitarReuniao = async (id) => {
+  const ref = doc(db, 'reunioes', id);
+  await updateDoc(ref, { status: 'agendado' });
+  carregarPendentes();
+  carregarAgendadas();
+};
+
+window.transferirReuniao = async (id, selectElement) => {
+  const novoConsultor = selectElement.value;
+  if (novoConsultor && novoConsultor !== userName) {
+    const ref = doc(db, 'reunioes', id);
+    await updateDoc(ref, { consultor: novoConsultor });
+    carregarPendentes();
+  }
+};
+
+async function carregarAgendadas() {
+  const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName), where("status", "==", "agendado")));
+  const containerHoje = document.getElementById('reunioesDia');
+  const containerProximas = document.getElementById('reunioesProximas');
+  containerHoje.innerHTML = '';
+  containerProximas.innerHTML = '';
+
+  const hoje = new Date().toISOString().split('T')[0];
+
+  snapshot.forEach(docSnap => {
+    const r = docSnap.data();
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <h3>${r.nomeLoja}</h3>
+      <p><strong>Segmento:</strong> ${r.segmento}</p>
+      <p><strong>Data:</strong> ${r.data}</p>
+      <p><strong>Horário:</strong> ${r.hora}</p>
+      <select onchange="alterarStatus('${docSnap.id}', this.value)" class="status-select">
+        <option value="">Atualizar status</option>
+        <option value="fechou">Fechou</option>
+        <option value="nao_interesse">Não teve interesse</option>
+        <option value="aguardando_pagamento">Aguardando pagamento</option>
+        <option value="aguardando_documentacao">Aguardando documentação</option>
+      </select>
+    `;
+
+    if (r.data === hoje) {
+      containerHoje.appendChild(card);
+    } else {
+      containerProximas.appendChild(card);
+    }
+  });
+}
+
+window.alterarStatus = async (id, novoStatus) => {
+  const ref = doc(db, 'reunioes', id);
+  await updateDoc(ref, { status: novoStatus });
+  carregarAgendadas();
+  carregarRealizadas();
+};
+
+async function carregarRealizadas() {
+  const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName)));
+  const container = document.getElementById('reunioesRealizadas');
+  container.innerHTML = '';
+  snapshot.forEach(docSnap => {
+    const r = docSnap.data();
+    if (["fechou", "nao_interesse", "aguardando_pagamento", "aguardando_documentacao"].includes(r.status)) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <h3>${r.nomeLoja}</h3>
+        <p><strong>Data:</strong> ${r.data}</p>
+        <p><strong>Status:</strong> ${r.status}</p>
+        <button class="btn" onclick="abrirCard(this)">Abrir Card</button>
+        <div class="card-details">
+          <p><strong>Segmento:</strong> ${r.segmento}</p>
+          <p><strong>Cidade:</strong> ${r.cidade}</p>
+          <p><strong>Observações:</strong> ${r.observacoes}</p>
+          <select onchange="alterarStatus('${docSnap.id}', this.value)" class="status-select">
+            <option value="">Editar status</option>
+            <option value="fechou">Fechou</option>
+            <option value="nao_interesse">Não teve interesse</option>
+            <option value="aguardando_pagamento">Aguardando pagamento</option>
+            <option value="aguardando_documentacao">Aguardando documentação</option>
+          </select>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+  });
+}
+
+window.salvarFechamento = async () => {
+  const data = {
+    nomeLojista: document.getElementById('nomeLojista').value,
+    contato: document.getElementById('contato').value,
+    cidade: document.getElementById('cidade').value,
+    estado: document.getElementById('estado').value,
+    qtdLojas: +document.getElementById('qtdLojas').value,
+    cnpj: document.getElementById('cnpj').value,
+    faturamento: +document.getElementById('faturamento').value,
+    temCrediario: document.getElementById('temCrediario').value,
+    valorCrediario: +document.getElementById('valorCrediario').value,
+    origem: document.getElementById('origem').value,
+    valorAdesao: +document.getElementById('valorAdesao').value,
+    criadoEm: Timestamp.now(),
+    consultor: userName
+  };
+  await addDoc(collection(db, 'fechamentos'), data);
+  alert("Fechamento salvo!");
+};
+
+window.carregarDashboard = async () => {
+  const inicio = new Date(document.getElementById('dataInicio').value);
+  const fim = new Date(document.getElementById('dataFim').value);
+  fim.setHours(23,59,59);
+  const snapshot = await getDocs(query(collection(db, 'fechamentos')));
+  let total = 0;
+  snapshot.forEach(docSnap => {
+    const d = docSnap.data();
+    if (d.criadoEm?.seconds * 1000 >= inicio.getTime() && d.criadoEm?.seconds * 1000 <= fim.getTime()) {
+      if (d.consultor === userName) total++;
+    }
+  });
+  document.getElementById('infoDashboard').innerHTML = `<p><strong>Fechamentos no período:</strong> ${total}</p>`;
+};
+
+carregarPendentes();
+carregarAgendadas();
+carregarRealizadas();
