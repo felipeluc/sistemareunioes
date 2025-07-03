@@ -1,97 +1,308 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  background: #f4f6f8;
-  color: #1c1c1e;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Reset e base */
+* {
+  box-sizing: border-box;
 }
 
-/* LOGIN */
-.tela-login {
-  height: 100vh;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background: #f5f5f7;
+  color: #1d1d1f;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.login-box {
+
+/* LOGIN */
+.login-container {
   background: #ffffff;
-  padding: 40px 40px 50px 40px;
+  padding: 40px 35px;
   border-radius: 20px;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.12);
-  max-width: 360px;
-  width: 100%;
-  box-sizing: border-box;
-}
-.login-box h2 {
-  margin-bottom: 30px;
-  font-weight: 600;
-  font-size: 1.8rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   text-align: center;
 }
-.login-box select,
-.login-box input {
-  width: 100%;
-  padding: 14px 15px;
-  margin-bottom: 18px;
+
+.login-container h2 {
+  font-weight: 600;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+  color: #111;
+}
+
+.login-container label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-align: left;
+  margin-left: 5px;
+  display: block;
+  color: #555;
+}
+
+.login-container select,
+.login-container input {
+  padding: 12px 15px;
   border-radius: 12px;
   border: 1.5px solid #ccc;
   font-size: 1rem;
   outline-offset: 2px;
   transition: border-color 0.3s ease;
-}
-.login-box select:focus,
-.login-box input:focus {
-  border-color: #007aff;
-}
-.login-box button {
   width: 100%;
-  padding: 14px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  background: #007aff;
-  color: white;
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-.login-box button:hover {
-  background: #005ecb;
-}
-.erro-msg {
-  color: #ff3b30;
-  font-size: 0.9rem;
-  margin-bottom: 15px;
-  text-align: center;
+  background-color: #fafafa;
 }
 
-/* MENU */
-.menu {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 260px;
-  height: 100vh;
-  background: #1d1d1f;
-  box-shadow: 3px 0 8px rgba(0,0,0,0.15);
-  padding: 25px 20px;
-  display: flex;
-  flex-direction: column;
-  z-index: 100;
-  border-radius: 0 25px 25px 0;
-  color: #f5f5f7;
-  user-select: none;
+.login-container select:focus,
+.login-container input:focus {
+  border-color: #007aff;
+  background-color: #fff;
 }
-.menu-header {
+
+.login-container button {
+  margin-top: 10px;
+  background-color: #007aff;
+  border: none;
+  border-radius: 16px;
+  padding: 14px 0;
+  font-size: 1.1rem;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+  transition: background-color 0.25s ease;
+}
+
+.login-container button:hover {
+  background-color: #005ecb;
+}
+
+.erro-msg {
+  color: #e74c3c;
+  font-weight: 500;
+  margin-top: 8px;
+  min-height: 18px;
+}
+
+/* DASHBOARD */
+.dashboard {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: #f5f5f7;
+  color: #1d1d1f;
+}
+
+/* HEADER */
+header {
+  height: 60px;
+  background: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 30px;
+  padding: 0 20px;
+  border-bottom: 1px solid #d1d1d6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
 }
-.menu-header #bem-vindo {
+
+#btn-menu {
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #007aff;
+}
+
+#bem-vindo {
   font-weight: 600;
   font-size: 1.2rem;
-  user-select: text;
+  color: #111;
 }
+
+#btn-logout {
+  background: transparent;
+  border: none;
+  color: #e74c3c;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 6px 12px;
+  border-radius: 12px;
+  transition: background-color 0.3s ease;
+}
+
+#btn-logout:hover {
+  background-color: rgba(231, 76, 60, 0.15);
+}
+
+/* MENU LATERAL */
+.menu-lateral {
+  width: 240px;
+  background: #fefefe;
+  border-right: 1px solid #d1d1d6;
+  padding-top: 80px;
+  box-shadow: 3px 0 10px rgba(0,0,0,0.05);
+  position: fixed;
+  top: 60px;
+  left: 0;
+  bottom: 0;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+  z-index: 99;
+}
+
+.menu-lateral.hidden {
+  transform: translateX(-100%);
+}
+
+.menu-lateral ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-lateral li {
+  margin: 0;
+}
+
+.menu-lateral button {
+  width: 100%;
+  padding: 15px 20px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 1rem;
+  color: #007aff;
+  cursor: pointer;
+  border-radius: 12px 0 0 12px;
+  transition: background-color 0.2s ease;
+}
+
+.menu-lateral button:hover {
+  background-color: #e0f0ff;
+}
+
+/* MAIN CONTEÚDO */
+main {
+  flex: 1;
+  margin-left: 0;
+  padding: 90px 30px 30px 30px;
+  overflow-y: auto;
+  max-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+.menu-lateral:not(.hidden) ~ main {
+  margin-left: 240px;
+}
+
+/* ABAS */
+.aba {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+  margin-bottom: 25px;
+  max-width: 900px;
+}
+
+.aba h2 {
+  margin-top: 0;
+  color: #111;
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 18px;
+}
+
+/* FORMULÁRIOS */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+input, select {
+  padding: 12px 15px;
+  border-radius: 14px;
+  border: 1.5px solid #d1d1d6;
+  font-size: 1rem;
+  outline-offset: 2px;
+  background-color: #fafafa;
+  transition: border-color 0.3s ease;
+}
+
+input:focus, select:focus {
+  border-color: #007aff;
+  background-color: white;
+}
+
+button[type="submit"], .aba button {
+  background-color: #007aff;
+  border: none;
+  color: white;
+  font-weight: 700;
+  padding: 14px 0;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0,122,255,0.3);
+  transition: background-color 0.25s ease;
+}
+
+button[type="submit"]:hover, .aba button:hover {
+  background-color: #005ecb;
+}
+
+/* BOTÕES */
+button {
+  outline: none;
+}
+
+/* Mensagens */
+.sucesso-msg {
+  color: #2ecc71;
+  font-weight: 600;
+}
+
+.erro-msg {
+  color: #e74c3c;
+  font-weight: 600;
+  min-height: 18px;
+  margin-top: 8px;
+}
+
+/* LISTAS DE REUNIÕES */
+#reunioes-pendentes button,
+#reunioes-hoje li,
+#reunioes-futuras li,
+#reunioes-realizadas li {
+  cursor: pointer;
+  padding: 12px 18px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  border-left: 5px solid #007aff;
+  background-color: #f0f5ff;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+#reunioes-pendentes button:hover,
+#reunioes-hoje li:hover,
+#reunioes-futuras li:hover,
+#reunioes-realizadas li:hover {
+  background-color: #d0e2ff;
+}
+
+#reunioes-pendentes button {
+  border-left-color: #fbbf24;
+  background-color:
