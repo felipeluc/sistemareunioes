@@ -1,0 +1,1 @@
+// Aqui virá o código completo funcional que conecta tudo ao Firebase

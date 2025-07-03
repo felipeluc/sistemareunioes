@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Consultores - SouFácil</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Bem-vindo(a) <span id="userName">Consultor</span></h2>
+    <button onclick="showSection('pendentes')">Pendentes</button>
+    <button onclick="showSection('agendadas')">Hoje / Próximos Dias</button>
+    <button onclick="showSection('realizadas')">Realizadas</button>
+    <button onclick="showSection('fechamentos')">Meus Fechamentos</button>
+    <button onclick="showSection('dashboard')">Dashboard</button>
+  </div>
+  <div class="content">
+    <div id="pendentes" class="section active">
+      <div class="header">Reuniões Pendentes</div>
+      <div id="reunioesPendentes"></div>
+    </div>
+    <div id="agendadas" class="section">
+      <div class="header">Hoje / Próximos Dias</div>
+      <div id="reunioesAgendadas"></div>
+    </div>
+    <div id="realizadas" class="section">
+      <div class="header">Reuniões Realizadas</div>
+      <input type="date" id="filtroDataRealizadas" class="filter-date" />
+      <select id="filtroStatusRealizadas" class="status-select">
+        <option value="">Filtrar Status</option>
+        <option>Fechou</option>
+        <option>Não teve interesse</option>
+        <option>Aguardando pagamento</option>
+        <option>Aguardando documentação</option>
+      </select>
+      <div id="reunioesRealizadas"></div>
+    </div>
+    <div id="fechamentos" class="section">
+      <div class="header">Meus Fechamentos</div>
+      <div class="form-section">
+        <input type="text" id="nomeLojista" placeholder="Nome do Lojista" />
+        <input type="text" id="contato" placeholder="Contato" />
+        <input type="text" id="cidade" placeholder="Cidade" />
+        <select id="estado">
+          <option value="">Selecione o Estado</option>
+          <option value="SP">SP</option>
+          <option value="RJ">RJ</option>
+          <option value="MG">MG</option>
+          <option value="PR">PR</option>
+          <option value="RS">RS</option>
+          <option value="BA">BA</option>
+          <option value="Outros">Outros</option>
+        </select>
+        <input type="number" id="qtdLojas" placeholder="Quantidade de Lojas" />
+        <input type="text" id="cnpj" placeholder="CNPJ" />
+        <input type="number" id="faturamento" placeholder="Faturamento Bruto" />
+        <select id="temCrediario">
+          <option value="">Tem crediário?</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+        </select>
+        <input type="number" id="valorCrediario" placeholder="Fatura quanto no crediário? (0 se não tiver)" />
+        <select id="origem">
+          <option value="">Veio por onde?</option>
+          <option value="Prospecção Própria">Prospecção Própria</option>
+          <option value="Angela">Angela</option>
+          <option value="Indicação">Indicação</option>
+        </select>
+        <input type="number" id="valorAdesao" placeholder="Valor de Adesão Cobrado" />
+        <button class="btn" onclick="salvarFechamento()">Salvar Fechamento</button>
+      </div>
+      <div id="listaFechamentos"></div>
+    </div>
+    <div id="dashboard" class="section">
+      <div class="header">Dashboard</div>
+      <input type="date" id="dataInicio" class="filter-date" />
+      <input type="date" id="dataFim" class="filter-date" />
+      <button class="btn" onclick="carregarDashboard()">Filtrar</button>
+      <div id="infoDashboard" class="card"></div>
+    </div>
+  </div>
+  <script type="module" src="consultor.js"></script>
+</body>
+</html>
