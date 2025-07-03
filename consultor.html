@@ -64,6 +64,7 @@
       padding: 1rem;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
       margin-bottom: 1rem;
+      cursor: pointer;
     }
 
     .card h4 {
@@ -114,6 +115,30 @@
 
     .form-grid button:hover {
       background: #005dd9;
+    }
+
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 90%;
+      max-width: 600px;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.4);
+      z-index: 999;
     }
   </style>
 </head>
@@ -176,39 +201,10 @@
     </section>
   </div>
 
-  <script type="module">
-    import { db } from './firebase-config.js';
-    import { collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <div id="modalContainer"></div>
 
-    window.salvarFechamento = async function(event) {
-      event.preventDefault();
-
-      const data = {
-        lojista: document.getElementById('lojista').value,
-        contato: document.getElementById('contato').value,
-        cidade: document.getElementById('cidade').value,
-        estado: document.getElementById('estado').value,
-        qtdLojas: parseInt(document.getElementById('qtdLojas').value),
-        cnpj: document.getElementById('cnpj').value,
-        faturamento: parseFloat(document.getElementById('faturamento').value),
-        crediario: document.getElementById('crediario').value,
-        valorCrediario: parseFloat(document.getElementById('valorCrediario').value),
-        origem: document.getElementById('origem').value,
-        adesao: parseFloat(document.getElementById('adesao').value),
-        criadoEm: Timestamp.now()
-      };
-
-      try {
-        await addDoc(collection(db, "fechamentos"), data);
-        alert("Fechamento salvo com sucesso!");
-        document.querySelector('#formFechamento form').reset();
-        document.getElementById("formFechamento").style.display = "none";
-      } catch (err) {
-        console.error("Erro ao salvar:", err);
-        alert("Erro ao salvar fechamento.");
-      }
-    }
-  </script>
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="consultor.js"></script>
 
   <script>
     function mostrarSecao(id) {
@@ -223,9 +219,22 @@
     function abrirFormFechamento() {
       document.getElementById("formFechamento").style.display = "block";
     }
-  </script>
 
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="consultor.js"></script>
+    function mostrarModal(titulo, conteudo) {
+      const overlay = document.createElement("div");
+      overlay.className = "overlay";
+      const modal = document.createElement("div");
+      modal.className = "modal";
+      modal.innerHTML = `<h3>${titulo}</h3><div>${conteudo}</div><br><button onclick="fecharModal()">Fechar</button>`;
+      const container = document.getElementById("modalContainer");
+      container.innerHTML = "";
+      container.appendChild(overlay);
+      container.appendChild(modal);
+    }
+
+    function fecharModal() {
+      document.getElementById("modalContainer").innerHTML = "";
+    }
+  </script>
 </body>
 </html>
