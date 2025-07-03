@@ -1,7 +1,7 @@
 import { db } from './firebase.js';
 import { collection, getDocs, doc, updateDoc, addDoc, query, where, Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-lite.js';
 
-const userName = localStorage.getItem('userName') || 'Consultor';
+const userName = localStorage.getItem('usuarioLogado') || 'Consultor';
 document.getElementById('userName').textContent = userName;
 
 const showSection = (id) => {
@@ -26,7 +26,7 @@ async function carregarPendentes() {
       <p><strong>Segmento:</strong> ${r.segmento}</p>
       <p><strong>Data:</strong> ${r.data}</p>
       <p><strong>Horário:</strong> ${r.hora}</p>
-      <button class="btn" onclick="aceitarReuniao('${docSnap.id}', '${r.data}')">Aceitar</button>
+      <button class="btn" onclick="aceitarReuniao('${docSnap.id}')">Aceitar</button>
       <select class="transfer-select" onchange="transferirReuniao('${docSnap.id}', this)">
         <option value="">Transferir para...</option>
         ${selectTransferir}
@@ -35,12 +35,13 @@ async function carregarPendentes() {
       <div class="card-details">
         <p><strong>Cidade:</strong> ${r.cidade || ''}</p>
         <p><strong>Estado:</strong> ${r.estado || ''}</p>
-        <p><strong>Link:</strong> <a href="${r.link}" target="_blank">Abrir</a></p>
-        <p><strong>Origem:</strong> ${r.origem}</p>
-        <p><strong>Canal:</strong> ${r.canal}</p>
-        <p><strong>Contato:</strong> ${r.contato}</p>
-        <p><strong>Responsável:</strong> ${r.responsavelConversa}</p>
-        <p><strong>Quantidade de Lojas:</strong> ${r.qtdLojas}</p>
+        <p><strong>Contato:</strong> ${r.contato || ''}</p>
+        <p><strong>Link:</strong> <a href="${r.linkReuniao}" target="_blank">Acessar reunião</a></p>
+        <p><strong>Responsável Conversa:</strong> ${r.responsavelConversa || ''}</p>
+        <p><strong>Prospecção:</strong> ${r.prospeccao || ''}</p>
+        <p><strong>Canal:</strong> ${r.canal || ''}</p>
+        <p><strong>Qtd Lojas:</strong> ${r.qtdLojas || ''}</p>
+        <p><strong>CNPJ:</strong> ${r.cnpj || ''}</p>
         <p><strong>Criado em:</strong> ${new Date(r.criadoEm?.seconds * 1000).toLocaleString()}</p>
       </div>
     `;
@@ -53,10 +54,8 @@ window.abrirCard = (btn) => {
   card.classList.toggle('open');
 };
 
-window.aceitarReuniao = async (id, dataAgendada) => {
+window.aceitarReuniao = async (id) => {
   const ref = doc(db, 'reunioes', id);
-  const hoje = new Date().toISOString().split('T')[0];
-  const status = dataAgendada === hoje ? 'hoje' : 'futuro';
   await updateDoc(ref, { status: 'agendado' });
   carregarPendentes();
   carregarAgendadas();
@@ -75,8 +74,6 @@ async function carregarAgendadas() {
   const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName), where("status", "==", "agendado")));
   const container = document.getElementById('reunioesAgendadas');
   container.innerHTML = '';
-  const hoje = new Date().toISOString().split('T')[0];
-
   snapshot.forEach(docSnap => {
     const r = docSnap.data();
     const card = document.createElement('div');
@@ -94,11 +91,7 @@ async function carregarAgendadas() {
         <option value="aguardando_documentacao">Aguardando documentação</option>
       </select>
     `;
-    if (r.data === hoje) {
-      document.getElementById('reunioesHoje').appendChild(card);
-    } else {
-      container.appendChild(card);
-    }
+    container.appendChild(card);
   });
 }
 
@@ -126,14 +119,7 @@ async function carregarRealizadas() {
         <div class="card-details">
           <p><strong>Segmento:</strong> ${r.segmento}</p>
           <p><strong>Cidade:</strong> ${r.cidade}</p>
-          <p><strong>Observações:</strong> ${r.observacoes || ''}</p>
-          <select onchange="alterarStatus('${docSnap.id}', this.value)" class="status-select">
-            <option value="">Editar status</option>
-            <option value="fechou">Fechou</option>
-            <option value="nao_interesse">Não teve interesse</option>
-            <option value="aguardando_pagamento">Aguardando pagamento</option>
-            <option value="aguardando_documentacao">Aguardando documentação</option>
-          </select>
+          <p><strong>Observações:</strong> ${r.observacoes}</p>
         </div>
       `;
       container.appendChild(card);
