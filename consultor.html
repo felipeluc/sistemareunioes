@@ -1,86 +1,202 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Consultores - SouFácil</title>
+  <title>Consultor | Comercial SouFacil</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #f2f2f7;
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: #ffffff;
+      border-right: 1px solid #e0e0e0;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      border-radius: 0 20px 20px 0;
+      box-shadow: 4px 0 12px rgba(0,0,0,0.05);
+    }
+
+    .sidebar h2 {
+      font-size: 1.6rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .sidebar button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .sidebar button:hover {
+      background: #007aff20;
+    }
+
+    .sidebar button.active {
+      background: #007aff;
+      color: white;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+    }
+
+    .card h4 {
+      margin: 0.5rem 0;
+    }
+
+    .card button {
+      margin-right: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .form-grid input,
+    .form-grid select {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .form-grid button {
+      grid-column: span 2;
+      padding: 0.9rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 14px;
+      border: none;
+      background: #007aff;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .form-grid button:hover {
+      background: #005dd9;
+    }
+  </style>
 </head>
 <body>
   <div class="sidebar">
-    <h2>Bem-vindo(a) <span id="userName">Consultor</span></h2>
-    <button onclick="showSection('pendentes')">Pendentes</button>
-    <button onclick="showSection('agendadas')">Hoje / Próximos Dias</button>
-    <button onclick="showSection('realizadas')">Realizadas</button>
-    <button onclick="showSection('fechamentos')">Meus Fechamentos</button>
-    <button onclick="showSection('dashboard')">Dashboard</button>
+    <h2>SouFacil</h2>
+    <button onclick="mostrarSecao('reunioes')" class="active">Reuniões</button>
+    <button onclick="mostrarSecao('fechamentos')">Fechamentos</button>
   </div>
-  <div class="content">
-    <div id="pendentes" class="section active">
-      <div class="header">Reuniões Pendentes</div>
-      <div id="reunioesPendentes"></div>
-    </div>
-    <div id="agendadas" class="section">
-      <div class="header">Hoje / Próximos Dias</div>
-      <div id="reunioesAgendadas"></div>
-    </div>
-    <div id="realizadas" class="section">
-      <div class="header">Reuniões Realizadas</div>
-      <input type="date" id="filtroDataRealizadas" class="filter-date" />
-      <select id="filtroStatusRealizadas" class="status-select">
-        <option value="">Filtrar Status</option>
-        <option>Fechou</option>
-        <option>Não teve interesse</option>
-        <option>Aguardando pagamento</option>
-        <option>Aguardando documentação</option>
-      </select>
-      <div id="reunioesRealizadas"></div>
-    </div>
-    <div id="fechamentos" class="section">
-      <div class="header">Meus Fechamentos</div>
-      <div class="form-section">
-        <input type="text" id="nomeLojista" placeholder="Nome do Lojista" />
-        <input type="text" id="contato" placeholder="Contato" />
-        <input type="text" id="cidade" placeholder="Cidade" />
-        <select id="estado">
-          <option value="">Selecione o Estado</option>
-          <option value="SP">SP</option>
-          <option value="RJ">RJ</option>
-          <option value="MG">MG</option>
-          <option value="PR">PR</option>
-          <option value="RS">RS</option>
-          <option value="BA">BA</option>
-          <option value="Outros">Outros</option>
-        </select>
-        <input type="number" id="qtdLojas" placeholder="Quantidade de Lojas" />
-        <input type="text" id="cnpj" placeholder="CNPJ" />
-        <input type="number" id="faturamento" placeholder="Faturamento Bruto" />
-        <select id="temCrediario">
-          <option value="">Tem crediário?</option>
-          <option value="Sim">Sim</option>
-          <option value="Não">Não</option>
-        </select>
-        <input type="number" id="valorCrediario" placeholder="Fatura quanto no crediário? (0 se não tiver)" />
-        <select id="origem">
-          <option value="">Veio por onde?</option>
-          <option value="Prospecção Própria">Prospecção Própria</option>
-          <option value="Angela">Angela</option>
-          <option value="Indicação">Indicação</option>
-        </select>
-        <input type="number" id="valorAdesao" placeholder="Valor de Adesão Cobrado" />
-        <button class="btn" onclick="salvarFechamento()">Salvar Fechamento</button>
+
+  <div class="main-content">
+    <h1 id="boasVindas">Bem-vindo(a),</h1>
+
+    <section id="reunioes" class="section active">
+      <h2>Reuniões Pendentes</h2>
+      <div id="listaReunioes"></div>
+
+      <h2 style="margin-top:2rem;">Reuniões do Dia</h2>
+      <div id="reunioesDia"></div>
+
+      <h2 style="margin-top:2rem;">Próximos Dias</h2>
+      <div id="reunioesProximas"></div>
+    </section>
+
+    <section id="fechamentos" class="section">
+      <h2>Fechamentos</h2>
+      <button onclick="abrirFormFechamento()">Novo Fechamento</button>
+      <div id="formFechamento" style="margin-top: 1rem; display: none;">
+        <form class="form-grid" onsubmit="salvarFechamento(event)">
+          <input type="text" placeholder="Nome do Lojista" required />
+          <input type="text" placeholder="Contato" required />
+          <input type="text" placeholder="Cidade" required />
+          <select required>
+            <option value="">Estado</option>
+            <option value="SP">SP</option>
+            <option value="RJ">RJ</option>
+            <option value="MG">MG</option>
+            <option value="BA">BA</option>
+            <!-- Adicione mais estados conforme necessidade -->
+          </select>
+          <input type="number" placeholder="Quantidade de Lojas" required />
+          <input type="text" placeholder="CNPJ" required />
+          <input type="number" placeholder="Faturamento Bruto" required />
+          <select required>
+            <option value="">Tem Crediário?</option>
+            <option value="Sim">Sim</option>
+            <option value="Não">Não</option>
+          </select>
+          <input type="number" placeholder="Valor do Crediário (0 se não tiver)" required />
+          <select required>
+            <option value="">Veio por onde?</option>
+            <option value="Própria">Prospecção Própria</option>
+            <option value="Angela">Angela</option>
+            <option value="Indicação">Indicação</option>
+          </select>
+          <input type="number" placeholder="Valor de Adesão Cobrado" required />
+          <button type="submit">Salvar Fechamento</button>
+        </form>
       </div>
-      <div id="listaFechamentos"></div>
-    </div>
-    <div id="dashboard" class="section">
-      <div class="header">Dashboard</div>
-      <input type="date" id="dataInicio" class="filter-date" />
-      <input type="date" id="dataFim" class="filter-date" />
-      <button class="btn" onclick="carregarDashboard()">Filtrar</button>
-      <div id="infoDashboard" class="card"></div>
-    </div>
+      <div id="listaFechamentos" style="margin-top: 1rem;"></div>
+    </section>
   </div>
+
+  <script type="module" src="firebase-config.js"></script>
   <script type="module" src="consultor.js"></script>
+  <script>
+    function mostrarSecao(id) {
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+
+      document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
+      if (id === 'reunioes') document.querySelectorAll('.sidebar button')[0].classList.add('active');
+      if (id === 'fechamentos') document.querySelectorAll('.sidebar button')[1].classList.add('active');
+    }
+
+    function abrirFormFechamento() {
+      document.getElementById("formFechamento").style.display = "block";
+    }
+
+    function salvarFechamento(event) {
+      event.preventDefault();
+      alert("Funcionalidade de salvar ainda não implementada no consultor.js");
+    }
+  </script>
 </body>
 </html>
