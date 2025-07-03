@@ -1,4 +1,3 @@
-// consultor.js
 import { db } from './firebase-config.js';
 import {
   collection,
@@ -7,126 +6,118 @@ import {
   getDocs,
   updateDoc,
   doc,
+  onSnapshot,
   addDoc,
-  Timestamp,
-  onSnapshot
+  Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const usuario = localStorage.getItem("usuarioAtual") || "Leticia";
-document.getElementById("boasVindas").innerText = `Bem-vindo(a), ${usuario}`;
+// 🔒 Captura o nome do consultor (ex: via localStorage após login)
+const consultorLogado = localStorage.getItem("usuarioLogado") || "Gabriel"; // fallback para Gabriel
+
+document.getElementById("boasVindas").textContent = `Bem-vindo(a), ${consultorLogado}`;
 
 const listaReunioes = document.getElementById("listaReunioes");
 const reunioesDia = document.getElementById("reunioesDia");
 const reunioesProximas = document.getElementById("reunioesProximas");
 const listaFechamentos = document.getElementById("listaFechamentos");
 
-function criarCardReuniao(dados, id) {
-  const div = document.createElement("div");
-  div.className = "card";
-  div.innerHTML = `
-    <h4>${dados.nomeLoja || "(Sem nome)"}</h4>
-    <p>${dados.segmento || "Segmento não informado"} - ${dados.horario || "--:--"}</p>
-    <button onclick="mostrarModal('Detalhes da Reunião', 
-      'Consultor: ${dados.consultor}<br>' +
-      'Cidade: ${dados.cidade}<br>' +
-      'Estado: ${dados.estado}<br>' +
-      'Link: <a href=\"${dados.link}\" target=\"_blank\">Acessar</a><br>' +
-      'Quantidade de Lojas: ${dados.qtdLojas}<br>' +
-      'CNPJ: ${dados.cnpj}<br>' +
-      'Segmento: ${dados.segmento}<br>' +
-      'Origem: ${dados.origem}<br>' +
-      'Canal: ${dados.canal}<br>' +
-      'Contato: ${dados.contato}<br>' +
-      'Responsável pela conversa: ${dados.responsavelConversa}'
-    )">Ver Detalhes</button>
-    <button onclick="aceitarReuniao('${id}')">Aceitar</button>
-    <button onclick="transferirReuniao('${id}')">Transferir</button>
-  `;
-  return div;
-}
+// 📦 Função para carregar reuniões pendentes
+async function carregarReunioesPendentes() {
+  listaReunioes.innerHTML = "<p>Carregando...</p>";
+  const q = query(collection(db, "reunioes"), where("consultor", "==", consultorLogado), where("status", "==", "pendente"));
+  const snapshot = await getDocs(q);
 
-window.mostrarModal = function(titulo, conteudo) {
-  const modal = document.createElement("div");
-  modal.style.position = "fixed";
-  modal.style.top = "0";
-  modal.style.left = "0";
-  modal.style.width = "100%";
-  modal.style.height = "100%";
-  modal.style.background = "rgba(0,0,0,0.5)";
-  modal.style.display = "flex";
-  modal.style.justifyContent = "center";
-  modal.style.alignItems = "center";
-  modal.innerHTML = `
-    <div style="background:white;padding:2rem;border-radius:20px;width:400px;max-width:90%;">
-      <h3>${titulo}</h3>
-      <div>${conteudo}</div>
-      <button onclick="this.closest('div').parentNode.remove()" style="margin-top:1rem;">Fechar</button>
-    </div>
-  `;
-  document.body.appendChild(modal);
-};
-
-window.aceitarReuniao = async function(id) {
-  const docRef = doc(db, "reunioes", id);
-  const status = prompt("Qual o status? (interessado, aguardando pagamento, aguardando documentação, não teve interesse)");
-  if (!status) return;
-
-  let motivo = "";
-  if (status === "não teve interesse") {
-    motivo = prompt("Qual o motivo?") || "";
+  if (snapshot.empty) {
+    listaReunioes.innerHTML = "<p>Nenhuma reunião pendente.</p>";
+    return;
   }
 
-  await updateDoc(docRef, {
-    status: status,
-    motivo: motivo || null,
-    atualizadoEm: Timestamp.now()
+  let html = "";
+  snapshot.forEach(docSnap => {
+    const r = docSnap.data();
+    html += `
+      <div class="card">
+        <h4>${r.nomeLoja || "Loja sem nome"}</h4>
+        <p><strong>Segmento:</strong> ${r.segmento || "-"}</p>
+        <p><strong>Horário:</strong> ${r.horario || "-"}</p>
+        <p><strong>Cidade:</strong> ${r.cidade || "-"} - ${r.estado || "-"}</p>
+        <button onclick="mostrarDetalhes('${docSnap.id}')">Ver Detalhes</button>
+        <button onclick="aceitarReuniao('${docSnap.id}')">Aceitar</button>
+        <button onclick="transferirReuniao('${docSnap.id}')">Solicitar Transferência</button>
+      </div>
+    `;
   });
 
-  alert("Status atualizado com sucesso.");
-  carregarReunioes();
-};
-
-window.transferirReuniao = async function(id) {
-  const docRef = doc(db, "reunioes", id);
-  await updateDoc(docRef, {
-    status: "transferencia"
-  });
-  alert("Reunião enviada para transferência.");
-  carregarReunioes();
-};
-
-async function carregarReunioes() {
-  listaReunioes.innerHTML = "Carregando...";
-  const q = query(collection(db, "reunioes"), where("consultor", "==", usuario), where("status", "==", "pendente"));
-  const snap = await getDocs(q);
-  listaReunioes.innerHTML = "";
-  snap.forEach(doc => {
-    const dados = doc.data();
-    const card = criarCardReuniao(dados, doc.id);
-    listaReunioes.appendChild(card);
-  });
+  listaReunioes.innerHTML = html;
 }
 
+// 👀 Mostrar todos os dados da reunião
+window.mostrarDetalhes = async function(id) {
+  const docRef = doc(db, "reunioes", id);
+  const snap = await getDocs(query(collection(db, "reunioes"), where("__name__", "==", id)));
+  const r = snap.docs[0].data();
+
+  alert(`
+Loja: ${r.nomeLoja}
+Cidade: ${r.cidade} - ${r.estado}
+Horário: ${r.horario}
+Segmento: ${r.segmento}
+CNPJ: ${r.cnpj}
+Qtd Lojas: ${r.qtdLojas}
+Link: ${r.link}
+Origem: ${r.origem}
+Canal: ${r.canal}
+Contato: ${r.contato}
+Conversa com: ${r.responsavelConversa}
+  `);
+};
+
+// ✅ Aceitar reunião
+window.aceitarReuniao = async function(id) {
+  const status = prompt("Status: interessado, aguardando pagamento, aguardando documentação, não teve interesse");
+  if (!status) return;
+
+  const update = { status };
+  if (status === "não teve interesse") {
+    const motivo = prompt("Motivo:");
+    if (!motivo) return;
+    update.motivo = motivo;
+  }
+
+  await updateDoc(doc(db, "reunioes", id), update);
+  alert("Reunião atualizada.");
+  carregarReunioesPendentes();
+}
+
+// 🔁 Solicitar transferência
+window.transferirReuniao = async function(id) {
+  await updateDoc(doc(db, "reunioes", id), { status: "transferencia" });
+  alert("Transferência solicitada.");
+  carregarReunioesPendentes();
+}
+
+// 📋 Carregar fechamentos
 async function carregarFechamentos() {
+  listaFechamentos.innerHTML = "<p>Carregando...</p>";
   const q = query(collection(db, "fechamentos"));
   const snap = await getDocs(q);
-  listaFechamentos.innerHTML = "";
+
+  let html = "";
   snap.forEach(doc => {
-    const dados = doc.data();
-    if (dados && dados.lojista) {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <strong>${dados.lojista}</strong><br>
-        ${dados.cidade}, ${dados.estado}<br>
-        CNPJ: ${dados.cnpj}<br>
-        Adesão: R$ ${dados.adesao}<br>
-        <small>Origem: ${dados.origem}</small>
-      `;
-      listaFechamentos.appendChild(div);
-    }
+    const f = doc.data();
+    html += `
+      <div class="card">
+        <strong>${f.lojista}</strong><br/>
+        ${f.cidade} - ${f.estado} | Lojas: ${f.qtdLojas}<br/>
+        Faturamento: R$ ${f.faturamento} | Crediário: ${f.crediario} (R$ ${f.valorCrediario})<br/>
+        Origem: ${f.origem} | Adesão: R$ ${f.adesao}
+      </div>
+    `;
   });
+
+  listaFechamentos.innerHTML = html || "<p>Nenhum fechamento encontrado.</p>";
 }
 
-carregarReunioes();
+// Inicialização
+carregarReunioesPendentes();
 carregarFechamentos();
