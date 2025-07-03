@@ -1,80 +1,47 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <title>Angela - Agendamentos</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
-    input, select, textarea { display: block; margin: 10px 0; padding: 8px; width: 100%; max-width: 400px; }
-    button { padding: 10px 20px; background: #007aff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    #mensagemSucesso { color: green; margin-top: 15px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Angela | Reuniões</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>Agendar Reunião</h2>
-  <form id="agendamentoForm">
-    <input type="text" id="nomeLoja" placeholder="Nome da loja" required />
-    <input type="text" id="cidade" placeholder="Cidade" required />
-    <input type="text" id="segmento" placeholder="Segmento" required />
-    <select id="consultor" required>
-      <option value="">Selecione um consultor</option>
-      <option value="Leticia">Leticia</option>
-      <option value="Glaucia">Glaucia</option>
-      <option value="Marcelo">Marcelo</option>
-      <option value="Gabriel">Gabriel</option>
-    </select>
-    <input type="date" id="data" required />
-    <input type="time" id="hora" required />
-    <textarea id="obs" placeholder="Observações"></textarea>
-    <button type="submit">Salvar</button>
-  </form>
+  <div class="page">
+    <header class="topbar">
+      <h1>SouFácil</h1>
+      <span class="user">Angela</span>
+    </header>
 
-  <div id="mensagemSucesso" style="display: none;">✅ Reunião agendada com sucesso!</div>
+    <main class="content">
+      <section class="card white-card">
+        <h2>Agendar Reunião</h2>
+        <form id="formReuniao" class="form-grid">
+          <input type="text" id="nomeLoja" placeholder="Nome da Loja" required />
+          <input type="text" id="segmento" placeholder="Segmento" required />
+          <input type="text" id="cidade" placeholder="Cidade" />
+          <input type="date" id="data" required />
+          <input type="time" id="hora" required />
+          <textarea id="observacoes" placeholder="Observações"></textarea>
+          <select id="consultor" required>
+            <option value="">Selecionar Consultor</option>
+            <option value="Leticia">Leticia</option>
+            <option value="Glaucia">Glaucia</option>
+            <option value="Marcelo">Marcelo</option>
+            <option value="Gabriel">Gabriel</option>
+          </select>
+          <button type="submit" class="btn">Agendar</button>
+        </form>
+      </section>
 
-  <script>
-    // Configuração do Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyA8RN8vcrLZGGmwCXx8ng4GaUZDSo_SSfg",
-      authDomain: "reunioes-sistema.firebaseapp.com",
-      projectId: "reunioes-sistema",
-      storageBucket: "reunioes-sistema.firebasestorage.app",
-      messagingSenderId: "591533232683",
-      appId: "1:591533232683:web:a2aaeddac1d6c4e3a7906e"
-    };
+      <section class="card white-card">
+        <h2>Reuniões Agendadas</h2>
+        <div id="listaReunioes" class="listagem"></div>
+      </section>
+    </main>
+  </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // Formulário
-    const form = document.getElementById("agendamentoForm");
-    const msg = document.getElementById("mensagemSucesso");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const dados = {
-        nomeLoja: document.getElementById("nomeLoja").value,
-        cidade: document.getElementById("cidade").value,
-        segmento: document.getElementById("segmento").value,
-        consultor: document.getElementById("consultor").value,
-        data: document.getElementById("data").value,
-        hora: document.getElementById("hora").value,
-        observacoes: document.getElementById("obs").value,
-        status: "pendente",
-        criadoEm: new Date()
-      };
-
-      try {
-        await db.collection("reunioes").add(dados);
-        msg.style.display = "block";
-        form.reset();
-        setTimeout(() => msg.style.display = "none", 3000);
-      } catch (erro) {
-        alert("Erro ao salvar: " + erro.message);
-      }
-    });
-  </script>
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="script-angela.js"></script>
 </body>
 </html>
