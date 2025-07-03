@@ -8,179 +8,189 @@ import {
   updateDoc,
   query,
   where,
-  orderBy
+  orderBy,
+  startAt,
+  endAt,
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
+// Firebase config e inicialização
 const firebaseConfig = {
   apiKey: "AIzaSyA82SCTdpkMEAnir63lwuEf0A2Wu2dAhAQ",
   authDomain: "sistemareuniao.firebaseapp.com",
   projectId: "sistemareuniao",
   storageBucket: "sistemareuniao.appspot.com",
   messagingSenderId: "509650784087",
-  appId: "1:509650784087:web:140e26fd7dcc2ef89df812"
+  appId: "1:509650784087:web:140e26fd7dcc2ef89df812",
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Usuários e senhas fixas
 const senhas = {
   "Ana Carolina": "Ana1234",
-  "Felipe": "Felipe1515",
-  "Glaucia": "Glaucia1234",
-  "Leticia": "Le1234",
-  "Marcelo": "Marcelo1234",
-  "Gabriel": "Gabriel1234",
-  "Angela": "Angela1234"
+  Felipe: "Felipe1515",
+  Glaucia: "Glaucia1234",
+  Leticia: "Le1234",
+  Marcelo: "Marcelo1234",
+  Gabriel: "Gabriel1234",
+  Angela: "Angela1234",
 };
 
 let usuarioLogado = "";
 let agendamentoSelecionado = null;
 
+// Login
 window.fazerLogin = function () {
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
   const erro = document.getElementById("login-erro");
 
   if (senhas[usuario] && senhas[usuario] === senha) {
-    erro.innerText = "";
     usuarioLogado = usuario;
+
     document.getElementById("login").classList.add("hidden");
     document.getElementById("dashboard").classList.remove("hidden");
+
     document.getElementById("bem-vindo").innerText = `Bem-vindo(a), ${usuario}!`;
 
-    document.getElementById("menu-lateral").classList.remove("hidden");
-    esconderMenus();
+    // Configura menus conforme usuário
+    document.querySelectorAll(".menu-angela").forEach((el) => el.classList.add("hidden"));
+    document.querySelectorAll(".menu-gerente").forEach((el) => el.classList.add("hidden"));
+    document.querySelectorAll(".menu-consultor").forEach((el) => el.classList.add("hidden"));
+
     if (usuario === "Angela") {
-      document.getElementById("menu-angela").classList.remove("hidden");
+      document.querySelectorAll(".menu-angela").forEach((el) => el.classList.remove("hidden"));
       mostrarAba("aba-dashboard-angela");
       carregarDashboardAngela();
       carregarTransferencias();
-    } else if (usuario === "Felipe" || usuario === "Ana Carolina") {
-      document.getElementById("menu-gerente").classList.remove("hidden");
-      mostrarAba("aba-gerente");
+    } else if (usuario === "Ana Carolina" || usuario === "Felipe") {
+      document.querySelectorAll(".menu-gerente").forEach((el) => el.classList.remove("hidden"));
+      mostrarAba("aba-painel-gerente");
     } else {
-      document.getElementById("menu-consultor").classList.remove("hidden");
-      mostrarAba("aba-consultor");
+      document.querySelectorAll(".menu-consultor").forEach((el) => el.classList.remove("hidden"));
+      mostrarAba("aba-minhas-reunioes");
       carregarReunioesConsultor();
     }
+
+    fecharMenu();
+    erro.innerText = "";
   } else {
     erro.innerText = "Usuário ou senha inválidos!";
   }
 };
 
-function esconderMenus() {
-  document.getElementById("menu-angela").classList.add("hidden");
-  document.getElementById("menu-gerente").classList.add("hidden");
-  document.getElementById("menu-consultor").classList.add("hidden");
-}
-
-window.mostrarAba = function (id) {
-  document.querySelectorAll(".aba").forEach(aba => aba.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
-
-  // Carregar dados ao abrir abas
-  if (id === "aba-consultor") {
-    carregarReunioesConsultor();
-  } else if (id === "aba-dashboard-angela") {
-    carregarDashboardAngela();
-  } else if (id === "aba-transferencias") {
-    carregarTransferencias();
-  }
-};
-
-// FUNÇÃO PARA TOGGLE MENU MOBILE (se quiser depois)
-window.toggleMenu = function () {
-  const menu = document.getElementById("menu-lateral");
-  if (menu.style.left === "0px" || !menu.style.left) {
-    menu.style.left = "-260px";
-  } else {
-    menu.style.left = "0px";
-  }
-};
-
+// Logout
 window.logout = function () {
   usuarioLogado = "";
   agendamentoSelecionado = null;
-  document.getElementById("login").classList.remove("hidden");
+
   document.getElementById("dashboard").classList.add("hidden");
-  document.getElementById("menu-lateral").classList.add("hidden");
+  document.getElementById("login").classList.remove("hidden");
   document.getElementById("usuario").value = "";
   document.getElementById("senha").value = "";
   document.getElementById("login-erro").innerText = "";
-  esconderMenus();
+  esconderTodasAbas();
+  fecharMenu();
 };
 
-// FORMULÁRIO DE AGENDAMENTO - ABA ÂNGELA
+// Menu lateral toggle
+window.toggleMenu = function () {
+  const menu = document.getElementById("menu-lateral");
+  menu.classList.toggle("hidden");
+};
+function fecharMenu() {
+  document.getElementById("menu-lateral").classList.add("hidden");
+}
+
+// Esconder todas as abas
+function esconderTodasAbas() {
+  document.querySelectorAll(".aba").forEach((aba) => aba.classList.add("hidden"));
+}
+
+// Mostrar aba
+window.mostrarAba = function (id) {
+  esconderTodasAbas();
+  document.getElementById(id).classList.remove("hidden");
+  fecharMenu();
+
+  if (id === "aba-minhas-reunioes") carregarReunioesConsultor();
+  if (id === "aba-dashboard-angela") carregarDashboardAngela();
+  if (id === "aba-transferencias") carregarTransferencias();
+  if (id === "aba-agendar") resetarFormularioAgendamento();
+};
+
+// Formulário agendamento
 const form = document.getElementById("form-agendamento");
+const sucesso = document.getElementById("mensagem-sucesso");
+
 if (form) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const dados = {
-      consultor: document.getElementById("agendar-consultor").value,
-      horario: document.getElementById("agendar-horario").value,
-      nome: document.getElementById("agendar-nome").value,
-      cidade: document.getElementById("agendar-cidade").value,
-      estado: document.getElementById("agendar-estado").value,
-      link: document.getElementById("agendar-link").value,
-      quantidadeLojas: document.getElementById("agendar-quantidade").value,
-      cnpj: document.getElementById("agendar-cnpj").value,
-      segmento: document.getElementById("agendar-segmento").value,
-      prospeccao: document.getElementById("agendar-prospeccao").value,
-      meio: document.getElementById("agendar-meio").value,
-      contato: document.getElementById("agendar-contato").value,
-      comQuem: document.getElementById("agendar-comquem").value,
+      consultor: form["agendar-consultor"].value,
+      horario: form["agendar-horario"].value,
+      nome: form["agendar-nome"].value,
+      cidade: form["agendar-cidade"].value,
+      estado: form["agendar-estado"].value,
+      link: form["agendar-link"].value,
+      quantidadeLojas: form["agendar-quantidade"].value,
+      cnpj: form["agendar-cnpj"].value,
+      segmento: form["agendar-segmento"].value,
+      prospeccao: form["agendar-prospeccao"].value,
+      meio: form["agendar-meio"].value,
+      contato: form["agendar-contato"].value,
+      comQuem: form["agendar-comquem"].value,
       status: "pendente",
       respostaConsultor: "",
       criadoPor: usuarioLogado,
-      criadoEm: new Date().toISOString()
+      criadoEm: new Date().toISOString(),
     };
 
     try {
       await addDoc(collection(db, "agendamentos"), dados);
-      document.getElementById("mensagem-sucesso").innerText = "✅ Reunião agendada com sucesso!";
+      sucesso.innerText = "✅ Reunião agendada com sucesso!";
       form.reset();
-      setTimeout(() => {
-        document.getElementById("mensagem-sucesso").innerText = "";
-      }, 3000);
+      setTimeout(() => (sucesso.innerText = ""), 3000);
+      mostrarAba("aba-minhas-reunioes");
     } catch (error) {
       console.error("Erro ao agendar:", error);
-      document.getElementById("mensagem-sucesso").innerText = "❌ Erro ao agendar reunião.";
+      sucesso.innerText = "❌ Erro ao agendar reunião.";
     }
   });
 }
+function resetarFormularioAgendamento() {
+  if (form) form.reset();
+  sucesso.innerText = "";
+}
 
-// CARREGAR REUNIÕES - CONSULTOR COM FILTROS
+// --- Consultor: carregar reuniões ---
 async function carregarReunioesConsultor() {
-  const filtroStatus = document.getElementById("filtro-status-realizadas").value;
-  const filtroData = document.getElementById("filtro-data-realizadas").value;
-
   const pendentesDiv = document.getElementById("reunioes-pendentes");
   const hojeUl = document.getElementById("reunioes-hoje");
   const futurasUl = document.getElementById("reunioes-futuras");
   const realizadasUl = document.getElementById("reunioes-realizadas");
+
+  const filtroStatus = document.getElementById("filtro-status-realizadas")?.value || "";
 
   pendentesDiv.innerHTML = "";
   hojeUl.innerHTML = "";
   futurasUl.innerHTML = "";
   realizadasUl.innerHTML = "";
 
-  // Buscar todos os agendamentos do consultor
   const snapshot = await getDocs(collection(db, "agendamentos"));
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
 
   snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    const agendamento = { id: docSnap.id, ...data };
+    const agendamento = { id: docSnap.id, ...docSnap.data() };
+
     if (agendamento.consultor !== usuarioLogado) return;
 
     const dataHora = new Date(agendamento.horario);
-    dataHora.setSeconds(0, 0);
     const dataComparar = new Date(dataHora);
     dataComparar.setHours(0, 0, 0, 0);
 
-    // Botão para reuniões pendentes (não aceitas ainda)
     if (agendamento.respostaConsultor !== "aceito") {
       const btn = document.createElement("button");
       btn.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
@@ -189,18 +199,16 @@ async function carregarReunioesConsultor() {
       btn.onclick = () => mostrarDetalhesReuniao(agendamento);
       pendentesDiv.appendChild(btn);
     } else {
-      // Reuniões aceitas - mostrar em Hoje, Futuras ou Realizadas
+      const li = document.createElement("li");
+      li.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()} - Status: ${agendamento.status || "Sem status"}`;
+      li.onclick = () => mostrarDetalhesReuniao(agendamento);
+
       if (dataComparar.getTime() === hoje.getTime()) {
-        const li = criarLiReuniao(agendamento, dataHora);
         hojeUl.appendChild(li);
       } else if (dataComparar.getTime() > hoje.getTime()) {
-        const li = criarLiReuniao(agendamento, dataHora);
         futurasUl.appendChild(li);
       } else {
-        // Realizadas - aplicar filtro de status e data
-        if ((filtroStatus === "" || agendamento.status === filtroStatus) &&
-          (filtroData === "" || (new Date(agendamento.horario)).toISOString().slice(0,10) === filtroData)) {
-          const li = criarLiReuniao(agendamento, dataHora, true);
+        if (!filtroStatus || filtroStatus === agendamento.status) {
           realizadasUl.appendChild(li);
         }
       }
@@ -208,21 +216,11 @@ async function carregarReunioesConsultor() {
   });
 }
 
-function criarLiReuniao(agendamento, dataHora, mostrarStatus = false) {
-  const li = document.createElement("li");
-  li.textContent = `${agendamento.nome} - ${dataHora.toLocaleString()}`;
-  if (mostrarStatus) {
-    li.textContent += ` — Status: ${agendamento.status || "N/A"}`;
-  }
-  li.style.cursor = "pointer";
-  li.onclick = () => mostrarDetalhesReuniao(agendamento);
-  return li;
-}
-
+// Mostrar detalhes da reunião
 function mostrarDetalhesReuniao(agendamento) {
   agendamentoSelecionado = agendamento;
-  document.getElementById("acoes-consultor").classList.remove("hidden");
 
+  document.getElementById("acoes-consultor").classList.remove("hidden");
   document.getElementById("det-nome").innerText = agendamento.nome;
   document.getElementById("det-cidade-estado").innerText = `${agendamento.cidade} / ${agendamento.estado}`;
   document.getElementById("det-cnpj").innerText = agendamento.cnpj;
@@ -234,26 +232,21 @@ function mostrarDetalhesReuniao(agendamento) {
   document.getElementById("det-horario").innerText = new Date(agendamento.horario).toLocaleString();
 
   const statusBox = document.getElementById("status-consultor");
+  statusBox.classList.remove("hidden");
+
   if (agendamento.respostaConsultor === "aceito") {
     statusBox.classList.remove("hidden");
-    document.getElementById("status-opcao").value = agendamento.status || "";
-    if (agendamento.status === "Não teve interesse") {
-      document.getElementById("motivo-sem-interesse").classList.remove("hidden");
-      document.getElementById("motivo-sem-interesse").value = agendamento.motivo || "";
-    } else {
-      document.getElementById("motivo-sem-interesse").classList.add("hidden");
-      document.getElementById("motivo-sem-interesse").value = "";
-    }
   } else {
     statusBox.classList.add("hidden");
   }
 }
 
+// Botões ações consultor
 document.getElementById("btn-aceitar").onclick = async () => {
   if (!agendamentoSelecionado) return;
 
   await updateDoc(doc(db, "agendamentos", agendamentoSelecionado.id), {
-    respostaConsultor: "aceito"
+    respostaConsultor: "aceito",
   });
 
   carregarReunioesConsultor();
@@ -264,7 +257,7 @@ document.getElementById("btn-transferir").onclick = async () => {
   if (!agendamentoSelecionado) return;
 
   await updateDoc(doc(db, "agendamentos", agendamentoSelecionado.id), {
-    respostaConsultor: "transferir"
+    respostaConsultor: "transferir",
   });
 
   alert("Solicitado transferência para a Angela.");
@@ -272,99 +265,125 @@ document.getElementById("btn-transferir").onclick = async () => {
   document.getElementById("acoes-consultor").classList.add("hidden");
 };
 
+// Mostrar/esconder motivo "não teve interesse"
 document.getElementById("status-opcao").onchange = (e) => {
-  const motivo = document.getElementById("motivo-sem-interesse");
-  motivo.classList.toggle("hidden", e.target.value !== "Não teve interesse");
+  const motivoInput = document.getElementById("motivo-sem-interesse");
+  if (e.target.value === "Não teve interesse") {
+    motivoInput.classList.remove("hidden");
+  } else {
+    motivoInput.classList.add("hidden");
+  }
 };
 
+// Salvar status reunião consultor
 document.getElementById("btn-enviar-status").onclick = async () => {
   if (!agendamentoSelecionado) return;
 
   const status = document.getElementById("status-opcao").value;
-  const motivo = document.getElementById("motivo-sem-interesse").value;
+  const motivo = document.getElementById("motivo-sem-interesse").value || "";
 
-  const update = { status };
-
-  if (status === "Não teve interesse") {
-    update.motivo = motivo || "Motivo não informado";
-  } else {
-    update.motivo = "";
-  }
-
-  await updateDoc(doc(db, "agendamentos", agendamentoSelecionado.id), update);
-  alert("Status atualizado com sucesso!");
-
-  carregarReunioesConsultor();
-  document.getElementById("acoes-consultor").classList.add("hidden");
-};
-
-// --- ABA DASHBOARD DA ÂNGELA ---
-async function carregarDashboardAngela() {
-  const filtroConsultor = document.getElementById("filtro-consultor-angela").value;
-  const filtroData = document.getElementById("filtro-data-angela").value;
-
-  const lista = document.getElementById("lista-dashboard-angela");
-  lista.innerHTML = "";
-
-  const agendamentosCol = collection(db, "agendamentos");
-  const snapshot = await getDocs(agendamentosCol);
-
-  snapshot.forEach(docSnap => {
-    const agendamento = { id: docSnap.id, ...docSnap.data() };
-
-    if (filtroConsultor && agendamento.consultor !== filtroConsultor) return;
-    if (filtroData && (new Date(agendamento.horario)).toISOString().slice(0, 10) !== filtroData) return;
-
-    const li = document.createElement("li");
-    li.textContent = `[${agendamento.consultor}] ${agendamento.nome} - ${new Date(agendamento.horario).toLocaleString()} - Status: ${agendamento.status || "N/A"}`;
-    lista.appendChild(li);
-  });
-}
-
-// --- ABA TRANSFERÊNCIAS PARA ÂNGELA ---
-async function carregarTransferencias() {
-  const lista = document.getElementById("lista-transferencias");
-  lista.innerHTML = "";
-
-  const snapshot = await getDocs(collection(db, "agendamentos"));
-  snapshot.forEach(docSnap => {
-    const agendamento = { id: docSnap.id, ...docSnap.data() };
-    if (agendamento.respostaConsultor === "transferir") {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <strong>${agendamento.nome}</strong> (Consultor: ${agendamento.consultor}) - ${new Date(agendamento.horario).toLocaleString()}
-        <button onclick="transferirParaOutro('${agendamento.id}')">Transferir para outro</button>
-      `;
-      lista.appendChild(li);
-    }
-  });
-}
-
-// FUNÇÃO PARA TRANSFERIR PARA OUTRO CONSULTOR (ANGELA)
-window.transferirParaOutro = async function (id) {
-  const novoConsultor = prompt("Digite o nome do consultor para transferir:");
-
-  if (!novoConsultor || !["Leticia", "Gabriel", "Glaucia", "Marcelo"].includes(novoConsultor)) {
-    alert("Consultor inválido. Tente novamente.");
+  if (!status) {
+    alert("Selecione um status!");
     return;
   }
 
-  await updateDoc(doc(db, "agendamentos", id), {
-    consultor: novoConsultor,
-    respostaConsultor: "",
-    status: "pendente"
+  await updateDoc(doc(db, "agendamentos", agendamentoSelecionado.id), {
+    status,
+    motivoNaoInteresse: motivo,
+    statusAtualizadoEm: new Date().toISOString(),
   });
 
-  alert(`Reunião transferida para ${novoConsultor} com sucesso!`);
-  carregarTransferencias();
-};
-
-// FILTROS DA ABA CONSULTOR
-document.getElementById("filtro-status-realizadas").onchange = carregarReunioesConsultor;
-document.getElementById("filtro-data-realizadas").onchange = carregarReunioesConsultor;
-
-// Seta de voltar (se precisar implementar na interface pode adicionar botão e chamar essa função)
-window.voltar = function () {
-  // pode usar para esconder detalhes ou voltar em abas, dependendo do design
+  alert("Status atualizado com sucesso!");
+  carregarReunioesConsultor();
   document.getElementById("acoes-consultor").classList.add("hidden");
+  document.getElementById("status-consultor").classList.add("hidden");
 };
+
+// --- DASHBOARD ANGELA ---
+
+async function carregarDashboardAngela() {
+  const filtroData = document.getElementById("filtro-data-angela")?.value;
+  const filtroConsultor = document.getElementById("filtro-consultor-angela")?.value;
+  const container = document.getElementById("dashboard-angela-conteudo");
+  container.innerHTML = "Carregando...";
+
+  let q = collection(db, "agendamentos");
+
+  let filtros = [];
+
+  if (filtroConsultor) {
+    filtros.push(where("consultor", "==", filtroConsultor));
+  }
+
+  if (filtroData) {
+    // Filtra agendamentos do dia escolhido (00:00 a 23:59)
+    const start = new Date(filtroData);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(filtroData);
+    end.setHours(23, 59, 59, 999);
+    filtros.push(where("horario", ">=", start.toISOString()));
+    filtros.push(where("horario", "<=", end.toISOString()));
+  }
+
+  if (filtros.length) {
+    q = query(collection(db, "agendamentos"), ...filtros);
+  }
+
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) {
+    container.innerHTML = "<p>Nenhum agendamento encontrado.</p>";
+    return;
+  }
+
+  let html = `<table class="tabela-dashboard">
+    <thead>
+      <tr>
+        <th>Consultor</th>
+        <th>Nome</th>
+        <th>Horário</th>
+        <th>Status</th>
+        <th>Resposta Consultor</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  snapshot.forEach((docSnap) => {
+    const ag = docSnap.data();
+    html += `<tr>
+      <td>${ag.consultor || ""}</td>
+      <td>${ag.nome || ""}</td>
+      <td>${new Date(ag.horario).toLocaleString()}</td>
+      <td>${ag.status || ""}</td>
+      <td>${ag.respostaConsultor || ""}</td>
+    </tr>`;
+  });
+
+  html += "</tbody></table>";
+
+  container.innerHTML = html;
+}
+
+// Filtro dashboard Angela
+window.filtrarDashboardAngela = () => {
+  carregarDashboardAngela();
+};
+
+// --- TRANSFERÊNCIAS (para Angela) ---
+
+async function carregarTransferencias() {
+  const lista = document.getElementById("lista-transferencias");
+  lista.innerHTML = "Carregando...";
+
+  const snapshot = await getDocs(query(collection(db, "agendamentos"), where("respostaConsultor", "==", "transferir")));
+
+  if (snapshot.empty) {
+    lista.innerHTML = "<p>Nenhuma transferência pendente.</p>";
+    return;
+  }
+
+  lista.innerHTML = "";
+  snapshot.forEach((docSnap) => {
+    const ag = { id: docSnap.id, ...docSnap.data() };
+
+    const div = document.createElement("div");
+    div.className
