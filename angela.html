@@ -1,1 +1,99 @@
-<!-- Página da Angela (em breve) -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Angela - Sistema de Reuniões</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script defer src="/firebase-init.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md p-6">
+      <h2 class="text-2xl font-semibold mb-4">Bem-vinda, Angela</h2>
+      <nav class="space-y-2">
+        <button onclick="showSection('agendar')" class="block w-full text-left px-4 py-2 rounded hover:bg-gray-200">Agendamentos</button>
+        <button onclick="showSection('transferencias')" class="block w-full text-left px-4 py-2 rounded hover:bg-gray-200">Transferências</button>
+        <button onclick="showSection('dashboard')" class="block w-full text-left px-4 py-2 rounded hover:bg-gray-200">Dashboard</button>
+      </nav>
+    </aside>
+
+    <!-- Conteúdo -->
+    <main class="flex-1 p-6 overflow-y-auto">
+      <!-- Seção Agendamentos -->
+      <section id="agendar" class="hidden">
+        <h2 class="text-xl font-bold mb-4">Agendar Reunião</h2>
+        <form id="form-agendar" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input type="text" name="nome" placeholder="Nome da loja" required class="border rounded p-2">
+          <input type="text" name="cidade" placeholder="Cidade" required class="border rounded p-2">
+          <input type="text" name="estado" placeholder="Estado" required class="border rounded p-2">
+          <input type="text" name="cnpj" placeholder="CNPJ" required class="border rounded p-2">
+          <input type="number" name="qtdLojas" placeholder="Quantidade de lojas" required class="border rounded p-2">
+          <input type="text" name="segmento" placeholder="Segmento da loja" class="border rounded p-2">
+          <input type="text" name="contato" placeholder="Contato do lojista" class="border rounded p-2">
+          <input type="text" name="comQuem" placeholder="Com quem vai conversar?" class="border rounded p-2">
+          <input type="text" name="link" placeholder="Link da Reunião ou telefone" class="border rounded p-2">
+          <input type="datetime-local" name="horario" placeholder="Horário da reunião" class="border rounded p-2">
+          <select name="consultor" class="border rounded p-2">
+            <option value="">Selecione o consultor</option>
+            <option value="Leticia">Leticia</option>
+            <option value="Glaucia">Glaucia</option>
+            <option value="Marcelo">Marcelo</option>
+            <option value="Gabriel">Gabriel</option>
+          </select>
+          <select name="prospeccao" class="border rounded p-2">
+            <option value="">Por onde prospectou</option>
+            <option value="Instagram">Instagram</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="Indicação">Indicação</option>
+          </select>
+          <select name="reuniaoVia" class="border rounded p-2">
+            <option value="">Por onde será a reunião</option>
+            <option value="Meet">Meet</option>
+            <option value="Ligacao">Ligação</option>
+          </select>
+          <button type="submit" class="col-span-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Agendar</button>
+        </form>
+      </section>
+
+      <!-- Seção Transferências -->
+      <section id="transferencias" class="hidden">
+        <h2 class="text-xl font-bold mb-4">Reuniões para Transferência</h2>
+        <div id="lista-transferencias" class="space-y-2"></div>
+      </section>
+
+      <!-- Seção Dashboard -->
+      <section id="dashboard" class="hidden">
+        <h2 class="text-xl font-bold mb-4">Dashboard</h2>
+        <div class="flex flex-wrap items-center gap-4 mb-4">
+          <select id="filtro-consultor" class="border rounded p-2">
+            <option value="">Todos os Consultores</option>
+            <option value="Leticia">Leticia</option>
+            <option value="Glaucia">Glaucia</option>
+            <option value="Marcelo">Marcelo</option>
+            <option value="Gabriel">Gabriel</option>
+          </select>
+          <input type="date" id="filtro-inicio" class="border rounded p-2">
+          <input type="date" id="filtro-fim" class="border rounded p-2">
+          <button onclick="aplicarFiltroDashboard()" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">Filtrar</button>
+        </div>
+        <div id="dados-dashboard"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const sections = ['agendar', 'transferencias', 'dashboard'];
+    function showSection(id) {
+      sections.forEach(s => {
+        document.getElementById(s).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+    }
+    showSection('agendar'); // mostra a primeira por padrão
+  </script>
+</body>
+</html>
