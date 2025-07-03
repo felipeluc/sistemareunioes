@@ -1,172 +1,177 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sistema de Reuniões</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+    }
+    aside.menu {
+      width: 220px;
+      background: #2c3e50;
+      color: #fff;
+      padding: 20px;
+      height: 100vh;
+    }
+    .menu-item {
+      list-style: none;
+      margin-bottom: 15px;
+    }
+    .menu-item button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #34495e;
+      color: #fff;
+      cursor: pointer;
+    }
+    .menu-item button:hover {
+      background: #1abc9c;
+    }
+    main {
+      flex: 1;
+      padding: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    .reuniao-box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .reuniao-pendente {
+      background: #fef9e7;
+      border-color: #f1c40f;
+    }
+  </style>
 </head>
 <body>
-  <div class="login-container" id="login">
-    <h2>Login</h2>
-    <select id="usuario">
-      <option value="">Selecione seu nome</option>
-      <option value="Ana Carolina">Ana Carolina</option>
-      <option value="Felipe">Felipe</option>
-      <option value="Leticia">Leticia</option>
-      <option value="Glaucia">Glaucia</option>
-      <option value="Marcelo">Marcelo</option>
-      <option value="Gabriel">Gabriel</option>
-      <option value="Angela">Angela</option>
-    </select>
-    <input type="password" id="senha" placeholder="Digite sua senha" />
-    <button onclick="fazerLogin()">Entrar</button>
-    <p id="login-erro"></p>
-  </div>
 
-  <div class="dashboard hidden" id="dashboard">
-    <aside>
-      <h3 id="bem-vindo"></h3>
-      <nav>
-        <button onclick="mostrarAba('aba-angela')" class="angela">Agendamentos</button>
-        <button onclick="mostrarAba('aba-consultor')" class="consultor">Minhas Reuniões</button>
-        <button onclick="mostrarAba('aba-fechamentos')" class="consultor">Meus Fechamentos</button>
-        <button onclick="mostrarAba('aba-gerente')" class="gerente">Painel Geral</button>
-        <button onclick="mostrarAba('aba-senhas')" class="gerente">Gerenciar Senhas</button>
-      </nav>
-    </aside>
+<aside class="menu">
+  <h2>Menu</h2>
+  <li class="menu-item angela" style="display: none;">
+    <button onclick="mostrarAba('aba-agendar')">📅 Agendar Reunião</button>
+  </li>
+  <li class="menu-item gerente" style="display: none;">
+    <button onclick="mostrarAba('aba-gerente')">📊 Painel Gerente</button>
+  </li>
+  <li class="menu-item consultor" style="display: none;">
+    <button onclick="mostrarAba('aba-consultor')">👥 Minhas Reuniões</button>
+  </li>
+  <li class="menu-item consultor" style="display: none;">
+    <button onclick="mostrarAba('aba-fechamentos')">💰 Meus Fechamentos</button>
+  </li>
+  <li class="menu-item">
+    <button onclick="location.reload()">🚪 Sair</button>
+  </li>
+</aside>
 
-    <main>
-      <!-- Tela da Angela -->
-      <section id="aba-angela" class="aba hidden">
-        <h2>Agenda da Ângela</h2>
+<main id="dashboard" class="hidden">
+  <h1 id="bem-vindo"></h1>
 
-        <form id="form-agendamento">
-          <h3>Agendar nova reunião</h3>
+  <!-- TELA 2: Ângela agendar -->
+  <section id="aba-agendar" class="aba hidden">
+    <h2>Agendar Reunião</h2>
+    <form id="form-agendamento">
+      <label>Consultor:</label>
+      <select id="agendar-consultor" required>
+        <option value="">Selecione</option>
+        <option value="Leticia">Leticia</option>
+        <option value="Gabriel">Gabriel</option>
+        <option value="Glaucia">Glaucia</option>
+        <option value="Marcelo">Marcelo</option>
+      </select><br/><br/>
+      <input id="agendar-horario" type="datetime-local" required /><br/><br/>
+      <input id="agendar-nome" placeholder="Nome" required /><br/><br/>
+      <input id="agendar-cidade" placeholder="Cidade" required /><br/><br/>
+      <input id="agendar-estado" placeholder="Estado" required /><br/><br/>
+      <input id="agendar-link" placeholder="Link da Reunião" required /><br/><br/>
+      <input id="agendar-quantidade" placeholder="Quantidade de lojas" required /><br/><br/>
+      <input id="agendar-cnpj" placeholder="CNPJ" required /><br/><br/>
+      <input id="agendar-segmento" placeholder="Segmento da loja" required /><br/><br/>
+      <input id="agendar-prospeccao" placeholder="Por onde prospectou?" required /><br/><br/>
+      <input id="agendar-meio" placeholder="Reunião por (Meet, Ligação...)" required /><br/><br/>
+      <input id="agendar-contato" placeholder="Contato do lojista" required /><br/><br/>
+      <input id="agendar-comquem" placeholder="Conversar com (Dono, gerente...)" required /><br/><br/>
+      <button type="submit">Agendar</button>
+    </form>
+    <p id="mensagem-sucesso" style="color: green;"></p>
+  </section>
 
-          <label>Para qual consultor:</label>
-          <select id="agendar-consultor" required>
-            <option value="">Selecione</option>
-            <option value="Leticia">Leticia</option>
-            <option value="Marcelo">Marcelo</option>
-            <option value="Gabriel">Gabriel</option>
-            <option value="Glaucia">Glaucia</option>
-          </select>
+  <!-- TELA 4: Painel do gerente -->
+  <section id="aba-gerente" class="aba hidden">
+    <h2>Painel dos Gerentes</h2>
+    <p>Aqui vai o painel com filtro, calendário e status geral.</p>
+  </section>
 
-          <label>Horário:</label>
-          <input type="datetime-local" id="agendar-horario" required />
+  <!-- TELA 3: Minhas reuniões (consultores) -->
+  <section id="aba-consultor" class="aba hidden">
+    <h2>Minhas Reuniões</h2>
+    <h3 style="color: #f1c40f;">🔶 Pendentes</h3>
+    <div id="reunioes-pendentes"></div>
+    <div id="acoes-consultor" class="hidden">
+      <h3>Detalhes da Reunião</h3>
+      <p><strong>Nome:</strong> <span id="det-nome"></span></p>
+      <p><strong>Cidade/Estado:</strong> <span id="det-cidade-estado"></span></p>
+      <p><strong>CNPJ:</strong> <span id="det-cnpj"></span></p>
+      <p><strong>Contato:</strong> <span id="det-contato"></span></p>
+      <p><strong>Segmento:</strong> <span id="det-segmento"></span></p>
+      <p><strong>Meio:</strong> <span id="det-meio"></span></p>
+      <p><strong>Link:</strong> <span id="det-link"></span></p>
+      <p><strong>Quem vai atender:</strong> <span id="det-comquem"></span></p>
+      <p><strong>Data e Hora:</strong> <span id="det-horario"></span></p>
+      <button id="btn-aceitar">✅ Aceitar</button>
+      <button id="btn-transferir">🔁 Transferir</button>
+    </div>
+    <div class="filtros-status hidden" id="status-consultor">
+      <h3>Status da Reunião</h3>
+      <select id="status-opcao">
+        <option value="">Selecione</option>
+        <option value="Se interessou">Se interessou</option>
+        <option value="Aguardando pagamento">Aguardando pagamento</option>
+        <option value="Aguardando documentação">Aguardando documentação</option>
+        <option value="Não teve interesse">Não teve interesse</option>
+      </select>
+      <input type="text" id="motivo-sem-interesse" placeholder="Por que não teve interesse?" class="hidden" />
+      <button id="btn-enviar-status">Salvar Status</button>
+    </div>
+    <hr />
+    <h3>✅ Hoje</h3>
+    <ul id="reunioes-hoje"></ul>
+    <h3>📆 Próximos dias</h3>
+    <ul id="reunioes-futuras"></ul>
+  </section>
 
-          <label>Nome do lojista:</label>
-          <input type="text" id="agendar-nome" required />
+  <!-- TELA EXTRA: Fechamentos -->
+  <section id="aba-fechamentos" class="aba hidden">
+    <h2>Meus Fechamentos</h2>
+    <p>Tela onde o consultor vai adicionar os fechamentos realizados.</p>
+  </section>
+</main>
 
-          <label>Cidade:</label>
-          <input type="text" id="agendar-cidade" required />
+<!-- LOGIN -->
+<section id="login">
+  <h2>Login</h2>
+  <select id="usuario">
+    <option value="Angela">Angela</option>
+    <option value="Felipe">Felipe</option>
+    <option value="Ana Carolina">Ana Carolina</option>
+    <option value="Leticia">Leticia</option>
+    <option value="Gabriel">Gabriel</option>
+    <option value="Glaucia">Glaucia</option>
+    <option value="Marcelo">Marcelo</option>
+  </select><br/><br/>
+  <input type="password" id="senha" placeholder="Digite sua senha" /><br/><br/>
+  <button onclick="fazerLogin()">Entrar</button>
+  <p id="login-erro" style="color: red;"></p>
+</section>
 
-          <label>Estado:</label>
-          <input type="text" id="agendar-estado" required />
-
-          <label>Link da reunião:</label>
-          <input type="url" id="agendar-link" />
-
-          <label>Quantidade de lojas:</label>
-          <input type="number" id="agendar-quantidade" required />
-
-          <label>CNPJ:</label>
-          <input type="text" id="agendar-cnpj" required />
-
-          <label>Segmento da loja:</label>
-          <input type="text" id="agendar-segmento" required />
-
-          <label>Por onde prospectou:</label>
-          <input type="text" id="agendar-prospeccao" />
-
-          <label>Por onde será a reunião:</label>
-          <select id="agendar-meio" required>
-            <option value="Meet">Meet</option>
-            <option value="Ligação">Ligação</option>
-            <option value="WhatsApp">WhatsApp</option>
-          </select>
-
-          <label>Contato do lojista:</label>
-          <input type="text" id="agendar-contato" required />
-
-          <label>Vai falar com:</label>
-          <select id="agendar-comquem" required>
-            <option value="Proprietário">Proprietário</option>
-            <option value="Gerente">Gerente</option>
-            <option value="Funcionário">Funcionário</option>
-          </select>
-
-          <button type="submit">Agendar Reunião</button>
-          <p id="mensagem-sucesso" style="color: green;"></p>
-        </form>
-      </section>
-
-      <!-- Tela do Consultor -->
-      <section id="aba-consultor" class="aba hidden">
-        <h2>Minhas Reuniões</h2>
-
-        <div id="reunioes-consultor"></div>
-
-        <div id="acoes-consultor" class="hidden">
-          <h3>Detalhes da Reunião</h3>
-          <p><strong>Nome:</strong> <span id="det-nome"></span></p>
-          <p><strong>Cidade/Estado:</strong> <span id="det-cidade-estado"></span></p>
-          <p><strong>CNPJ:</strong> <span id="det-cnpj"></span></p>
-          <p><strong>Contato:</strong> <span id="det-contato"></span></p>
-          <p><strong>Segmento:</strong> <span id="det-segmento"></span></p>
-          <p><strong>Meio:</strong> <span id="det-meio"></span></p>
-          <p><strong>Link:</strong> <span id="det-link"></span></p>
-          <p><strong>Quem vai atender:</strong> <span id="det-comquem"></span></p>
-          <p><strong>Data e Hora:</strong> <span id="det-horario"></span></p>
-
-          <button id="btn-aceitar">✅ Aceitar</button>
-          <button id="btn-transferir">🔁 Transferir</button>
-        </div>
-
-        <div class="filtros-status hidden" id="status-consultor">
-          <h3>Status da Reunião</h3>
-          <select id="status-opcao">
-            <option value="">Selecione</option>
-            <option value="Se interessou">Se interessou</option>
-            <option value="Aguardando pagamento">Aguardando pagamento</option>
-            <option value="Aguardando documentação">Aguardando documentação</option>
-            <option value="Não teve interesse">Não teve interesse</option>
-          </select>
-          <input
-            type="text"
-            id="motivo-sem-interesse"
-            placeholder="Por que não teve interesse?"
-            class="hidden"
-          />
-          <button id="btn-enviar-status">Salvar Status</button>
-        </div>
-
-        <hr />
-        <h3>Hoje</h3>
-        <ul id="reunioes-hoje"></ul>
-
-        <h3>Próximos dias</h3>
-        <ul id="reunioes-futuras"></ul>
-      </section>
-
-      <!-- Tela de Fechamentos -->
-      <section id="aba-fechamentos" class="aba hidden">
-        <h2>Meus Fechamentos</h2>
-      </section>
-
-      <!-- Tela do Gerente -->
-      <section id="aba-gerente" class="aba hidden">
-        <h2>Painel Gerencial</h2>
-      </section>
-
-      <!-- Tela de Senhas -->
-      <section id="aba-senhas" class="aba hidden">
-        <h2>Gerenciar Senhas</h2>
-      </section>
-    </main>
-  </div>
-
-  <script type="module" src="script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
