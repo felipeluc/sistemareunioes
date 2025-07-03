@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" >
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -12,7 +12,7 @@
   <section id="login" class="login-container">
     <h2>Sistema de Reuniões</h2>
     <label for="usuario">Usuário</label>
-    <select id="usuario" aria-label="Selecione usuário">
+    <select id="usuario">
       <option value="" disabled selected>Selecione o usuário</option>
       <option>Ana Carolina</option>
       <option>Felipe</option>
@@ -24,17 +24,16 @@
     </select>
 
     <label for="senha">Senha</label>
-    <input type="password" id="senha" placeholder="Digite sua senha" autocomplete="off" />
+    <input type="password" id="senha" placeholder="Digite sua senha" />
 
     <button id="btn-login" onclick="fazerLogin()">Entrar</button>
-
     <p id="login-erro" class="erro-msg"></p>
   </section>
 
   <!-- DASHBOARD -->
   <section id="dashboard" class="hidden">
     <header>
-      <button id="btn-menu" aria-label="Abrir menu" onclick="toggleMenu()">☰</button>
+      <button id="btn-menu" onclick="toggleMenu()">☰</button>
       <h1 id="bem-vindo"></h1>
       <button id="btn-logout" onclick="logout()">Sair</button>
     </header>
@@ -53,7 +52,7 @@
     </aside>
 
     <main>
-      <!-- Abas -->
+      <!-- Abas de conteúdo -->
       <section id="aba-dashboard-angela" class="aba hidden">
         <h2>Dashboard Angela</h2>
         <div class="filtros">
@@ -69,9 +68,7 @@
           </label>
           <button onclick="filtrarDashboardAngela()">Filtrar</button>
         </div>
-        <div id="dashboard-angela-conteudo">
-          <!-- Aqui vai os dados filtrados -->
-        </div>
+        <div id="dashboard-angela-conteudo"></div>
       </section>
 
       <section id="aba-transferencias" class="aba hidden">
@@ -108,12 +105,11 @@
 
       <section id="aba-painel-gerente" class="aba hidden">
         <h2>Painel dos Gerentes</h2>
-        <p>Aqui vai o painel com filtros e visualização geral de todas as reuniões.</p>
+        <p>Em construção... 🚧</p>
       </section>
 
       <section id="aba-minhas-reunioes" class="aba hidden">
         <h2>Minhas Reuniões</h2>
-
         <div class="filtros">
           <label>Filtrar realizadas por status:
             <select id="filtro-status-realizadas">
@@ -170,11 +166,12 @@
 
       <section id="aba-fechamentos" class="aba hidden">
         <h2>Meus Fechamentos</h2>
-        <p>Tela onde o consultor vai adicionar os fechamentos realizados.</p>
+        <p>Em breve você poderá registrar seus fechamentos aqui. 💰</p>
       </section>
     </main>
   </section>
 
+  <!-- Importar o script -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
