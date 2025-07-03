@@ -1,170 +1,85 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Angela | Comercial SouFacil</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: #f2f2f7;
-      display: flex;
-      height: 100vh;
-    }
+// script-angela.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  Timestamp
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-    .sidebar {
-      width: 260px;
-      background: #ffffff;
-      border-right: 1px solid #e0e0e0;
-      padding: 2rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      border-radius: 0 20px 20px 0;
-      box-shadow: 4px 0 12px rgba(0,0,0,0.05);
-    }
+// Configuração Firebase (já deve estar no firebase-config.js)
+import { db } from './firebase-config.js';
 
-    .sidebar h2 {
-      font-size: 1.6rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
-    }
+const form = document.getElementById("formAgendamento");
+const listaTransferencias = document.getElementById("listaTransferencias");
 
-    .sidebar button {
-      background: none;
-      border: none;
-      font-size: 1rem;
-      padding: 0.75rem 1rem;
-      border-radius: 14px;
-      text-align: left;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    .sidebar button:hover {
-      background: #007aff20;
-    }
+  const data = {
+    consultor: form.consultor.value,
+    horario: form.hora.value,
+    nomeLoja: form.nomeLoja.value,
+    cidade: form.cidade.value,
+    link: form.linkReuniao.value,
+    estado: form.estado.value,
+    qtdLojas: form.qtdLojas.value,
+    cnpj: form.cnpj.value,
+    segmento: form.segmento.value,
+    origem: form.prospeccao.value,
+    canal: form.canal.value,
+    contato: form.contato.value,
+    responsavelConversa: form.responsavelConversa.value,
+    status: "pendente",
+    criadoEm: Timestamp.now()
+  };
 
-    .sidebar button.active {
-      background: #007aff;
-      color: white;
-    }
+  try {
+    await addDoc(collection(db, "reunioes"), data);
+    alert("Reunião agendada com sucesso!");
+    form.reset();
+  } catch (err) {
+    console.error("Erro ao salvar:", err);
+    alert("Erro ao agendar reunião");
+  }
+});
 
-    .main-content {
-      flex: 1;
-      padding: 2rem;
-      overflow-y: auto;
-    }
+// Carregar transferências
+async function carregarTransferencias() {
+  listaTransferencias.innerHTML = "<p>Carregando...</p>";
+  const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
+  const snapshot = await getDocs(q);
 
-    .content-section {
-      display: none;
-    }
+  let html = "";
+  snapshot.forEach((doc) => {
+    const dados = doc.data();
+    html += `<div style="border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 12px;">
+      <strong>${dados.nomeLoja}</strong><br/>
+      ${dados.cidade} - ${dados.estado}<br/>
+      <small>${dados.horario}</small><br/>
+      <button onclick="transferirOutro('${doc.id}')">Transferir para outro</button>
+    </div>`;
+  });
 
-    .content-section.active {
-      display: block;
-    }
+  listaTransferencias.innerHTML = html || "<p>Nenhuma transferência no momento.</p>";
+}
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
+window.transferirOutro = async (idDoc) => {
+  const novo = prompt("Para qual consultor transferir?");
+  if (!novo) return;
 
-    .form-grid input,
-    .form-grid select,
-    .form-grid textarea {
-      padding: 0.75rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      background: #fff;
-    }
+  const docRef = collection(db, "reunioes");
+  const snapshot = await getDocs(query(docRef, where("status", "==", "transferencia")));
+  const docToUpdate = snapshot.docs.find(doc => doc.id === idDoc);
 
-    .form-grid button {
-      grid-column: span 2;
-      padding: 0.9rem;
-      font-size: 1rem;
-      font-weight: 500;
-      border-radius: 14px;
-      border: none;
-      background: #007aff;
-      color: white;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
+  if (docToUpdate) {
+    await docToUpdate.ref.update({ consultor: novo, status: "pendente" });
+    alert("Transferido com sucesso!");
+    carregarTransferencias();
+  }
+};
 
-    .form-grid button:hover {
-      background: #005dd9;
-    }
-  </style>
-</head>
-<body>
-  <div class="sidebar">
-    <h2>SouFacil</h2>
-    <button onclick="mostrarSecao('agendar')" class="active">Agendar Reunião</button>
-    <button onclick="mostrarSecao('transferencias')">Transferências</button>
-    <button onclick="mostrarSecao('dashboard')">Dashboard</button>
-  </div>
-
-  <div class="main-content">
-    <h1>Bem-vinda, Angela</h1>
-
-    <section id="agendar" class="content-section active">
-      <h2>Agendar Reunião</h2>
-      <form id="formAgendamento" class="form-grid">
-        <select id="consultor" required>
-          <option value="">Selecionar Consultor</option>
-          <option value="Leticia">Leticia</option>
-          <option value="Glaucia">Glaucia</option>
-          <option value="Marcelo">Marcelo</option>
-          <option value="Gabriel">Gabriel</option>
-        </select>
-        <input type="time" id="hora" placeholder="Horário" required />
-        <input type="text" id="nomeLoja" placeholder="Nome da Loja" required />
-        <input type="text" id="cidade" placeholder="Cidade" required />
-        <input type="url" id="linkReuniao" placeholder="Link da Reunião" required />
-        <input type="text" id="estado" placeholder="Estado" required />
-        <input type="number" id="qtdLojas" placeholder="Quantidade de Lojas" required />
-        <input type="text" id="cnpj" placeholder="CNPJ" required />
-        <input type="text" id="segmento" placeholder="Segmento da Loja" required />
-        <input type="text" id="prospeccao" placeholder="Origem da Prospecção" required />
-        <input type="text" id="canal" placeholder="Canal da Reunião (meet, ligação)" required />
-        <input type="text" id="contato" placeholder="Contato do Lojista" required />
-        <input type="text" id="responsavelConversa" placeholder="Vai conversar com: Proprietário, Gerente..." required />
-        <button type="submit">Agendar</button>
-      </form>
-    </section>
-
-    <section id="transferencias" class="content-section">
-      <h2>Transferências Recebidas</h2>
-      <div id="listaTransferencias">
-        <!-- Aqui aparecerão as transferências que a Angela pode reenviar -->
-      </div>
-    </section>
-
-    <section id="dashboard" class="content-section">
-      <h2>Dashboard</h2>
-      <div id="graficoReunioes"></div>
-      <div id="graficoLojas"></div>
-    </section>
-  </div>
-
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="script-angela.js"></script>
-  <script>
-    function mostrarSecao(id) {
-      document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-
-      document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
-      const buttons = document.querySelectorAll('.sidebar button');
-      if (id === 'agendar') buttons[0].classList.add('active');
-      if (id === 'transferencias') buttons[1].classList.add('active');
-      if (id === 'dashboard') buttons[2].classList.add('active');
-    }
-  </script>
-</body>
-</html>
+carregarTransferencias();
