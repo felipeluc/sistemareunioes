@@ -2,24 +2,33 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Angela | Reuniões</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Angela | SouFacil</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="page">
-    <header class="topbar">
-      <h1>SouFácil</h1>
-      <span class="user">Angela</span>
-    </header>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <h2>SouFacil</h2>
+      <nav>
+        <button onclick="mostrarSecao('agendamentos')">Agendamentos</button>
+        <button onclick="mostrarSecao('transferencias')">Transferências</button>
+        <button onclick="mostrarSecao('dashboard')">Dashboard</button>
+      </nav>
+    </aside>
 
-    <main class="content">
-      <section class="card white-card">
+    <main class="main-content">
+      <header class="header">
+        <h1>Bem-vinda, Angela</h1>
+      </header>
+
+      <section id="agendamentos" class="content-section">
         <h2>Agendar Reunião</h2>
-        <form id="formReuniao" class="form-grid">
+        <form id="formAgendamento" class="form-grid">
           <input type="text" id="nomeLoja" placeholder="Nome da Loja" required />
           <input type="text" id="segmento" placeholder="Segmento" required />
-          <input type="text" id="cidade" placeholder="Cidade" />
+          <input type="text" id="cidade" placeholder="Cidade" required />
+          <input type="text" id="estado" placeholder="Estado" required />
           <input type="date" id="data" required />
           <input type="time" id="hora" required />
           <textarea id="observacoes" placeholder="Observações"></textarea>
@@ -30,13 +39,43 @@
             <option value="Marcelo">Marcelo</option>
             <option value="Gabriel">Gabriel</option>
           </select>
-          <button type="submit" class="btn">Agendar</button>
+          <button type="submit">Agendar</button>
         </form>
       </section>
 
-      <section class="card white-card">
-        <h2>Reuniões Agendadas</h2>
-        <div id="listaReunioes" class="listagem"></div>
+      <section id="transferencias" class="content-section hidden">
+        <h2>Transferência de Reuniões</h2>
+        <form id="formTransferencia" class="form-grid">
+          <select id="consultorDestino" required>
+            <option value="">Consultor Responsável</option>
+            <option value="Leticia">Leticia</option>
+            <option value="Glaucia">Glaucia</option>
+            <option value="Marcelo">Marcelo</option>
+            <option value="Gabriel">Gabriel</option>
+          </select>
+          <input type="text" id="horario" placeholder="Horário da Reunião" required />
+          <input type="text" id="nome" placeholder="Nome da Loja" required />
+          <input type="text" id="cidadeTransferencia" placeholder="Cidade" required />
+          <input type="text" id="estadoTransferencia" placeholder="Estado" required />
+          <input type="text" id="cnpj" placeholder="CNPJ" required />
+          <input type="number" id="qtdLojas" placeholder="Quantidade de Lojas" required />
+          <input type="text" id="segmentoTransferencia" placeholder="Segmento da Loja" required />
+          <input type="text" id="prospeccao" placeholder="Origem da Prospecção" required />
+          <input type="text" id="canal" placeholder="Canal da Reunião (Meet, Ligação...)" required />
+          <input type="text" id="contato" placeholder="Contato do Lojista" required />
+          <input type="text" id="responsavel" placeholder="Com quem vai conversar (Proprietário, Gerente...)" required />
+          <button type="submit">Enviar Transferência</button>
+        </form>
+
+        <div id="transferenciasPendentes">
+          <!-- Lista de transferências não aceitas aparecerá aqui -->
+        </div>
+      </section>
+
+      <section id="dashboard" class="content-section hidden">
+        <h2>Dashboard</h2>
+        <p>Aqui você pode ver as estatísticas das reuniões.</p>
+        <!-- Estatísticas e relatórios -->
       </section>
     </main>
   </div>
