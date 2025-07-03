@@ -1,0 +1,64 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f2f2f7;
+  margin: 0;
+  padding: 0;
+  color: #1c1c1e;
+}
+
+.section {
+  max-width: 500px;
+  margin: 50px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  font-size: 16px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #005ecb;
+}
+
+.hidden {
+  display: none;
+}
+
+.erro {
+  color: red;
+  font-size: 14px;
+}
+
+.sucesso {
+  color: green;
+  font-size: 14px;
+}
+
+#menu-lateral {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+}
+
+.aba {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 16px;
+}
