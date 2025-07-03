@@ -24,7 +24,7 @@ async function carregarPendentes() {
     card.innerHTML = `
       <h3>${r.nomeLoja || 'Sem nome'}</h3>
       <p><strong>Segmento:</strong> ${r.segmento}</p>
-      <p><strong>Data:</strong> ${r.data || 'Sem data'}</p>
+      <p><strong>Data:</strong> ${r.data}</p>
       <p><strong>Horário:</strong> ${r.hora}</p>
       <button class="btn" onclick="aceitarReuniao('${docSnap.id}', '${r.data}')">Aceitar</button>
       <select class="transfer-select" onchange="transferirReuniao('${docSnap.id}', this)">
@@ -35,10 +35,12 @@ async function carregarPendentes() {
       <div class="card-details">
         <p><strong>Cidade:</strong> ${r.cidade || ''}</p>
         <p><strong>Estado:</strong> ${r.estado || ''}</p>
-        <p><strong>Link:</strong> <a href="${r.link}" target="_blank">Abrir Reunião</a></p>
+        <p><strong>Link:</strong> <a href="${r.link}" target="_blank">Abrir</a></p>
+        <p><strong>Origem:</strong> ${r.origem}</p>
+        <p><strong>Canal:</strong> ${r.canal}</p>
         <p><strong>Contato:</strong> ${r.contato}</p>
-        <p><strong>Responsável pela conversa:</strong> ${r.responsavelConversa}</p>
-        <p><strong>Origem:</strong> ${r.origem || ''}</p>
+        <p><strong>Responsável:</strong> ${r.responsavelConversa}</p>
+        <p><strong>Quantidade de Lojas:</strong> ${r.qtdLojas}</p>
         <p><strong>Criado em:</strong> ${new Date(r.criadoEm?.seconds * 1000).toLocaleString()}</p>
       </div>
     `;
@@ -51,17 +53,11 @@ window.abrirCard = (btn) => {
   card.classList.toggle('open');
 };
 
-window.aceitarReuniao = async (id, data) => {
-  const hoje = new Date();
-  const dataReuniao = new Date(data);
-  let status = 'agendado';
-  if (dataReuniao.toDateString() === hoje.toDateString()) {
-    status = 'dia';
-  } else if (dataReuniao > hoje) {
-    status = 'proximos';
-  }
+window.aceitarReuniao = async (id, dataAgendada) => {
   const ref = doc(db, 'reunioes', id);
-  await updateDoc(ref, { status });
+  const hoje = new Date().toISOString().split('T')[0];
+  const status = dataAgendada === hoje ? 'hoje' : 'futuro';
+  await updateDoc(ref, { status: 'agendado' });
   carregarPendentes();
   carregarAgendadas();
 };
@@ -76,9 +72,11 @@ window.transferirReuniao = async (id, selectElement) => {
 };
 
 async function carregarAgendadas() {
-  const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName), where("status", "in", ["agendado", "dia", "proximos"])));
+  const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName), where("status", "==", "agendado")));
   const container = document.getElementById('reunioesAgendadas');
   container.innerHTML = '';
+  const hoje = new Date().toISOString().split('T')[0];
+
   snapshot.forEach(docSnap => {
     const r = docSnap.data();
     const card = document.createElement('div');
@@ -96,7 +94,11 @@ async function carregarAgendadas() {
         <option value="aguardando_documentacao">Aguardando documentação</option>
       </select>
     `;
-    container.appendChild(card);
+    if (r.data === hoje) {
+      document.getElementById('reunioesHoje').appendChild(card);
+    } else {
+      container.appendChild(card);
+    }
   });
 }
 
@@ -124,7 +126,7 @@ async function carregarRealizadas() {
         <div class="card-details">
           <p><strong>Segmento:</strong> ${r.segmento}</p>
           <p><strong>Cidade:</strong> ${r.cidade}</p>
-          <p><strong>Observações:</strong> ${r.observacoes}</p>
+          <p><strong>Observações:</strong> ${r.observacoes || ''}</p>
           <select onchange="alterarStatus('${docSnap.id}', this.value)" class="status-select">
             <option value="">Editar status</option>
             <option value="fechou">Fechou</option>
