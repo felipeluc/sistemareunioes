@@ -1,174 +1,111 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Consultores - SouFácil</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Inter', sans-serif;
-    }
-    body {
-      display: flex;
-      height: 100vh;
-      background-color: #f5f5f7;
-    }
-    .sidebar {
-      width: 250px;
-      background-color: #ffffff;
-      padding: 20px;
-      border-right: 1px solid #ddd;
-    }
-    .sidebar h2 {
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
-    .sidebar button {
-      display: block;
-      width: 100%;
-      padding: 10px 15px;
-      margin-bottom: 10px;
-      border: none;
-      background-color: #f1f1f1;
-      border-radius: 8px;
-      text-align: left;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .sidebar button:hover {
-      background-color: #e0e0e0;
-    }
-    .content {
-      flex: 1;
-      padding: 30px;
-    }
-    .header {
-      font-size: 24px;
-      margin-bottom: 30px;
-    }
-    .section {
-      display: none;
-    }
-    .section.active {
-      display: block;
-    }
-    .card {
-      background: #fff;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 16px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.05);
-    }
-    .card h3 {
-      margin-bottom: 10px;
-    }
-    .status-select, .filter-date {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      margin-right: 10px;
-    }
-    .btn {
-      padding: 10px 15px;
-      background: #007aff;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .btn:hover {
-      background: #005fd0;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel do Consultor</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <div class="sidebar">
-    <h2>Bem-vindo(a) <span id="userName">Consultor</span></h2>
-    <button onclick="showSection('pendentes')">Pendentes</button>
-    <button onclick="showSection('agendadas')">Hoje / Próximos Dias</button>
-    <button onclick="showSection('realizadas')">Realizadas</button>
-    <button onclick="showSection('fechamentos')">Meus Fechamentos</button>
-    <button onclick="showSection('dashboard')">Dashboard</button>
-  </div>
-  <div class="content">
-    <div id="pendentes" class="section active">
-      <div class="header">Reuniões Pendentes</div>
-      <div class="card">
-        <h3>Nome da Loja</h3>
-        <p>Informações da reunião...</p>
-        <button class="btn">Aceitar</button>
-        <button class="btn">Transferir</button>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="avatar">
+        <img src="https://ui-avatars.com/api/?name=Consultor" alt="Avatar">
+        <span id="consultor-nome">Consultor</span>
       </div>
-    </div>
+      <nav>
+        <ul>
+          <li onclick="showSection('pendentes')">Pendentes</li>
+          <li onclick="showSection('hoje')">Hoje</li>
+          <li onclick="showSection('proximos')">Próximos Dias</li>
+          <li onclick="showSection('realizadas')">Realizadas</li>
+          <li onclick="showSection('fechamentos')">Meus Fechamentos</li>
+          <li onclick="showSection('dashboard')">Dashboard</li>
+        </ul>
+      </nav>
+    </aside>
 
-    <div id="agendadas" class="section">
-      <div class="header">Hoje / Próximos Dias</div>
-      <div class="card">
-        <h3>Nome da Loja</h3>
-        <select class="status-select">
-          <option value="">Status</option>
-          <option>Fechou</option>
-          <option>Não teve interesse</option>
-          <option>Aguardando pagamento</option>
-          <option>Aguardando documentação</option>
-        </select>
-        <button class="btn">Salvar Status</button>
-      </div>
-    </div>
+    <main class="content">
+      <section id="pendentes" class="section active">
+        <h2>Reuniões Pendentes</h2>
+        <div id="listaPendentes"></div>
+      </section>
 
-    <div id="realizadas" class="section">
-      <div class="header">Reuniões Realizadas</div>
-      <div>
-        <input type="date" class="filter-date">
-        <select class="status-select">
-          <option value="">Filtrar Status</option>
-          <option>Fechou</option>
-          <option>Não teve interesse</option>
-          <option>Aguardando pagamento</option>
-          <option>Aguardando documentação</option>
-        </select>
-      </div>
-      <div class="card">
-        <h3>Loja XPTO</h3>
-        <p>Status: Fechou</p>
-        <button class="btn">Editar Status</button>
-      </div>
-    </div>
+      <section id="hoje" class="section">
+        <h2>Reuniões de Hoje</h2>
+        <div id="listaHoje"></div>
+      </section>
 
-    <div id="fechamentos" class="section">
-      <div class="header">Meus Fechamentos</div>
-      <button class="btn">Adicionar Fechamento</button>
-      <div class="card">
-        <h3>Loja XPTO</h3>
-        <p>Data: 01/07/2025</p>
-        <p>Estado: SP</p>
-        <p>Adesão: R$ 1500</p>
-      </div>
-    </div>
+      <section id="proximos" class="section">
+        <h2>Próximas Reuniões</h2>
+        <div id="listaProximos"></div>
+      </section>
 
-    <div id="dashboard" class="section">
-      <div class="header">Dashboard</div>
-      <div>
-        <input type="date" class="filter-date">
-      </div>
-      <div class="card">
-        <h3>Total de Fechamentos: 3</h3>
-        <h3>Estado com mais vendas: SP</h3>
-        <h3>Valor total de adesão: R$ 4.500,00</h3>
-      </div>
-    </div>
+      <section id="realizadas" class="section">
+        <h2>Reuniões Realizadas</h2>
+        <div class="filtros">
+          <input type="date" id="filtroDataRealizadas">
+          <select id="filtroStatus">
+            <option value="">Todos os Status</option>
+            <option value="fechou">Fechou</option>
+            <option value="sem_interesse">Sem Interesse</option>
+            <option value="aguardando_doc">Aguardando Documentação</option>
+            <option value="aguardando_pg">Aguardando Pagamento</option>
+          </select>
+        </div>
+        <div id="listaRealizadas"></div>
+      </section>
+
+      <section id="fechamentos" class="section">
+        <h2>Meus Fechamentos</h2>
+        <button onclick="abrirFormularioFechamento()">Adicionar Fechamento</button>
+        <div id="listaFechamentos"></div>
+      </section>
+
+      <section id="dashboard" class="section">
+        <h2>Meu Dashboard</h2>
+        <input type="date" id="filtroInicioDashboard">
+        <input type="date" id="filtroFimDashboard">
+        <div id="resumoDashboard"></div>
+      </section>
+    </main>
   </div>
 
-  <script>
-    function showSection(id) {
-      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-    document.getElementById("userName").textContent = localStorage.getItem("user") || "Consultor";
-  </script>
+  <div id="modalFechamento" class="modal hidden">
+    <div class="modal-content">
+      <h3>Novo Fechamento</h3>
+      <form id="formFechamento">
+        <input type="text" placeholder="Nome do lojista" required>
+        <input type="text" placeholder="Contato" required>
+        <input type="text" placeholder="Cidade" required>
+        <select required>
+          <option value="">Estado</option>
+          <option value="SP">SP</option>
+          <option value="RJ">RJ</option>
+          <!-- adicionar todos estados -->
+        </select>
+        <input type="number" placeholder="Qtd de lojas" required>
+        <input type="text" placeholder="CNPJ" required>
+        <input type="number" placeholder="Faturamento bruto" required>
+        <select required>
+          <option value="">Tem crediário?</option>
+          <option value="sim">Sim</option>
+          <option value="nao">Não</option>
+        </select>
+        <input type="number" placeholder="Fatura em crediário" required>
+        <select required>
+          <option value="">Origem</option>
+          <option value="proprio">Prospecção própria</option>
+          <option value="angela">Angela</option>
+          <option value="indicacao">Indicação</option>
+        </select>
+        <input type="number" placeholder="Valor da adesão" required>
+        <button type="submit">Salvar</button>
+        <button type="button" onclick="fecharFormularioFechamento()">Cancelar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js" type="module"></script>
 </body>
 </html>
