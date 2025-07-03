@@ -10,6 +10,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       background: #f3f4f6;
+      height: 100vh;
     }
     aside.menu {
       width: 240px;
@@ -18,6 +19,9 @@
       padding: 30px 20px;
       height: 100vh;
       box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      display: none; /* esconde menu até login */
+      flex-direction: column;
+      justify-content: space-between;
     }
     .menu-item {
       list-style: none;
@@ -41,6 +45,8 @@
       flex: 1;
       padding: 30px;
       background: #f9fafb;
+      overflow-y: auto;
+      display: none; /* esconde conteúdo até login */
     }
     .hidden {
       display: none;
@@ -59,6 +65,7 @@
       border-radius: 6px;
       border: 1px solid #d1d5db;
       width: 100%;
+      box-sizing: border-box;
     }
     button[type="submit"], .aba button {
       background: #2563eb;
@@ -75,6 +82,7 @@
       padding: 12px 15px;
       border-radius: 10px;
       margin-bottom: 10px;
+      cursor: pointer;
     }
     .reuniao-pendente {
       border-left-color: #facc15;
@@ -83,15 +91,38 @@
     .reuniao-realizada {
       border-left-color: #10b981;
       background: #ecfdf5;
+      cursor: default;
     }
     h2, h3 {
       margin-top: 0;
     }
+
+    /* Login centralizado */
+    #login {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      width: 100vw;
+      background: #f3f4f6;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 10;
+    }
+    #login > div {
+      max-width: 400px;
+      width: 100%;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
   </style>
 </head>
 <body>
 
-<aside class="menu">
+<aside class="menu" id="menu-lateral">
   <h2 style="color: #fff;">Menu</h2>
   <li class="menu-item angela" style="display: none;">
     <button onclick="mostrarAba('aba-agendar')">📅 Agendar Reunião</button>
@@ -106,11 +137,14 @@
     <button onclick="mostrarAba('aba-fechamentos')">💰 Meus Fechamentos</button>
   </li>
   <li class="menu-item">
-    <button onclick="location.reload()">🚪 Sair</button>
+    <button onclick="logout()">🚪 Sair</button>
+  </li>
+  <li class="menu-item">
+    <button onclick="voltarAba()">⬅️ Voltar</button>
   </li>
 </aside>
 
-<main id="dashboard" class="hidden">
+<main id="dashboard">
   <h1 id="bem-vindo"></h1>
 
   <!-- TELA ÂNGELA -->
@@ -138,7 +172,6 @@
       <input id="agendar-comquem" placeholder="Conversar com (Dono, gerente...)" required />
       <button type="submit">Agendar</button>
     </form>
-    <p id="mensagem-sucesso" style="color: green;"></p>
   </section>
 
   <!-- TELA GERENTE -->
@@ -202,7 +235,7 @@
 
 <!-- LOGIN -->
 <section id="login">
-  <div style="max-width: 400px; margin: 80px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+  <div>
     <h2 style="text-align: center;">Login</h2>
     <select id="usuario">
       <option value="Angela">Angela</option>
@@ -219,6 +252,154 @@
   </div>
 </section>
 
-<script type="module" src="script.js"></script>
-</body>
-</html>
+<script>
+  const usuarios = {
+    Angela: { senha: "123", perfil: "angela" },
+    Felipe: { senha: "123", perfil: "gerente" },
+    "Ana Carolina": { senha: "123", perfil: "gerente" },
+    Leticia: { senha: "123", perfil: "consultor" },
+    Gabriel: { senha: "123", perfil: "consultor" },
+    Glaucia: { senha: "123", perfil: "consultor" },
+    Marcelo: { senha: "123", perfil: "consultor" }
+  };
+
+  let reunioes = [];
+  let abaAtual = null;
+  let usuarioLogado = null;
+  let historicoAbas = [];
+
+  const elementos = {
+    login: document.getElementById("login"),
+    dashboard: document.getElementById("dashboard"),
+    bemVindo: document.getElementById("bem-vindo"),
+    menu: document.getElementById("menu-lateral"),
+    menuItens: document.querySelectorAll(".menu-item"),
+    abas: {
+      agendar: document.getElementById("aba-agendar"),
+      gerente: document.getElementById("aba-gerente"),
+      consultor: document.getElementById("aba-consultor"),
+      fechamentos: document.getElementById("aba-fechamentos")
+    },
+    reunioesPendentes: document.getElementById("reunioes-pendentes"),
+    reunioesHoje: document.getElementById("reunioes-hoje"),
+    reunioesFuturas: document.getElementById("reunioes-futuras"),
+    reunioesRealizadas: document.getElementById("reunioes-realizadas"),
+    acoesConsultor: document.getElementById("acoes-consultor"),
+    statusConsultor: document.getElementById("status-consultor"),
+    motivoSemInteresse: document.getElementById("motivo-sem-interesse"),
+    formAgendamento: document.getElementById("form-agendamento")
+  };
+
+  // Login
+  function fazerLogin() {
+    const nome = document.getElementById("usuario").value;
+    const senha = document.getElementById("senha").value;
+    const erro = document.getElementById("login-erro");
+
+    if (usuarios[nome] && usuarios[nome].senha === senha) {
+      usuarioLogado = { nome, perfil: usuarios[nome].perfil };
+      erro.textContent = "";
+      mostrarDashboard();
+    } else {
+      erro.textContent = "Usuário ou senha incorretos";
+    }
+  }
+
+  function mostrarDashboard() {
+    elementos.login.style.display = "none";
+    elementos.dashboard.style.display = "block";
+    elementos.menu.style.display = "flex";
+
+    // Mostrar menu conforme perfil
+    elementos.menuItens.forEach((item) => (item.style.display = "none"));
+    if (usuarioLogado.perfil === "angela") {
+      document.querySelector(".menu-item.angela").style.display = "block";
+    }
+    if (usuarioLogado.perfil === "gerente") {
+      document.querySelector(".menu-item.gerente").style.display = "block";
+    }
+    if (usuarioLogado.perfil === "consultor") {
+      document.querySelectorAll(".menu-item.consultor").forEach((el) => (el.style.display = "block"));
+    }
+
+    elementos.bemVindo.textContent = `Olá, ${usuarioLogado.nome}!`;
+
+    // Começar na primeira aba conforme perfil
+    if (usuarioLogado.perfil === "angela") mostrarAba("aba-agendar");
+    else if (usuarioLogado.perfil === "gerente") mostrarAba("aba-gerente");
+    else if (usuarioLogado.perfil === "consultor") mostrarAba("aba-consultor");
+  }
+
+  // Controle histórico de abas para "voltar"
+  function mostrarAba(id) {
+    if (abaAtual && abaAtual !== id) historicoAbas.push(abaAtual);
+
+    // Esconde todas as abas
+    Object.values(elementos.abas).forEach((aba) => aba.classList.add("hidden"));
+    // Esconde detalhes, status, etc
+    elementos.acoesConsultor.classList.add("hidden");
+    elementos.statusConsultor.classList.add("hidden");
+    elementos.motivoSemInteresse.classList.add("hidden");
+
+    // Mostrar aba selecionada
+    const aba = elementos.abas[id.replace("aba-", "")];
+    if (aba) aba.classList.remove("hidden");
+    abaAtual = id;
+
+    // Atualiza listas se for consultor
+    if (id === "aba-consultor") {
+      atualizarListasConsultor();
+    }
+  }
+
+  // Botão voltar
+  function voltarAba() {
+    if (historicoAbas.length === 0) return;
+    const anterior = historicoAbas.pop();
+    mostrarAba(anterior);
+  }
+
+  // Função para atualizar as listas de reuniões para consultor
+  function atualizarListasConsultor() {
+    elementos.reunioesPendentes.innerHTML = "";
+    elementos.reunioesHoje.innerHTML = "";
+    elementos.reunioesFuturas.innerHTML = "";
+    elementos.reunioesRealizadas.innerHTML = "";
+
+    // Filtrar reuniões do consultor logado
+    const minhasReunioes = reunioes.filter(r => r.consultor === usuarioLogado.nome);
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    minhasReunioes.forEach(reuniao => {
+      const dataHora = new Date(reuniao.horario);
+      const item = document.createElement("li");
+      item.className = "reuniao-box " + (reuniao.statusReuniao === "realizada" ? "reuniao-realizada" : "reuniao-pendente");
+      item.textContent = `${reuniao.nome} - ${dataHora.toLocaleString()}`;
+      item.onclick = () => mostrarDetalhes(reuniao);
+
+      if (reuniao.statusReuniao === "realizada") {
+        elementos.reunioesRealizadas.appendChild(item);
+      } else {
+        // Pendentes, Hoje, Próximos Dias
+        if (dataHora.toDateString() === hoje.toDateString()) {
+          elementos.reunioesHoje.appendChild(item);
+        } else if (dataHora > hoje) {
+          elementos.reunioesFuturas.appendChild(item);
+        } else {
+          elementos.reunioesPendentes.appendChild(item);
+        }
+      }
+    });
+  }
+
+  let reuniaoSelecionada = null;
+
+  // Mostrar detalhes da reunião e controlar visibilidade do status
+  function mostrarDetalhes(reuniao) {
+    reuniaoSelecionada = reuniao;
+
+    elementos.acoesConsultor.classList.remove("hidden");
+    document.getElementById("det-nome").textContent = reuniao.nome;
+    document.getElementById("det-cidade-estado").textContent = reuniao.cidade
