@@ -2,114 +2,113 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Consultor | Comercial SouFacil</title>
   <link rel="stylesheet" href="style.css" />
   <style>
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: #f2f2f7;
-      display: flex;
-      height: 100vh;
     }
 
-    .sidebar {
-      width: 260px;
-      background: #ffffff;
-      border-right: 1px solid #e0e0e0;
-      padding: 2rem 1rem;
+    header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      font-weight: 500;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      z-index: 10;
+    }
+
+    .menu {
       display: flex;
-      flex-direction: column;
       gap: 1rem;
-      border-radius: 0 20px 20px 0;
-      box-shadow: 4px 0 12px rgba(0,0,0,0.05);
+      padding: 1rem 2rem;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
     }
 
-    .sidebar h2 {
-      font-size: 1.6rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
-    }
-
-    .sidebar button {
+    .menu button {
       background: none;
       border: none;
-      font-size: 1rem;
-      padding: 0.75rem 1rem;
-      border-radius: 14px;
-      text-align: left;
+      font-weight: 500;
       cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
       transition: background 0.2s ease;
     }
 
-    .sidebar button:hover {
-      background: #007aff20;
-    }
-
-    .sidebar button.active {
+    .menu button:hover,
+    .menu button.active {
       background: #007aff;
       color: white;
     }
 
-    .main-content {
-      flex: 1;
-      padding: 2rem;
-      overflow-y: auto;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 1rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-      margin-bottom: 1rem;
-    }
-
-    .card h4 {
-      margin: 0.5rem 0;
-    }
-
-    .card button {
-      margin-right: 0.5rem;
-      margin-top: 0.5rem;
-    }
-
     .section {
       display: none;
+      padding: 2rem;
     }
 
     .section.active {
       display: block;
     }
 
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+    }
+
+    .card-details {
+      display: none;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .card.open .card-details {
+      display: block;
+    }
+
+    .btn, .status-select, .transfer-select {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+
+    .status-select, .transfer-select {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+
+    input, select {
+      padding: 0.6rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .form-grid input,
-    .form-grid select {
-      padding: 0.75rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      background: #fff;
     }
 
     .form-grid button {
       grid-column: span 2;
-      padding: 0.9rem;
-      font-size: 1rem;
-      font-weight: 500;
-      border-radius: 14px;
-      border: none;
       background: #007aff;
       color: white;
+      font-weight: 500;
+      border: none;
+      padding: 0.9rem;
+      border-radius: 14px;
       cursor: pointer;
-      transition: background 0.2s ease;
     }
 
     .form-grid button:hover {
@@ -118,78 +117,81 @@
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <h2>SouFacil</h2>
-    <button onclick="mostrarSecao('reunioes')" class="active">Reuniões</button>
-    <button onclick="mostrarSecao('fechamentos')">Fechamentos</button>
+  <header>
+    Bem-vindo(a), <span id="userName">Consultor</span>
+  </header>
+
+  <div class="menu">
+    <button onclick="showSection('pendentes')" class="active">Pendentes</button>
+    <button onclick="showSection('agendadas')">Agendadas</button>
+    <button onclick="showSection('realizadas')">Realizadas</button>
+    <button onclick="showSection('fechamentos')">Fechamentos</button>
+    <button onclick="showSection('dashboard')">Dashboard</button>
   </div>
 
-  <div class="main-content">
-    <h1 id="boasVindas">Bem-vindo(a),</h1>
+  <section id="pendentes" class="section active">
+    <h2>Reuniões Pendentes</h2>
+    <div id="reunioesPendentes"></div>
+  </section>
 
-    <section id="reunioes" class="section active">
-      <h2>Reuniões Pendentes</h2>
-      <div id="listaReunioes"></div>
+  <section id="agendadas" class="section">
+    <h2>Reuniões Agendadas</h2>
+    <div id="reunioesAgendadas"></div>
+  </section>
 
-      <h2 style="margin-top:2rem;">Reuniões do Dia</h2>
-      <div id="reunioesDia"></div>
+  <section id="realizadas" class="section">
+    <h2>Reuniões Realizadas</h2>
+    <div id="reunioesRealizadas"></div>
+  </section>
 
-      <h2 style="margin-top:2rem;">Próximos Dias</h2>
-      <div id="reunioesProximas"></div>
-    </section>
+  <section id="fechamentos" class="section">
+    <h2>Fechamentos</h2>
+    <form class="form-grid">
+      <input type="text" id="nomeLojista" placeholder="Nome do Lojista" required />
+      <input type="text" id="contato" placeholder="Contato" required />
+      <input type="text" id="cidade" placeholder="Cidade" required />
+      <select id="estado">
+        <option value="">Estado</option>
+        <option value="SP">SP</option>
+        <option value="RJ">RJ</option>
+        <option value="MG">MG</option>
+        <!-- Adicione mais estados se quiser -->
+      </select>
+      <input type="number" id="qtdLojas" placeholder="Quantidade de Lojas" required />
+      <input type="text" id="cnpj" placeholder="CNPJ" required />
+      <input type="number" id="faturamento" placeholder="Faturamento Bruto" required />
+      <select id="temCrediario">
+        <option value="">Tem crediário?</option>
+        <option value="Sim">Sim</option>
+        <option value="Não">Não</option>
+      </select>
+      <input type="number" id="valorCrediario" placeholder="Valor do crediário" required />
+      <input type="text" id="origem" placeholder="Origem (Angela, indicação...)" required />
+      <input type="number" id="valorAdesao" placeholder="Valor da Adesão" required />
+      <button type="button" onclick="salvarFechamento()">Salvar Fechamento</button>
+    </form>
+  </section>
 
-    <section id="fechamentos" class="section">
-      <h2>Fechamentos</h2>
-      <button onclick="abrirFormFechamento()">Novo Fechamento</button>
-      <div id="formFechamento" style="margin-top: 1rem; display: none;">
-        <form class="form-grid" onsubmit="salvarFechamento(event)">
-          <input type="text" id="lojista" placeholder="Nome do Lojista" required />
-          <input type="text" id="contato" placeholder="Contato" required />
-          <input type="text" id="cidade" placeholder="Cidade" required />
-          <select id="estado" required>
-            <option value="">Estado</option>
-            <option value="SP">SP</option>
-            <option value="RJ">RJ</option>
-            <option value="MG">MG</option>
-            <option value="BA">BA</option>
-          </select>
-          <input type="number" id="qtdLojas" placeholder="Quantidade de Lojas" required />
-          <input type="text" id="cnpj" placeholder="CNPJ" required />
-          <input type="number" id="faturamento" placeholder="Faturamento Bruto" required />
-          <select id="crediario" required>
-            <option value="">Tem Crediário?</option>
-            <option value="Sim">Sim</option>
-            <option value="Não">Não</option>
-          </select>
-          <input type="number" id="valorCrediario" placeholder="Valor do Crediário (0 se não tiver)" required />
-          <select id="origem" required>
-            <option value="">Veio por onde?</option>
-            <option value="Própria">Prospecção Própria</option>
-            <option value="Angela">Angela</option>
-            <option value="Indicação">Indicação</option>
-          </select>
-          <input type="number" id="adesao" placeholder="Valor de Adesão Cobrado" required />
-          <button type="submit">Salvar Fechamento</button>
-        </form>
-      </div>
-      <div id="listaFechamentos" style="margin-top: 1rem;"></div>
-    </section>
-  </div>
+  <section id="dashboard" class="section">
+    <h2>Dashboard</h2>
+    <label>Data Início: <input type="date" id="dataInicio" /></label>
+    <label>Data Fim: <input type="date" id="dataFim" /></label>
+    <button onclick="carregarDashboard()">Filtrar</button>
+    <div id="infoDashboard" style="margin-top: 1rem;"></div>
+  </section>
 
-  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="firebase.js"></script>
   <script type="module" src="consultor.js"></script>
   <script>
-    function mostrarSecao(id) {
+    function showSection(id) {
       document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(id).classList.add('active');
 
-      document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
-      if (id === 'reunioes') document.querySelectorAll('.sidebar button')[0].classList.add('active');
-      if (id === 'fechamentos') document.querySelectorAll('.sidebar button')[1].classList.add('active');
-    }
-
-    function abrirFormFechamento() {
-      document.getElementById("formFechamento").style.display = "block";
+      document.querySelectorAll('.menu button').forEach(btn => btn.classList.remove('active'));
+      const buttons = document.querySelectorAll('.menu button');
+      const ids = ['pendentes', 'agendadas', 'realizadas', 'fechamentos', 'dashboard'];
+      const index = ids.indexOf(id);
+      if (index !== -1) buttons[index].classList.add('active');
     }
   </script>
 </body>
