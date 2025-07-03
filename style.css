@@ -1,77 +1,118 @@
-body {
+/* Reset e base */
+* {
+  box-sizing: border-box;
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
+  padding: 0;
 }
-
-.login-container {
-  max-width: 400px;
-  margin: 80px auto;
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
-}
-
-input, select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 15px;
-  background: #0066ff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #004ccc;
-}
-
-.dashboard {
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f2f2f7;
   display: flex;
   height: 100vh;
 }
 
+/* Sidebar */
 aside {
-  width: 250px;
-  background: #003366;
-  color: white;
-  padding: 20px;
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid #d1d1d6;
+  padding: 30px 20px;
+  display: none;
+  flex-direction: column;
 }
-
-aside h3 {
-  margin-bottom: 30px;
-}
-
-aside nav button {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
-  background: transparent;
+nav button {
+  background: none;
   border: none;
-  color: white;
+  width: 100%;
   text-align: left;
-  padding: 10px;
-  cursor: pointer;
+  padding: 12px;
+  margin-bottom: 8px;
+  font-size: 17px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+nav button:hover {
+  background: #f2f2f7;
 }
 
-aside nav button:hover {
-  background: #005599;
-}
-
+/* Main */
 main {
   flex: 1;
-  padding: 30px;
+  padding: 40px;
+  display: none;
   overflow-y: auto;
 }
 
+/* Abas / seções */
+.aba {
+  background: #ffffff;
+  padding: 30px;
+  margin-bottom: 25px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Inputs e botões */
+input, select, button {
+  font-family: inherit;
+  font-size: 16px;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #c7c7cc;
+  border-radius: 8px;
+}
+button {
+  background: #0071e3;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+button:hover {
+  opacity: 0.9;
+}
+
+/* Reuniões */
+.reuniao-box {
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 12px 18px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.reuniao-box:hover {
+  background: #f2f2f7;
+}
+.status-badge {
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: #ffd60a;
+  color: #1c1c1e;
+}
+
+/* Login */
+#login {
+  position: fixed;
+  inset: 0;
+  background: rgba(242,242,247,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.login-container {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* Ocultos */
 .hidden {
-  display: none;
+  display: none !important;
 }
