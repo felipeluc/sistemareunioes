@@ -140,3 +140,68 @@ function salvarStatus() {
 window.filtrarDashboardAngela = function () {
   alert("Filtro aplicado (implementar Firebase)");
 };
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+
+// Carregar reuniões do consultor logado
+function carregarReunioesConsultor() {
+  const consultor = usuarioLogado;
+  const reunioesRef = collection(db, "reunioes");
+  const q = query(reunioesRef, where("consultor", "==", consultor));
+
+  onSnapshot(q, (snapshot) => {
+    const hoje = new Date().toISOString().slice(0, 10);
+    const pendentes = [];
+    const hojeReunioes = [];
+    const futuras = [];
+    const realizadas = [];
+
+    snapshot.forEach((doc) => {
+      const dados = doc.data();
+      const horario = dados.horario?.slice(0, 10);
+      const status = dados.status || "pendente";
+      const itemHTML = `
+        <li onclick="mostrarDetalhesReuniao('${doc.id}')">
+          <strong>${dados.nome}</strong> - ${dados.cidade}/${dados.estado} - ${dados.horario.slice(11, 16)}
+        </li>
+      `;
+
+      if (status === "pendente") {
+        pendentes.push(itemHTML);
+      } else if (horario === hoje) {
+        hojeReunioes.push(itemHTML);
+      } else if (horario > hoje) {
+        futuras.push(itemHTML);
+      } else {
+        realizadas.push(itemHTML);
+      }
+    });
+
+    document.getElementById("reunioes-pendentes").innerHTML = pendentes.join("");
+    document.getElementById("reunioes-hoje").innerHTML = hojeReunioes.join("");
+    document.getElementById("reunioes-futuras").innerHTML = futuras.join("");
+    document.getElementById("reunioes-realizadas").innerHTML = realizadas.join("");
+  });
+}
+
+// Mostrar detalhes da reunião ao clicar
+window.mostrarDetalhesReuniao = async function (id) {
+  const docRef = await db.collection("reunioes").doc(id).get();
+  const dados = docRef.data();
+  if (!dados) return;
+
+  document.getElementById("acoes-consultor").classList.remove("hidden");
+  document.getElementById("status-consultor").classList.remove("hidden");
+
+  document.getElementById("det-nome").textContent = dados.nome;
+  document.getElementById("det-cidade-estado").textContent = `${dados.cidade}/${dados.estado}`;
+  document.getElementById("det-cnpj").textContent = dados.cnpj;
+  document.getElementById("det-contato").textContent = dados.contato;
+  document.getElementById("det-segmento").textContent = dados.segmento;
+  document.getElementById("det-meio").textContent = dados.meio;
+  document.getElementById("det-link").textContent = dados.link;
+  document.getElementById("det-comquem").textContent = dados.comquem;
+  document.getElementById("det-horario").textContent = dados.horario;
+
+  // Salvar ID atual para alterações
+  document.getElementById("btn-enviar-status").dataset.id = id;
+};
