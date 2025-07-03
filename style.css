@@ -1,229 +1,97 @@
-/* Reset e base */
-body, h1, h2, h3, h4, h5, h6, p, ul {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  background: #f1f5f9;
-  color: #111827;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background: #f4f6f8;
+  color: #1c1c1e;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Login */
+/* LOGIN */
 .tela-login {
   height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background: #f8fafc;
+  align-items: center;
 }
-
 .login-box {
-  background: white;
-  padding: 40px 30px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  padding: 40px 40px 50px 40px;
+  border-radius: 20px;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.12);
+  max-width: 360px;
   width: 100%;
-  max-width: 400px;
+  box-sizing: border-box;
 }
-
 .login-box h2 {
+  margin-bottom: 30px;
+  font-weight: 600;
+  font-size: 1.8rem;
   text-align: center;
-  margin-bottom: 20px;
-  color: #111827;
 }
-
 .login-box select,
 .login-box input {
   width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  margin-bottom: 15px;
-  font-size: 16px;
-  background-color: #f9fafb;
+  padding: 14px 15px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  border: 1.5px solid #ccc;
+  font-size: 1rem;
+  outline-offset: 2px;
+  transition: border-color 0.3s ease;
 }
-
+.login-box select:focus,
+.login-box input:focus {
+  border-color: #007aff;
+}
 .login-box button {
   width: 100%;
-  padding: 12px;
-  background: #2563eb;
-  border: none;
+  padding: 14px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: #007aff;
   color: white;
-  border-radius: 10px;
-  font-size: 16px;
+  border: none;
+  border-radius: 14px;
   cursor: pointer;
-  transition: 0.3s ease;
+  transition: background-color 0.3s ease;
 }
-
 .login-box button:hover {
-  background: #1e40af;
+  background: #005ecb;
 }
-
-.erro-login {
-  color: red;
+.erro-msg {
+  color: #ff3b30;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
   text-align: center;
-  margin-top: 10px;
 }
 
-/* Dashboard */
-#dashboard {
+/* MENU */
+.menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: #1d1d1f;
+  box-shadow: 3px 0 8px rgba(0,0,0,0.15);
+  padding: 25px 20px;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  z-index: 100;
+  border-radius: 0 25px 25px 0;
+  color: #f5f5f7;
+  user-select: none;
 }
-
-/* Topo */
-.topo-dashboard {
+.menu-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background: white;
-  padding: 15px 20px;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.topo-dashboard h1 {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-#menu-toggle, #btn-logout {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #1e3a8a;
-}
-
-/* Menu lateral */
-.menu-lateral {
-  position: fixed;
-  top: 60px;
-  left: 0;
-  width: 250px;
-  background: #1e293b;
-  height: 100%;
-  padding: 20px;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-  z-index: 1000;
-}
-
-.menu-lateral ul {
-  list-style: none;
-}
-
-.menu-lateral li {
-  padding: 12px 15px;
-  color: #fff;
-  margin-bottom: 10px;
-  background: #334155;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.menu-lateral li:hover {
-  background: #2563eb;
-}
-
-/* Conteúdo Principal */
-main#conteudo {
-  flex: 1;
-  padding: 30px;
-  margin-left: 260px;
-  overflow-y: auto;
-}
-
-.aba {
-  background: white;
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  justify-content: space-between;
   margin-bottom: 30px;
 }
-
-input, select, textarea, button {
-  font-size: 16px;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 10px;
-  border: 1px solid #d1d5db;
-  width: 100%;
-}
-
-button[type="submit"], .aba button {
-  background: #2563eb;
-  color: white;
-  border: none;
-  transition: background 0.3s ease;
-}
-
-button[type="submit"]:hover, .aba button:hover {
-  background: #1d4ed8;
-}
-
-.reuniao-box {
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  border-left: 4px solid #3b82f6;
-  padding: 12px 15px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-
-.reuniao-pendente {
-  border-left-color: #facc15;
-  background: #fefce8;
-}
-
-.reuniao-realizada {
-  border-left-color: #10b981;
-  background: #ecfdf5;
-}
-
-.mensagem-sucesso {
-  color: green;
-  margin-top: 10px;
-}
-
-/* Filtros */
-#filtros-reunioes {
-  margin: 20px 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-#filtros-reunioes label {
-  flex: 1 0 100%;
+.menu-header #bem-vindo {
   font-weight: 600;
-  margin-top: 10px;
-}
-
-#filtros-reunioes select, #filtros-reunioes input {
-  flex: 1;
-}
-
-/* Responsivo */
-@media screen and (max-width: 768px) {
-  main#conteudo {
-    margin-left: 0;
-    padding: 20px;
-  }
-
-  .menu-lateral {
-    position: absolute;
-    top: 60px;
-    width: 200px;
-    height: calc(100% - 60px);
-  }
-}
-
-.hidden {
-  display: none;
+  font-size: 1.2rem;
+  user-select: text;
 }
