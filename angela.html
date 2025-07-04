@@ -74,8 +74,7 @@
     }
 
     .form-grid input,
-    .form-grid select,
-    .form-grid textarea {
+    .form-grid select {
       padding: 0.75rem;
       font-size: 1rem;
       border: 1px solid #ccc;
@@ -123,9 +122,10 @@
       color: #333;
     }
 
-    .dashboard-scroll {
+    .scroll-container {
       overflow-y: auto;
       max-height: 300px;
+      padding-right: 4px;
     }
 
     .card {
@@ -182,8 +182,8 @@
           <option value="Marcelo">Marcelo</option>
           <option value="Gabriel">Gabriel</option>
         </select>
-        <input type="date" id="dataReuniao" placeholder="Data da Reunião" required />
-        <input type="time" id="hora" placeholder="Horário" required />
+        <input type="date" id="dataReuniao" required />
+        <input type="time" id="hora" required />
         <input type="text" id="nomeLoja" placeholder="Nome da Loja" required />
         <input type="text" id="cidade" placeholder="Cidade" required />
         <input type="url" id="linkReuniao" placeholder="Link da Reunião" required />
@@ -192,9 +192,9 @@
         <input type="text" id="cnpj" placeholder="CNPJ" required />
         <input type="text" id="segmento" placeholder="Segmento da Loja" required />
         <input type="text" id="prospeccao" placeholder="Origem da Prospecção" required />
-        <input type="text" id="canal" placeholder="Canal da Reunião (meet, ligação)" required />
+        <input type="text" id="canal" placeholder="Canal da Reunião" required />
         <input type="text" id="contato" placeholder="Contato do Lojista" required />
-        <input type="text" id="responsavelConversa" placeholder="Vai conversar com: Proprietário, Gerente..." required />
+        <input type="text" id="responsavelConversa" placeholder="Vai conversar com..." required />
         <button type="submit">Agendar</button>
       </form>
     </section>
@@ -209,15 +209,15 @@
       <div class="dashboard-columns">
         <div class="dashboard-column">
           <h3>Hoje</h3>
-          <div id="dashboardHoje" class="dashboard-scroll"></div>
+          <div id="dashboardHoje" class="scroll-container"></div>
         </div>
         <div class="dashboard-column">
           <h3>Próximos Dias</h3>
-          <div id="dashboardProximos" class="dashboard-scroll"></div>
+          <div id="dashboardProximos" class="scroll-container"></div>
         </div>
         <div class="dashboard-column">
           <h3>Resultados</h3>
-          <div id="dashboardResultados" class="dashboard-scroll"></div>
+          <div id="dashboardResultados"></div>
         </div>
       </div>
     </section>
