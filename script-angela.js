@@ -105,15 +105,15 @@ function atualizarDashboard() {
 }
 
 async function mostrarDashboardHoje() {
-  const q = collection(db, "reunioes");
+  const q = query(collection(db, "reunioes"));
   const snapshot = await getDocs(q);
-  const hoje = new Date().toISOString().split("T")[0];
+  const hoje = new Date().toISOString().split('T')[0];
 
   dashboardHoje.innerHTML = "";
 
-  snapshot.forEach((docSnap) => {
-    const dados = docSnap.data();
-    if (dados.data === hoje && dados.status === "pendente") {
+  snapshot.forEach((doc) => {
+    const dados = doc.data();
+    if (dados.data === hoje) {
       const div = document.createElement("div");
       div.className = "card";
       div.innerHTML = `
@@ -127,15 +127,15 @@ async function mostrarDashboardHoje() {
 }
 
 async function mostrarDashboardProximos() {
-  const q = collection(db, "reunioes");
+  const q = query(collection(db, "reunioes"));
   const snapshot = await getDocs(q);
-  const hoje = new Date().toISOString().split("T")[0];
+  const hoje = new Date().toISOString().split('T')[0];
 
   dashboardProximos.innerHTML = "";
 
-  snapshot.forEach((docSnap) => {
-    const dados = docSnap.data();
-    if (dados.data > hoje && dados.status === "pendente") {
+  snapshot.forEach((doc) => {
+    const dados = doc.data();
+    if (dados.data > hoje) {
       const div = document.createElement("div");
       div.className = "card";
       div.innerHTML = `
@@ -157,10 +157,14 @@ async function mostrarResultadosDashboard(filtro = "todos") {
   snapshot.forEach((doc) => {
     const r = doc.data();
     if (r.status === "realizada") {
-      if (filtro !== "todos" && r.resultado !== filtro) return;
+      const resultado = r.resultado;
 
-      if (!resultados[r.resultado]) resultados[r.resultado] = [];
-      resultados[r.resultado].push({
+      // Verifica se está dentro dos valores válidos esperados
+      const validos = ["interessado", "aguardandoPagamento", "aguardandoDocumentacao", "semInteresse"];
+      if (!validos.includes(resultado)) return;
+
+      if (!resultados[resultado]) resultados[resultado] = [];
+      resultados[resultado].push({
         nomeLoja: r.nomeLoja || "Sem nome",
         cnpj: r.cnpj || "Não informado",
       });
@@ -175,17 +179,17 @@ async function mostrarResultadosDashboard(filtro = "todos") {
     semInteresse: "#f44336"
   };
 
+  const titulo = {
+    interessado: "Interessado",
+    aguardandoPagamento: "Aguardando Pagamento",
+    aguardandoDocumentacao: "Aguardando Documentação",
+    semInteresse: "Não teve interesse"
+  };
+
   for (const tipo in resultados) {
     const box = document.createElement("div");
     box.className = "dashboard-box";
     box.style.borderTop = `4px solid ${cores[tipo] || "#999"}`;
-
-    const titulo = {
-      interessado: "Interessados",
-      aguardandoPagamento: "Aguardando Pagamento",
-      aguardandoDocumentacao: "Aguardando Documentação",
-      semInteresse: "Sem Interesse"
-    };
 
     box.innerHTML = `
       <h3>${titulo[tipo] || tipo}</h3>
