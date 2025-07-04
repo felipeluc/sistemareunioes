@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Angela | Comercial SouFacil</title>
   <link rel="stylesheet" href="style.css" />
   <style>
@@ -100,36 +100,31 @@
       background: #005dd9;
     }
 
-    .dashboard-controls {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .dashboard-controls select {
-      padding: 0.6rem;
-      font-size: 1rem;
-      border-radius: 10px;
-      border: 1px solid #ccc;
+    .card {
       background: white;
-    }
-
-    .card-dashboard {
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       padding: 1rem;
+      border-radius: 14px;
       margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    .card-dashboard h3 {
-      margin: 0 0 0.5rem 0;
+    .card h3 {
+      margin-top: 0;
       font-size: 1.2rem;
     }
 
-    .card-dashboard p {
-      margin: 0.3rem 0;
+    .card button {
+      margin-top: 0.5rem;
+      padding: 0.6rem 1rem;
+      border: none;
+      background: #007aff;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .card button:hover {
+      background: #005dd9;
     }
   </style>
 </head>
@@ -144,6 +139,7 @@
   <div class="main-content">
     <h1>Bem-vinda, Angela</h1>
 
+    <!-- Agendar -->
     <section id="agendar" class="content-section active">
       <h2>Agendar Reunião</h2>
       <form id="formAgendamento" class="form-grid">
@@ -171,41 +167,17 @@
       </form>
     </section>
 
+    <!-- Transferências -->
     <section id="transferencias" class="content-section">
       <h2>Transferências Recebidas</h2>
       <div id="listaTransferencias"></div>
     </section>
 
+    <!-- Dashboard -->
     <section id="dashboard" class="content-section">
       <h2>Dashboard</h2>
-      <div class="dashboard-controls">
-        <select id="filtroConsultor">
-          <option value="">Todos os Consultores</option>
-          <option value="Leticia">Leticia</option>
-          <option value="Glaucia">Glaucia</option>
-          <option value="Marcelo">Marcelo</option>
-          <option value="Gabriel">Gabriel</option>
-        </select>
-        <select id="filtroMes">
-          <option value="">Todos os Meses</option>
-          <option value="01">Janeiro</option>
-          <option value="02">Fevereiro</option>
-          <option value="03">Março</option>
-          <option value="04">Abril</option>
-          <option value="05">Maio</option>
-          <option value="06">Junho</option>
-          <option value="07">Julho</option>
-          <option value="08">Agosto</option>
-          <option value="09">Setembro</option>
-          <option value="10">Outubro</option>
-          <option value="11">Novembro</option>
-          <option value="12">Dezembro</option>
-        </select>
-        <button onclick="carregarDashboard()">Atualizar</button>
-      </div>
-
-      <div id="graficoReunioes" class="card-dashboard"></div>
-      <div id="graficoLojas" class="card-dashboard"></div>
+      <div id="graficoReunioes" style="margin-bottom: 2rem;"></div>
+      <div id="graficoLojas"></div>
     </section>
   </div>
 
@@ -215,11 +187,11 @@
     function mostrarSecao(id) {
       document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(id).classList.add('active');
+
       document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
-      const buttons = document.querySelectorAll('.sidebar button');
-      if (id === 'agendar') buttons[0].classList.add('active');
-      if (id === 'transferencias') buttons[1].classList.add('active');
-      if (id === 'dashboard') buttons[2].classList.add('active');
+      if (id === 'agendar') document.querySelectorAll('.sidebar button')[0].classList.add('active');
+      if (id === 'transferencias') document.querySelectorAll('.sidebar button')[1].classList.add('active');
+      if (id === 'dashboard') document.querySelectorAll('.sidebar button')[2].classList.add('active');
     }
   </script>
 </body>
