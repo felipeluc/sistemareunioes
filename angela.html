@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Angela | Comercial SouFacil</title>
   <link rel="stylesheet" href="style.css" />
   <style>
@@ -66,59 +66,91 @@
       display: block;
     }
 
-    .card {
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .form-grid input,
+    .form-grid select,
+    .form-grid textarea {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .form-grid button {
+      grid-column: span 2;
+      padding: 0.9rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 14px;
+      border: none;
+      background: #007aff;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .form-grid button:hover {
+      background: #005dd9;
+    }
+
+    .dashboard-columns {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .dashboard-column {
+      flex: 1;
       background: white;
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .dashboard-column h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      color: #333;
+    }
+
+    .card {
+      background: #fff;
       padding: 1rem;
       border-radius: 14px;
       margin-bottom: 1rem;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    .card strong {
-      display: block;
-      font-size: 1.1rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .card small {
-      color: #555;
-    }
-
     .card button {
       margin-top: 0.5rem;
-      margin-right: 0.5rem;
-      padding: 0.5rem 0.9rem;
-      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 10px;
       border: none;
       background: #007aff;
       color: white;
       cursor: pointer;
+      font-size: 0.9rem;
     }
 
     .card button:hover {
       background: #005dd9;
     }
 
-    .dashboard-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .dashboard-grid .card {
-      flex: 1 1 280px;
-    }
-
-    .resultado-detalhes {
+    .card ul {
       margin-top: 0.5rem;
-      padding-left: 1rem;
+      padding-left: 1.2rem;
     }
 
-    .resultado-detalhes div {
-      margin: 0.25rem 0;
-      font-size: 0.9rem;
+    .hidden {
+      display: none;
     }
   </style>
 </head>
@@ -133,92 +165,52 @@
   <div class="main-content">
     <h1>Bem-vinda, Angela</h1>
 
-    <!-- Agendar Reunião -->
     <section id="agendar" class="content-section active">
-      <h2 class="section-title">Agendar Reunião</h2>
-      <form id="formAgendamento">
-        <div class="card">
-          <label>Consultor Responsável:</label>
-          <select name="consultor" required>
-            <option value="">Selecione</option>
-            <option value="Leticia">Leticia</option>
-            <option value="Glaucia">Glaucia</option>
-            <option value="Marcelo">Marcelo</option>
-            <option value="Gabriel">Gabriel</option>
-          </select><br><br>
-
-          <label>Data:</label><br>
-          <input type="date" name="dataReuniao" required /><br><br>
-
-          <label>Horário:</label><br>
-          <input type="time" name="hora" required /><br><br>
-
-          <label>Nome da Loja:</label><br>
-          <input type="text" name="nomeLoja" required /><br><br>
-
-          <label>Cidade:</label><br>
-          <input type="text" name="cidade" required /><br><br>
-
-          <label>Estado:</label><br>
-          <input type="text" name="estado" required /><br><br>
-
-          <label>Link da Reunião:</label><br>
-          <input type="url" name="linkReuniao" required /><br><br>
-
-          <label>Quantidade de Lojas:</label><br>
-          <input type="number" name="qtdLojas" required /><br><br>
-
-          <label>CNPJ:</label><br>
-          <input type="text" name="cnpj" required /><br><br>
-
-          <label>Segmento:</label><br>
-          <input type="text" name="segmento" /><br><br>
-
-          <label>Por onde foi prospectado?</label><br>
-          <input type="text" name="prospeccao" /><br><br>
-
-          <label>Canal da Reunião:</label><br>
-          <select name="canal">
-            <option value="meet">Google Meet</option>
-            <option value="ligacao">Ligação</option>
-          </select><br><br>
-
-          <label>Contato do Lojista:</label><br>
-          <input type="text" name="contato" /><br><br>
-
-          <label>Vai conversar com:</label><br>
-          <select name="responsavelConversa">
-            <option value="proprietario">Proprietário</option>
-            <option value="gerente">Gerente</option>
-            <option value="funcionario">Funcionário</option>
-          </select><br><br>
-
-          <button type="submit">Agendar</button>
-        </div>
+      <h2>Agendar Reunião</h2>
+      <form id="formAgendamento" class="form-grid">
+        <select id="consultor" required>
+          <option value="">Selecionar Consultor</option>
+          <option value="Leticia">Leticia</option>
+          <option value="Glaucia">Glaucia</option>
+          <option value="Marcelo">Marcelo</option>
+          <option value="Gabriel">Gabriel</option>
+        </select>
+        <input type="date" id="dataReuniao" placeholder="Data da Reunião" required />
+        <input type="time" id="hora" placeholder="Horário" required />
+        <input type="text" id="nomeLoja" placeholder="Nome da Loja" required />
+        <input type="text" id="cidade" placeholder="Cidade" required />
+        <input type="url" id="linkReuniao" placeholder="Link da Reunião" required />
+        <input type="text" id="estado" placeholder="Estado" required />
+        <input type="number" id="qtdLojas" placeholder="Quantidade de Lojas" required />
+        <input type="text" id="cnpj" placeholder="CNPJ" required />
+        <input type="text" id="segmento" placeholder="Segmento da Loja" required />
+        <input type="text" id="prospeccao" placeholder="Origem da Prospecção" required />
+        <input type="text" id="canal" placeholder="Canal da Reunião (meet, ligação)" required />
+        <input type="text" id="contato" placeholder="Contato do Lojista" required />
+        <input type="text" id="responsavelConversa" placeholder="Vai conversar com: Proprietário, Gerente..." required />
+        <button type="submit">Agendar</button>
       </form>
     </section>
 
-    <!-- Transferências -->
     <section id="transferencias" class="content-section">
-      <h2 class="section-title">Transferências Recebidas</h2>
+      <h2>Transferências Recebidas</h2>
       <div id="listaTransferencias"></div>
     </section>
 
-    <!-- Dashboard -->
     <section id="dashboard" class="content-section">
-      <h2 class="section-title">Dashboard</h2>
-      <div class="dashboard-grid">
-        <div class="card">
-          <h3>Total de Reuniões</h3>
-          <p id="totalReunioes">0</p>
+      <h2>Dashboard</h2>
+      <div class="dashboard-columns">
+        <div class="dashboard-column">
+          <h3>Hoje</h3>
+          <div id="dashboardHoje"></div>
         </div>
-        <div class="card">
-          <h3>Total de Lojas</h3>
-          <p id="totalLojas">0</p>
+        <div class="dashboard-column">
+          <h3>Próximos Dias</h3>
+          <div id="dashboardProximos"></div>
         </div>
-        <div class="card">
+        <div class="dashboard-column">
           <h3>Resultados</h3>
-          <div id="resultadosPorStatus"></div>
+          <div id="dashboardResultados"></div>
         </div>
       </div>
     </section>
