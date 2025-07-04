@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Gerente | SouFacil</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gerente | Comercial SouFacil</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       margin: 0;
@@ -13,6 +13,7 @@
       display: flex;
       height: 100vh;
     }
+
     .sidebar {
       width: 260px;
       background: #ffffff;
@@ -23,11 +24,13 @@
       border-radius: 0 20px 20px 0;
       box-shadow: 4px 0 12px rgba(0,0,0,0.05);
     }
+
     .sidebar h2 {
       font-size: 1.6rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
       text-align: center;
     }
+
     .sidebar button {
       background: none;
       border: none;
@@ -37,41 +40,57 @@
       text-align: left;
       cursor: pointer;
       transition: background 0.2s ease;
+      margin-bottom: 0.5rem;
+      color: #333;
     }
+
     .sidebar button:hover {
       background: #007aff20;
     }
+
     .sidebar button.active {
       background: #007aff;
       color: white;
     }
+
     .main-content {
       flex: 1;
       padding: 2rem;
       overflow-y: auto;
     }
-    .content-section { display: none; }
-    .content-section.active { display: block; }
+
+    .content-section {
+      display: none;
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
     .dashboard-columns {
       display: flex;
       gap: 1rem;
       margin-top: 1rem;
       flex-wrap: wrap;
     }
+
     .dashboard-column {
       flex: 1;
-      min-width: 300px;
       background: white;
       border-radius: 14px;
       padding: 1rem;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      max-height: 550px;
       overflow-y: auto;
+      max-height: 500px;
+      min-width: 250px;
     }
+
     .dashboard-column h3 {
+      margin-top: 0;
       font-size: 1.2rem;
       margin-bottom: 1rem;
     }
+
     .card {
       background: #fff;
       padding: 1rem;
@@ -79,6 +98,7 @@
       margin-bottom: 1rem;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
+
     .card button {
       margin-top: 0.5rem;
       padding: 0.4rem 0.8rem;
@@ -89,7 +109,50 @@
       cursor: pointer;
       font-size: 0.9rem;
     }
-    .card button:hover { background: #005dd9; }
+
+    .card button:hover {
+      background: #005dd9;
+    }
+
+    .card p {
+      margin: 0.2rem 0;
+    }
+
+    .filtro-transferencia {
+      margin-bottom: 1rem;
+    }
+
+    .dashboard-box {
+      background: white;
+      padding: 1rem;
+      border-radius: 14px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
+    }
+
+    .dashboard-box h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .dashboard-box p {
+      font-size: 1.2rem;
+      margin: 0.5rem 0;
+    }
+
+    .dashboard-box button {
+      margin-top: 0.5rem;
+      background: #007aff;
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .dashboard-box button:hover {
+      background: #005dd9;
+    }
   </style>
 </head>
 <body>
@@ -100,28 +163,32 @@
   </div>
 
   <div class="main-content">
-    <h1>Dashboard Gerente</h1>
+    <h1>Bem-vindo(a), Gerente</h1>
 
     <section id="dashboardAngela" class="content-section active">
-      <h2>Resultados dos Consultores</h2>
-      <div id="dashboardResultados" class="dashboard-columns"></div>
+      <h2>Resultados</h2>
+      <div id="resultadosDashboard" class="dashboard-columns"></div>
     </section>
 
     <section id="dashboardReunioes" class="content-section">
-      <h2>Agenda dos Consultores</h2>
+      <h2>Reuniões</h2>
       <div class="dashboard-columns">
         <div class="dashboard-column">
           <h3>Hoje</h3>
-          <div id="colunaHoje"></div>
+          <div id="dashboardHoje"></div>
         </div>
         <div class="dashboard-column">
           <h3>Próximos Dias</h3>
-          <div id="colunaProximos"></div>
+          <div id="dashboardProximos"></div>
         </div>
         <div class="dashboard-column">
           <h3>Transferências</h3>
-          <label>Filtrar por data: <input type="date" id="filtroDataTransferencia"></label>
-          <div id="colunaTransferencias"></div>
+          <div class="filtro-transferencia">
+            <label for="filtroData">Filtrar por Data:</label>
+            <input type="date" id="filtroData" />
+            <button onclick="carregarTransferencias()">Filtrar</button>
+          </div>
+          <div id="dashboardTransferencias"></div>
         </div>
       </div>
     </section>
@@ -133,6 +200,7 @@
     function mostrarSecao(id) {
       document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(id).classList.add('active');
+
       document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
       const buttons = document.querySelectorAll('.sidebar button');
       if (id === 'dashboardAngela') buttons[0].classList.add('active');
