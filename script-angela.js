@@ -16,7 +16,6 @@ const listaTransferencias = document.getElementById("listaTransferencias");
 const graficoReunioes = document.getElementById("graficoReunioes");
 const graficoLojas = document.getElementById("graficoLojas");
 
-// Agendamento de reunião
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -51,12 +50,10 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// Carrega transferências com campo 'transferidoPor'
 async function carregarTransferencias() {
   listaTransferencias.innerHTML = "<p>Carregando...</p>";
   const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
   const snapshot = await getDocs(q);
-
   listaTransferencias.innerHTML = "";
 
   if (snapshot.empty) {
@@ -67,12 +64,10 @@ async function carregarTransferencias() {
   snapshot.forEach((docSnap) => {
     const dados = docSnap.data();
     const id = docSnap.id;
+    const solicitadoPor = dados.transferidoPor || "desconhecido";
 
     const card = document.createElement("div");
     card.className = "card";
-
-    const solicitadoPor = dados.transferidoPor || "desconhecido";
-
     card.innerHTML = `
       <strong>${dados.nomeLoja || "Loja sem nome"}</strong>
       <div><b>Segmento:</b> ${dados.segmento || "-"}</div>
@@ -94,10 +89,7 @@ async function carregarTransferencias() {
     btnTransferir.textContent = "Transferir";
     btnTransferir.onclick = async () => {
       const novoConsultor = select.value;
-      if (!novoConsultor) {
-        alert("Selecione um consultor");
-        return;
-      }
+      if (!novoConsultor) return alert("Selecione um consultor");
       await updateDoc(doc(db, "reunioes", id), {
         consultor: novoConsultor,
         status: "pendente",
@@ -113,33 +105,61 @@ async function carregarTransferencias() {
   });
 }
 
-// Dashboard: total de reuniões e total de lojas
+// Dashboard novo
 async function atualizarDashboard() {
-  graficoReunioes.innerHTML = "<p>Carregando...</p>";
-  graficoLojas.innerHTML = "";
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
 
   const snapshot = await getDocs(collection(db, "reunioes"));
-  let totalReunioes = 0;
-  let totalLojas = 0;
+  const hojeList = [];
+  const futuroList = [];
+  const resultados = {};
 
-  snapshot.forEach((doc) => {
-    const dados = doc.data();
-    totalReunioes++;
-    if (dados.qtdLojas) {
-      totalLojas += parseInt(dados.qtdLojas);
+  snapshot.forEach(docSnap => {
+    const dados = docSnap.data();
+    const dataReuniao = new Date(dados.data);
+
+    if (!isNaN(dataReuniao)) {
+      dataReuniao.setHours(0, 0, 0, 0);
+
+      if (dataReuniao.getTime() === hoje.getTime()) {
+        hojeList.push(dados);
+      } else if (dataReuniao > hoje) {
+        futuroList.push(dados);
+      }
+    }
+
+    if (dados.status === "realizada" && dados.resultado) {
+      const mes = new Date(dados.realizadaEm || "").getMonth();
+      const chave = dados.resultado;
+      if (!resultados[chave]) resultados[chave] = [];
+      resultados[chave].push(dados);
     }
   });
 
   graficoReunioes.innerHTML = `
     <div class="card">
-      <strong>Total de Reuniões:</strong> ${totalReunioes}
-    </div>`;
+      <strong>Reuniões de Hoje:</strong>
+      ${hojeList.map(r => `<div>${r.nomeLoja} - ${r.consultor}</div>`).join("") || "<p>Nenhuma</p>"}
+    </div>
+    <div class="card">
+      <strong>Próximos Dias:</strong>
+      ${futuroList.map(r => `<div>${r.nomeLoja} - ${r.data}</div>`).join("") || "<p>Nenhuma</p>"}
+    </div>
+  `;
+
   graficoLojas.innerHTML = `
     <div class="card">
-      <strong>Total de Lojas:</strong> ${totalLojas}
-    </div>`;
+      <strong>Resultados:</strong>
+      ${Object.entries(resultados).map(([res, list]) => `
+        <details>
+          <summary>${res}: ${list.length}</summary>
+          ${list.map(l => `<div>${l.nomeLoja} - ${l.cnpj}</div>`).join("")}
+        </details>
+      `).join("") || "<p>Nenhum resultado registrado</p>"}
+    </div>
+  `;
 }
 
-// Inicia transferências e dashboard ao carregar
 carregarTransferencias();
 atualizarDashboard();
