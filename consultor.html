@@ -40,12 +40,13 @@
 
     .main-content {
       flex: 1;
-      padding: 2rem;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     header {
-      margin-bottom: 2rem;
+      margin: 2rem;
     }
 
     header h1 {
@@ -59,7 +60,15 @@
       padding: 1rem 1.5rem;
       border-radius: 16px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-      margin-bottom: 2rem;
+      margin: 1rem 2rem;
+    }
+
+    .fixo-topo {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #f2f2f7;
+      padding-top: 1rem;
     }
 
     section h2 {
@@ -121,7 +130,7 @@
       <h1>Bem-vindo(a), <span id="userName">Consultor</span></h1>
     </header>
 
-    <section>
+    <section class="fixo-topo">
       <h2>Reuniões Pendentes</h2>
       <div id="reunioesPendentes"></div>
     </section>
