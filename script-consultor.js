@@ -82,7 +82,7 @@ function mostrarLista(container, lista, tipo) {
         <option value="aguardandoDocumentacao">Aguardando Documentação</option>
         <option value="semInteresse">Não teve interesse</option>
       `;
-      select.onchange = () => atualizarStatus(dados.id, select.value);
+      select.onchange = () => atualizarStatus(dados.id, select.value, dados.nomeLoja, dados.cnpj);
       div.appendChild(select);
     }
 
@@ -94,7 +94,7 @@ async function aceitar(id) {
   const ref = doc(db, "reunioes", id);
   await updateDoc(ref, {
     status: "agendada",
-    transferidoPor: null // limpa o campo se tiver vindo de transferência
+    transferidoPor: null
   });
   carregarReunioes();
 }
@@ -103,7 +103,7 @@ async function transferir(id) {
   const ref = doc(db, "reunioes", id);
   await updateDoc(ref, {
     status: "transferencia",
-    transferidoPor: usuario // ✅ adiciona quem está pedindo
+    transferidoPor: usuario
   });
   carregarReunioes();
 }
@@ -120,14 +120,16 @@ Observações: ${dados.observacoes || "-"}
   `);
 }
 
-async function atualizarStatus(id, resultado) {
+async function atualizarStatus(id, resultado, nomeLoja, cnpj) {
   if (!resultado) return;
 
   const ref = doc(db, "reunioes", id);
   await updateDoc(ref, {
     status: "realizada",
     resultado: resultado,
-    realizadaEm: new Date().toISOString()
+    realizadaEm: new Date().toISOString(),
+    nomeLoja: nomeLoja || "",
+    cnpj: cnpj || ""
   });
 
   carregarReunioes();
