@@ -114,7 +114,11 @@
       margin-bottom: 0.25rem;
     }
 
-    .card button, .card select {
+    .card small {
+      color: #555;
+    }
+
+    .card button {
       margin-top: 0.5rem;
       margin-right: 0.5rem;
       padding: 0.5rem 0.9rem;
@@ -126,41 +130,8 @@
       cursor: pointer;
     }
 
-    .card select {
-      background: white;
-      color: #333;
-      border: 1px solid #ccc;
-    }
-
     .card button:hover {
       background: #005dd9;
-    }
-
-    .dashboard-grid {
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-      margin-top: 2rem;
-    }
-
-    .dashboard-box {
-      background: #fff;
-      border-radius: 14px;
-      padding: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      flex: 1 1 300px;
-      text-align: center;
-    }
-
-    .dashboard-box h3 {
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .dashboard-box .numero {
-      font-size: 2.4rem;
-      font-weight: 700;
-      color: #007aff;
     }
   </style>
 </head>
@@ -185,8 +156,8 @@
           <option value="Marcelo">Marcelo</option>
           <option value="Gabriel">Gabriel</option>
         </select>
-        <input type="date" id="dataReuniao" required />
-        <input type="time" id="hora" required />
+        <input type="date" id="dataReuniao" placeholder="Data da Reunião" required />
+        <input type="time" id="hora" placeholder="Horário" required />
         <input type="text" id="nomeLoja" placeholder="Nome da Loja" required />
         <input type="text" id="cidade" placeholder="Cidade" required />
         <input type="url" id="linkReuniao" placeholder="Link da Reunião" required />
@@ -195,9 +166,9 @@
         <input type="text" id="cnpj" placeholder="CNPJ" required />
         <input type="text" id="segmento" placeholder="Segmento da Loja" required />
         <input type="text" id="prospeccao" placeholder="Origem da Prospecção" required />
-        <input type="text" id="canal" placeholder="Canal da Reunião" required />
+        <input type="text" id="canal" placeholder="Canal da Reunião (meet, ligação)" required />
         <input type="text" id="contato" placeholder="Contato do Lojista" required />
-        <input type="text" id="responsavelConversa" placeholder="Vai conversar com..." required />
+        <input type="text" id="responsavelConversa" placeholder="Vai conversar com: Proprietário, Gerente..." required />
         <button type="submit">Agendar</button>
       </form>
     </section>
@@ -209,16 +180,15 @@
 
     <section id="dashboard" class="content-section">
       <h2>Dashboard</h2>
-      <div class="dashboard-grid">
-        <div class="dashboard-box">
-          <h3>Total de Reuniões</h3>
-          <div class="numero" id="totalReunioes">0</div>
-        </div>
-        <div class="dashboard-box">
-          <h3>Total de Lojas</h3>
-          <div class="numero" id="totalLojas">0</div>
-        </div>
-      </div>
+
+      <h3>Reuniões de Hoje</h3>
+      <div id="dashboardHoje"></div>
+
+      <h3>Próximos Dias</h3>
+      <div id="dashboardProximos"></div>
+
+      <h3>Resultados (Reuniões Realizadas)</h3>
+      <div id="dashboardResultados"></div>
     </section>
   </div>
 
@@ -228,10 +198,12 @@
     function mostrarSecao(id) {
       document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(id).classList.add('active');
+
       document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
-      if (id === 'agendar') document.querySelectorAll('.sidebar button')[0].classList.add('active');
-      if (id === 'transferencias') document.querySelectorAll('.sidebar button')[1].classList.add('active');
-      if (id === 'dashboard') document.querySelectorAll('.sidebar button')[2].classList.add('active');
+      const buttons = document.querySelectorAll('.sidebar button');
+      if (id === 'agendar') buttons[0].classList.add('active');
+      if (id === 'transferencias') buttons[1].classList.add('active');
+      if (id === 'dashboard') buttons[2].classList.add('active');
     }
   </script>
 </body>
