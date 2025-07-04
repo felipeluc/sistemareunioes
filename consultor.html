@@ -112,6 +112,24 @@
     .card button:hover {
       background: #005dd9;
     }
+
+    .form-popup {
+      background: white;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 600px;
+    }
+
+    .form-popup input, .form-popup select {
+      width: 100%;
+      padding: 0.7rem;
+      margin-bottom: 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -121,6 +139,7 @@
     <button onclick="mostrarSecao('pendentes')" class="active">Pendentes</button>
     <button onclick="mostrarSecao('agendadas')">Agendadas</button>
     <button onclick="mostrarSecao('realizadas')">Realizadas</button>
+    <button onclick="mostrarSecao('fechamentos')">Fechamentos</button>
   </div>
 
   <div class="main-content">
@@ -138,6 +157,29 @@
       <h2 class="section-title">Reuniões Realizadas</h2>
       <div id="listaRealizadas"></div>
     </section>
+
+    <section id="fechamentos" class="content-section">
+      <h2 class="section-title">Fechamentos</h2>
+      <button onclick="abrirFormularioFechamento()">Novo Fechamento</button>
+      <div id="formularioFechamento" class="form-popup" style="display:none;">
+        <input type="text" id="nomeLojista" placeholder="Nome do Lojista" required>
+        <input type="text" id="contato" placeholder="Contato" required>
+        <input type="text" id="cidade" placeholder="Cidade" required>
+        <input type="text" id="estado" placeholder="Estado" required>
+        <input type="number" id="qtdLojas" placeholder="Quantidade de Lojas" required>
+        <input type="text" id="cnpj" placeholder="CNPJ" required>
+        <input type="text" id="faturamento" placeholder="Faturamento" required>
+        <select id="crediario">
+          <option value="">Tem crediário?</option>
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+        </select>
+        <input type="number" id="valorAdesao" placeholder="Valor da Adesão (R$)">
+        <input type="text" id="origem" placeholder="Origem">
+        <button onclick="salvarFechamento()">Salvar Fechamento</button>
+      </div>
+      <div id="listaFechamentos"></div>
+    </section>
   </div>
 
   <script type="module" src="firebase-config.js"></script>
@@ -152,6 +194,12 @@
       if (id === 'pendentes') buttons[0].classList.add('active');
       if (id === 'agendadas') buttons[1].classList.add('active');
       if (id === 'realizadas') buttons[2].classList.add('active');
+      if (id === 'fechamentos') buttons[3].classList.add('active');
+    }
+
+    function abrirFormularioFechamento() {
+      const form = document.getElementById("formularioFechamento");
+      form.style.display = form.style.display === "none" ? "block" : "none";
     }
   </script>
 </body>
