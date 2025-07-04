@@ -1,3 +1,4 @@
+// script-gerente.js
 import {
   collection,
   getDocs,
@@ -8,93 +9,119 @@ import {
 
 import { db } from './firebase-config.js';
 
-const dashboardHoje = document.getElementById("dashboardHoje");
-const dashboardProximos = document.getElementById("dashboardProximos");
-const dashboardTransferencias = document.getElementById("dashboardTransferencias");
-const dashboardAngela = document.getElementById("dashboardAngela");
+const hojeEl = document.getElementById("dashboardHoje");
+const proximosEl = document.getElementById("dashboardProximos");
+const transferenciasEl = document.getElementById("dashboardTransferencias");
+const resultadosEl = document.getElementById("dashboardResultados");
+const filtroData = document.getElementById("filtroDataTransferencia");
 
-function formatarData(timestamp) {
-  if (!timestamp) return "";
+function formatarDataCompleta(timestamp) {
+  if (!timestamp) return "-";
   const data = timestamp.toDate();
-  return data.toLocaleDateString("pt-BR") + ' ' + data.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+  return data.toLocaleDateString("pt-BR") + ' ' + data.toLocaleTimeString("pt-BR");
 }
 
-function criarCard(dados) {
+function criarCard({ nomeLoja, cidade, estado, data, hora, criadoEm, transferidoPor, consultor, status }, extra = {}) {
   const div = document.createElement("div");
   div.className = "card";
   div.innerHTML = `
-    <strong>${dados.nomeLoja || "Sem nome"}</strong>
-    <p>${dados.cidade} - ${dados.estado}</p>
-    <p>Data Reunião: ${dados.data || "-"} ${dados.hora || ""}</p>
-    <p>Agendado em: ${formatarData(dados.criadoEm)}</p>
-    <button onclick='verDetalhes(${JSON.stringify(dados).replace(/'/g, "&#39;")})'>Ver Detalhes</button>
+    <strong>${nomeLoja}</strong>
+    <p>${cidade} - ${estado}</p>
+    <p><b>Data da Reunião:</b> ${data} ${hora}</p>
+    <p><b>Agendada em:</b> ${formatarDataCompleta(criadoEm)}</p>
+    ${transferidoPor ? `<p><b>Solicitado por:</b> ${transferidoPor}</p>` : ""}
+    ${consultor ? `<p><b>Agendado para:</b> ${consultor}</p>` : ""}
+    ${status ? `<p><b>Status:</b> ${status}</p>` : ""}
+    <button onclick='verDetalhes(${JSON.stringify(extra).replace(/'/g, "\'")})'>Ver Detalhes</button>
   `;
   return div;
 }
 
-function criarCardTransferencia(dados) {
-  const div = document.createElement("div");
-  div.className = "card";
-  div.innerHTML = `
-    <strong>${dados.nomeLoja}</strong>
-    <p>${dados.cidade} - ${dados.estado}</p>
-    <p>Data Reunião: ${dados.data} ${dados.hora}</p>
-    <p>De: ${dados.transferidoPor || "Desconhecido"}</p>
-    <p>Para: ${dados.consultor}</p>
-    <p>Status: ${dados.status === "agendada" ? "Aceita" : "Aguardando"}</p>
-    <button onclick='verDetalhes(${JSON.stringify(dados).replace(/'/g, "&#39;")})'>Ver Detalhes</button>
-  `;
-  return div;
-}
+async function carregarHoje() {
+  const snapshot = await getDocs(collection(db, "reunioes"));
+  const hoje = new Date().toISOString().split("T")[0];
+  hojeEl.innerHTML = "";
 
-window.verDetalhes = function(dados) {
-  alert(`
-Loja: ${dados.nomeLoja}
-Cidade: ${dados.cidade}
-Estado: ${dados.estado}
-Contato: ${dados.contato}
-Segmento: ${dados.segmento}
-Link: ${dados.link}
-Origem: ${dados.origem}
-Canal: ${dados.canal}
-Responsável pela conversa: ${dados.responsavelConversa}
-CNPJ: ${dados.cnpj}
-Qtd Lojas: ${dados.qtdLojas}
-Status: ${dados.status}
-  `);
-};
-
-async function carregarDashboard() {
-  const q = query(collection(db, "reunioes"));
-  const snapshot = await getDocs(q);
-  const hoje = new Date().toISOString().split('T')[0];
-
-  dashboardHoje.innerHTML = "";
-  dashboardProximos.innerHTML = "";
-  dashboardTransferencias.innerHTML = "";
-  dashboardAngela.innerHTML = "";
-
-  snapshot.forEach(docSnap => {
-    const dados = docSnap.data();
-
-    // Seção Angela (replica dados do dashboard da Angela)
-    const resumoAngela = document.createElement("div");
-    resumoAngela.className = "card";
-    resumoAngela.innerHTML = `
-      <strong>${dados.nomeLoja}</strong>
-      <p>Consultor: ${dados.consultor}</p>
-      <p>Status: ${dados.status}</p>
-    `;
-    dashboardAngela.appendChild(resumoAngela);
-
-    if (dados.status === "transferencia") {
-      dashboardTransferencias.appendChild(criarCardTransferencia(dados));
-    } else if (dados.data === hoje) {
-      dashboardHoje.appendChild(criarCard(dados));
-    } else if (dados.data > hoje) {
-      dashboardProximos.appendChild(criarCard(dados));
+  snapshot.forEach(doc => {
+    const dados = doc.data();
+    if (dados.data === hoje) {
+      const card = criarCard(dados, dados);
+      hojeEl.appendChild(card);
     }
   });
 }
 
-carregarDashboard();
+async function carregarProximos() {
+  const snapshot = await getDocs(collection(db, "reunioes"));
+  const hoje = new Date().toISOString().split("T")[0];
+  proximosEl.innerHTML = "";
+
+  snapshot.forEach(doc => {
+    const dados = doc.data();
+    if (dados.data > hoje) {
+      const card = criarCard(dados, dados);
+      proximosEl.appendChild(card);
+    }
+  });
+}
+
+async function carregarTransferencias() {
+  const snapshot = await getDocs(query(collection(db, "reunioes"), where("status", "==", "transferencia")));
+  transferenciasEl.innerHTML = "";
+
+  snapshot.forEach(doc => {
+    const dados = doc.data();
+    const card = criarCard(dados, dados);
+    transferenciasEl.appendChild(card);
+  });
+}
+
+async function carregarResultados() {
+  const snapshot = await getDocs(collection(db, "reunioes"));
+  resultadosEl.innerHTML = "";
+
+  const resultados = {};
+  snapshot.forEach(doc => {
+    const dados = doc.data();
+    if (dados.status === "realizada") {
+      const key = dados.resultado;
+      if (!resultados[key]) resultados[key] = [];
+      resultados[key].push(dados);
+    }
+  });
+
+  const cores = {
+    interessado: "#4caf50",
+    aguardandoPagamento: "#fbbc05",
+    aguardandoDocumentacao: "#00bcd4",
+    semInteresse: "#f44336"
+  };
+
+  for (const tipo in resultados) {
+    const box = document.createElement("div");
+    box.className = "dashboard-box";
+    box.style.borderTop = `4px solid ${cores[tipo] || "#999"}`;
+
+    box.innerHTML = `
+      <h3>${tipo}</h3>
+      <p><strong>${resultados[tipo].length}</strong> resultado(s)</p>
+      <button onclick='verDetalhesResultado(${JSON.stringify(resultados[tipo]).replace(/'/g, "\'")})'>Ver Detalhes</button>
+    `;
+    resultadosEl.appendChild(box);
+  }
+}
+
+window.verDetalhes = function(dados) {
+  alert(`\nLoja: ${dados.nomeLoja}\nCidade: ${dados.cidade}\nEstado: ${dados.estado}\nLink: ${dados.link}\nSegmento: ${dados.segmento}\nCNPJ: ${dados.cnpj}\nOrigem: ${dados.origem}\nCanal: ${dados.canal}\nContato: ${dados.contato}\nResponsável pela conversa: ${dados.responsavelConversa}`);
+};
+
+window.verDetalhesResultado = function(lista) {
+  if (!Array.isArray(lista)) return;
+  const texto = lista.map(d => `Loja: ${d.nomeLoja}\nCNPJ: ${d.cnpj}`).join("\n\n");
+  alert(texto);
+};
+
+carregarHoje();
+carregarProximos();
+carregarTransferencias();
+carregarResultados();
