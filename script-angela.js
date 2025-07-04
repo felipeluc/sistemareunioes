@@ -1,3 +1,4 @@
+// script-angela.js
 import {
   collection,
   addDoc,
@@ -13,9 +14,8 @@ import { db } from './firebase-config.js';
 
 const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
-const graficoReunioes = document.getElementById("totalReunioes");
-const graficoLojas = document.getElementById("totalLojas");
-const resultadosPorStatus = document.getElementById("resultadosPorStatus");
+const graficoReunioes = document.getElementById("graficoReunioes");
+const graficoLojas = document.getElementById("graficoLojas");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -50,17 +50,9 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// Transferências
 async function carregarTransferencias() {
-  listaTransferencias.innerHTML = "<p>Carregando...</p>";
-
   const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
   const snapshot = await getDocs(q);
-
-  if (snapshot.empty) {
-    listaTransferencias.innerHTML = "<p>Nenhuma reunião transferida.</p>";
-    return;
-  }
 
   listaTransferencias.innerHTML = "";
 
@@ -70,95 +62,143 @@ async function carregarTransferencias() {
     div.className = "card";
     div.innerHTML = `
       <strong>${dados.nomeLoja}</strong>
-      <div><b>Consultor que solicitou:</b> ${dados.transferidoPor || "Desconhecido"}</div>
-      <div><b>Cidade:</b> ${dados.cidade}</div>
-      <div><b>Data:</b> ${dados.data}</div>
-      <div><b>Hora:</b> ${dados.hora}</div>
-      <button onclick="transferirParaOutro('${docSnap.id}')">Transferir para outro consultor</button>
+      <p><b>Cidade:</b> ${dados.cidade}</p>
+      <p><b>Estado:</b> ${dados.estado}</p>
+      <p><b>Solicitado por:</b> ${dados.transferidoPor || "Desconhecido"}</p>
+      <select class="novo-consultor">
+        <option value="">Transferir para...</option>
+        <option value="Leticia">Leticia</option>
+        <option value="Glaucia">Glaucia</option>
+        <option value="Marcelo">Marcelo</option>
+        <option value="Gabriel">Gabriel</option>
+      </select>
+      <button class="btn-transferir">Transferir</button>
     `;
+
+    const select = div.querySelector(".novo-consultor");
+    const btn = div.querySelector(".btn-transferir");
+
+    btn.onclick = async () => {
+      const novoConsultor = select.value;
+      if (!novoConsultor) return alert("Selecione o consultor de destino");
+
+      await updateDoc(doc(db, "reunioes", docSnap.id), {
+        consultor: novoConsultor,
+        status: "pendente",
+        transferidoPor: null
+      });
+
+      carregarTransferencias();
+    };
+
     listaTransferencias.appendChild(div);
   });
 }
 
-window.transferirParaOutro = async function (id) {
-  const novoConsultor = prompt("Para qual consultor deseja transferir?");
-  if (!novoConsultor) return;
+carregarTransferencias();
 
-  const ref = doc(db, "reunioes", id);
-  await updateDoc(ref, {
-    consultor: novoConsultor,
-    status: "pendente",
-    transferidoPor: null
-  });
+function atualizarDashboard() {
+  contarReunioesPorPeriodo();
+  contarLojasPorPeriodo();
+  mostrarResultadosDashboard();
+}
 
-  alert("Reunião transferida com sucesso!");
-  carregarTransferencias();
-};
-
-// DASHBOARD
-async function atualizarDashboard() {
-  const snapshot = await getDocs(collection(db, "reunioes"));
+async function contarReunioesPorPeriodo() {
+  const q = collection(db, "reunioes");
+  const snapshot = await getDocs(q);
 
   let total = 0;
-  let totalLojas = 0;
+  snapshot.forEach(() => total++);
+
+  graficoReunioes.innerHTML = `
+    <div class="dashboard-box">
+      <h3>Total de Reuniões</h3>
+      <p>${total}</p>
+    </div>
+  `;
+}
+
+async function contarLojasPorPeriodo() {
+  const q = collection(db, "reunioes");
+  const snapshot = await getDocs(q);
+
+  let total = 0;
+  snapshot.forEach((doc) => {
+    const dados = doc.data();
+    if (dados.qtdLojas) total += parseInt(dados.qtdLojas);
+  });
+
+  graficoLojas.innerHTML = `
+    <div class="dashboard-box">
+      <h3>Total de Lojas</h3>
+      <p>${total}</p>
+    </div>
+  `;
+}
+
+async function mostrarResultadosDashboard(filtro = "todos") {
+  const q = collection(db, "reunioes");
+  const snapshot = await getDocs(q);
+
   const resultados = {};
 
-  const detalhesPorStatus = {};
+  snapshot.forEach((doc) => {
+    const r = doc.data();
+    if (r.status === "realizada") {
+      if (filtro !== "todos" && r.resultado !== filtro) return;
 
-  snapshot.forEach((docSnap) => {
-    const dados = docSnap.data();
-    total++;
-    totalLojas += dados.qtdLojas || 1;
-
-    if (dados.resultado) {
-      const status = dados.resultado;
-      resultados[status] = (resultados[status] || 0) + 1;
-
-      if (!detalhesPorStatus[status]) detalhesPorStatus[status] = [];
-      detalhesPorStatus[status].push({
-        nomeLoja: dados.nomeLoja || "-",
-        cnpj: dados.cnpj || "-"
+      if (!resultados[r.resultado]) resultados[r.resultado] = [];
+      resultados[r.resultado].push({
+        nomeLoja: r.nomeLoja || "Sem nome",
+        cnpj: r.cnpj || "Não informado",
       });
     }
   });
 
-  graficoReunioes.textContent = total;
-  graficoLojas.textContent = totalLojas;
+  const container = document.getElementById("resultadosDashboard");
+  container.innerHTML = "";
 
-  resultadosPorStatus.innerHTML = "";
+  const cores = {
+    interessado: "#4caf50",
+    aguardandoPagamento: "#fbbc05",
+    aguardandoDocumentacao: "#00bcd4",
+    semInteresse: "#f44336"
+  };
 
-  for (const status in resultados) {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <strong>${status}</strong>
-      <p>Total: ${resultados[status]}</p>
-      <button onclick='verDetalhesResultado("${status}")'>Ver Detalhes</button>
-      <div class="resultado-detalhes" id="detalhes-${status}" style="display:none;"></div>
+  for (const tipo in resultados) {
+    const box = document.createElement("div");
+    box.className = "dashboard-box";
+    box.style.borderTop = `4px solid ${cores[tipo] || "#999"}`;
+
+    const titulo = {
+      interessado: "Interessados",
+      aguardandoPagamento: "Aguardando Pagamento",
+      aguardandoDocumentacao: "Aguardando Documentação",
+      semInteresse: "Sem Interesse"
+    };
+
+    box.innerHTML = `
+      <h3>${titulo[tipo] || tipo}</h3>
+      <p><strong>${resultados[tipo].length}</strong> resultado(s)</p>
+      <button onclick='verDetalhesResultado(${JSON.stringify(resultados[tipo])})'>Ver Detalhes</button>
     `;
-    resultadosPorStatus.appendChild(card);
-  }
 
-  // Armazena os detalhes para acesso no botão
-  window._detalhesResultados = detalhesPorStatus;
+    container.appendChild(box);
+  }
 }
 
-window.verDetalhesResultado = function (status) {
-  const container = document.getElementById(`detalhes-${status}`);
-  if (!container) return;
-
-  if (container.style.display === "none") {
-    container.innerHTML = "";
-    window._detalhesResultados[status].forEach(item => {
-      const div = document.createElement("div");
-      div.innerHTML = `<b>${item.nomeLoja}</b> — CNPJ: ${item.cnpj}`;
-      container.appendChild(div);
-    });
-    container.style.display = "block";
-  } else {
-    container.style.display = "none";
+// Ver detalhes do resultado (nome da loja e CNPJ)
+window.verDetalhesResultado = function(lista) {
+  if (!Array.isArray(lista) || lista.length === 0) {
+    alert("Nenhuma informação disponível.");
+    return;
   }
+
+  const texto = lista
+    .map(item => `Loja: ${item.nomeLoja}\nCNPJ: ${item.cnpj}`)
+    .join('\n\n');
+
+  alert(texto);
 };
 
-carregarTransferencias();
 atualizarDashboard();
