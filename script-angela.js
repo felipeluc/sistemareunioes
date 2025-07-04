@@ -1,3 +1,4 @@
+// script-angela.js
 import {
   collection,
   addDoc,
@@ -44,7 +45,6 @@ form.addEventListener("submit", async (e) => {
     alert("Reunião agendada com sucesso!");
     form.reset();
     atualizarDashboard();
-    carregarTransferencias();
   } catch (err) {
     console.error("Erro ao salvar:", err);
     alert("Erro ao agendar reunião");
@@ -99,46 +99,68 @@ async function carregarTransferencias() {
 carregarTransferencias();
 
 function atualizarDashboard() {
-  mostrarHojeEProximos();
+  mostrarDashboardHoje();
+  mostrarDashboardProximos();
   mostrarResultadosDashboard();
 }
 
-async function mostrarHojeEProximos() {
+async function mostrarDashboardHoje() {
   const q = collection(db, "reunioes");
   const snapshot = await getDocs(q);
+  const hoje = new Date().toISOString().slice(0, 10);
 
   dashboardHoje.innerHTML = "";
-  dashboardProximos.innerHTML = "";
+  dashboardHoje.style.maxHeight = "300px";
+  dashboardHoje.style.overflowY = "auto";
 
-  const hoje = new Date();
-  const hojeStr = hoje.toISOString().split("T")[0];
+  snapshot.forEach((doc) => {
+    const dados = doc.data();
+    const dataReuniao = typeof dados.data === "string"
+      ? dados.data
+      : dados.data.toDate().toISOString().slice(0, 10);
 
-  snapshot.forEach((docSnap) => {
-    const dados = docSnap.data();
-    if (!dados.data || dados.status !== "pendente") return;
-
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <strong>${dados.nomeLoja}</strong>
-      <p><b>Consultor:</b> ${dados.consultor}</p>
-      <p><b>Horário:</b> ${dados.hora}</p>
-      <p><b>Cidade:</b> ${dados.cidade}</p>
-      <p><b>Estado:</b> ${dados.estado}</p>
-    `;
-
-    if (dados.data === hojeStr) {
-      dashboardHoje.appendChild(card);
-    } else {
-      const dataReuniao = new Date(dados.data);
-      if (dataReuniao > hoje) {
-        dashboardProximos.appendChild(card);
-      }
+    if (dataReuniao === hoje) {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <strong>${dados.nomeLoja}</strong>
+        <p>${dados.cidade} - ${dados.estado}</p>
+        <p>${dataReuniao} às ${dados.hora}</p>
+      `;
+      dashboardHoje.appendChild(div);
     }
   });
 }
 
-async function mostrarResultadosDashboard() {
+async function mostrarDashboardProximos() {
+  const q = collection(db, "reunioes");
+  const snapshot = await getDocs(q);
+  const hoje = new Date().toISOString().slice(0, 10);
+
+  dashboardProximos.innerHTML = "";
+  dashboardProximos.style.maxHeight = "300px";
+  dashboardProximos.style.overflowY = "auto";
+
+  snapshot.forEach((doc) => {
+    const dados = doc.data();
+    const dataReuniao = typeof dados.data === "string"
+      ? dados.data
+      : dados.data.toDate().toISOString().slice(0, 10);
+
+    if (dataReuniao > hoje) {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <strong>${dados.nomeLoja}</strong>
+        <p>${dados.cidade} - ${dados.estado}</p>
+        <p>${dataReuniao} às ${dados.hora}</p>
+      `;
+      dashboardProximos.appendChild(div);
+    }
+  });
+}
+
+async function mostrarResultadosDashboard(filtro = "todos") {
   const q = collection(db, "reunioes");
   const snapshot = await getDocs(q);
 
@@ -147,6 +169,8 @@ async function mostrarResultadosDashboard() {
   snapshot.forEach((doc) => {
     const r = doc.data();
     if (r.status === "realizada") {
+      if (filtro !== "todos" && r.resultado !== filtro) return;
+
       if (!resultados[r.resultado]) resultados[r.resultado] = [];
       resultados[r.resultado].push({
         nomeLoja: r.nomeLoja || "Sem nome",
@@ -156,7 +180,6 @@ async function mostrarResultadosDashboard() {
   });
 
   dashboardResultados.innerHTML = "";
-
   const cores = {
     interessado: "#4caf50",
     aguardandoPagamento: "#fbbc05",
@@ -186,18 +209,12 @@ async function mostrarResultadosDashboard() {
   }
 }
 
-// Ver detalhes do resultado (nome da loja e CNPJ)
 window.verDetalhesResultado = function(lista) {
   if (!Array.isArray(lista) || lista.length === 0) {
     alert("Nenhuma informação disponível.");
     return;
   }
 
-  const texto = lista
-    .map(item => `Loja: ${item.nomeLoja}\nCNPJ: ${item.cnpj}`)
-    .join('\n\n');
-
+  const texto = lista.map(item => `Loja: ${item.nomeLoja}\nCNPJ: ${item.cnpj}`).join('\n\n');
   alert(texto);
 };
-
-atualizarDashboard();
