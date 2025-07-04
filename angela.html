@@ -108,19 +108,28 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    .card h3 {
-      margin-top: 0;
-      font-size: 1.2rem;
+    .card strong {
+      display: block;
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
     }
 
-    .card button {
+    .card button, .card select {
       margin-top: 0.5rem;
-      padding: 0.6rem 1rem;
+      margin-right: 0.5rem;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.9rem;
+      border-radius: 10px;
       border: none;
       background: #007aff;
       color: white;
-      border-radius: 10px;
       cursor: pointer;
+    }
+
+    .card select {
+      background: white;
+      color: #333;
+      border: 1px solid #ccc;
     }
 
     .card button:hover {
@@ -139,7 +148,6 @@
   <div class="main-content">
     <h1>Bem-vinda, Angela</h1>
 
-    <!-- Agendar -->
     <section id="agendar" class="content-section active">
       <h2>Agendar Reunião</h2>
       <form id="formAgendamento" class="form-grid">
@@ -150,8 +158,8 @@
           <option value="Marcelo">Marcelo</option>
           <option value="Gabriel">Gabriel</option>
         </select>
-        <input type="date" id="dataReuniao" required />
-        <input type="time" id="hora" required />
+        <input type="date" id="dataReuniao" placeholder="Data da Reunião" required />
+        <input type="time" id="hora" placeholder="Horário" required />
         <input type="text" id="nomeLoja" placeholder="Nome da Loja" required />
         <input type="text" id="cidade" placeholder="Cidade" required />
         <input type="url" id="linkReuniao" placeholder="Link da Reunião" required />
@@ -167,17 +175,16 @@
       </form>
     </section>
 
-    <!-- Transferências -->
     <section id="transferencias" class="content-section">
       <h2>Transferências Recebidas</h2>
-      <div id="listaTransferencias"></div>
+      <div id="listaTransferencias">
+        <!-- Aqui aparecerão as transferências que a Angela pode reenviar -->
+      </div>
     </section>
 
-    <!-- Dashboard -->
     <section id="dashboard" class="content-section">
       <h2>Dashboard</h2>
-      <div id="graficoReunioes" style="margin-bottom: 2rem;"></div>
-      <div id="graficoLojas"></div>
+      <p style="opacity: 0.5;">(em breve)</p>
     </section>
   </div>
 
@@ -189,9 +196,10 @@
       document.getElementById(id).classList.add('active');
 
       document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
-      if (id === 'agendar') document.querySelectorAll('.sidebar button')[0].classList.add('active');
-      if (id === 'transferencias') document.querySelectorAll('.sidebar button')[1].classList.add('active');
-      if (id === 'dashboard') document.querySelectorAll('.sidebar button')[2].classList.add('active');
+      const buttons = document.querySelectorAll('.sidebar button');
+      if (id === 'agendar') buttons[0].classList.add('active');
+      if (id === 'transferencias') buttons[1].classList.add('active');
+      if (id === 'dashboard') buttons[2].classList.add('active');
     }
   </script>
 </body>
