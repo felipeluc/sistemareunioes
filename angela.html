@@ -6,6 +6,7 @@
   <title>Angela | Comercial SouFacil</title>
   <link rel="stylesheet" href="style.css" />
   <style>
+    /* MANTÉM O MESMO ESTILO DO PRIMEIRO HTML, COM ESTILO DO DASHBOARD NOVO */
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -100,57 +101,44 @@
       background: #005dd9;
     }
 
-    .dashboard-columns {
+    .dashboard-row {
       display: flex;
+      flex-wrap: wrap;
       gap: 1rem;
-      margin-top: 1rem;
     }
 
-    .dashboard-column {
-      flex: 1;
+    .dashboard-box {
       background: white;
-      border-radius: 14px;
-      padding: 1rem;
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      min-width: 220px;
+      max-width: 300px;
+      flex: 1;
     }
 
-    .dashboard-column h3 {
-      margin-top: 0;
-      margin-bottom: 1rem;
-      font-size: 1.2rem;
-      color: #333;
+    .dashboard-box h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
     }
 
-    .card {
-      background: #fff;
-      padding: 1rem;
-      border-radius: 14px;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    .dashboard-box p {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
     }
 
-    .card button {
-      margin-top: 0.5rem;
-      padding: 0.4rem 0.8rem;
-      border-radius: 10px;
-      border: none;
+    .dashboard-box button {
       background: #007aff;
       color: white;
+      padding: 0.4rem 0.7rem;
+      border-radius: 10px;
+      border: none;
       cursor: pointer;
-      font-size: 0.9rem;
     }
 
-    .card button:hover {
+    .dashboard-box button:hover {
       background: #005dd9;
-    }
-
-    .card ul {
-      margin-top: 0.5rem;
-      padding-left: 1.2rem;
-    }
-
-    .hidden {
-      display: none;
     }
   </style>
 </head>
@@ -168,6 +156,7 @@
     <section id="agendar" class="content-section active">
       <h2>Agendar Reunião</h2>
       <form id="formAgendamento" class="form-grid">
+        <!-- MESMO FORM ANTIGO MANTIDO -->
         <select id="consultor" required>
           <option value="">Selecionar Consultor</option>
           <option value="Leticia">Leticia</option>
@@ -199,20 +188,10 @@
 
     <section id="dashboard" class="content-section">
       <h2>Dashboard</h2>
-      <div class="dashboard-columns">
-        <div class="dashboard-column">
-          <h3>Hoje</h3>
-          <div id="dashboardHoje"></div>
-        </div>
-        <div class="dashboard-column">
-          <h3>Próximos Dias</h3>
-          <div id="dashboardProximos"></div>
-        </div>
-        <div class="dashboard-column">
-          <h3>Resultados</h3>
-          <div id="dashboardResultados"></div>
-        </div>
-      </div>
+      <div id="graficoReunioes" class="dashboard-row"></div>
+      <div id="graficoLojas" class="dashboard-row" style="margin-top: 1rem;"></div>
+      <h3 style="margin-top: 2rem;">Resultados</h3>
+      <div id="resultadosDashboard" class="dashboard-row" style="margin-top: 1rem;"></div>
     </section>
   </div>
 
