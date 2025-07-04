@@ -104,30 +104,22 @@ function atualizarDashboard() {
   mostrarResultadosDashboard();
 }
 
-function formatarDataBR(isoString) {
-  const dataObj = new Date(isoString);
-  return dataObj.toLocaleDateString('pt-BR');
-}
-
 async function mostrarDashboardHoje() {
   const q = collection(db, "reunioes");
   const snapshot = await getDocs(q);
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = new Date().toISOString().split("T")[0];
 
   dashboardHoje.innerHTML = "";
-  dashboardHoje.style.maxHeight = "300px";
-  dashboardHoje.style.overflowY = "auto";
 
-  snapshot.forEach((doc) => {
-    const dados = doc.data();
-    if (dados.data === hoje) {
+  snapshot.forEach((docSnap) => {
+    const dados = docSnap.data();
+    if (dados.data === hoje && dados.status === "pendente") {
       const div = document.createElement("div");
       div.className = "card";
-      const dataFormatada = formatarDataBR(dados.data);
       div.innerHTML = `
         <strong>${dados.nomeLoja}</strong>
         <p>${dados.cidade} - ${dados.estado}</p>
-        <p>${dataFormatada} às ${dados.hora}</p>
+        <p>Data: ${dados.data} às ${dados.hora}</p>
       `;
       dashboardHoje.appendChild(div);
     }
@@ -137,22 +129,19 @@ async function mostrarDashboardHoje() {
 async function mostrarDashboardProximos() {
   const q = collection(db, "reunioes");
   const snapshot = await getDocs(q);
-  const hoje = new Date().toISOString().slice(0, 10);
+  const hoje = new Date().toISOString().split("T")[0];
 
   dashboardProximos.innerHTML = "";
-  dashboardProximos.style.maxHeight = "300px";
-  dashboardProximos.style.overflowY = "auto";
 
-  snapshot.forEach((doc) => {
-    const dados = doc.data();
-    if (dados.data > hoje) {
+  snapshot.forEach((docSnap) => {
+    const dados = docSnap.data();
+    if (dados.data > hoje && dados.status === "pendente") {
       const div = document.createElement("div");
       div.className = "card";
-      const dataFormatada = formatarDataBR(dados.data);
       div.innerHTML = `
         <strong>${dados.nomeLoja}</strong>
         <p>${dados.cidade} - ${dados.estado}</p>
-        <p>${dataFormatada} às ${dados.hora}</p>
+        <p>Data: ${dados.data} às ${dados.hora}</p>
       `;
       dashboardProximos.appendChild(div);
     }
