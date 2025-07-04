@@ -1,3 +1,4 @@
+// script-angela.js
 import {
   collection,
   addDoc,
@@ -148,24 +149,20 @@ async function mostrarDashboardProximos() {
 }
 
 async function mostrarResultadosDashboard(filtro = "todos") {
-  const q = collection(db, "reunioes");
+  const q = query(collection(db, "reunioes"));
   const snapshot = await getDocs(q);
 
   const resultados = {};
 
   snapshot.forEach((doc) => {
     const r = doc.data();
-    if (r.status === "realizada") {
-      const resultado = r.resultado;
+    if (r.status === "realizada" && r.resultado) {
+      if (filtro !== "todos" && r.resultado !== filtro) return;
 
-      // Somente considerar resultados válidos
-      const validos = ["interessado", "aguardandoPagamento", "aguardandoDocumentacao", "semInteresse"];
-      if (!validos.includes(resultado)) return;
-
-      if (!resultados[resultado]) resultados[resultado] = [];
-      resultados[resultado].push({
+      if (!resultados[r.resultado]) resultados[r.resultado] = [];
+      resultados[r.resultado].push({
         nomeLoja: r.nomeLoja || "Sem nome",
-        cnpj: r.cnpj || "Não informado"
+        cnpj: r.cnpj || "Não informado",
       });
     }
   });
@@ -179,11 +176,11 @@ async function mostrarResultadosDashboard(filtro = "todos") {
     semInteresse: "#f44336"
   };
 
-  const nomes = {
-    interessado: "Interessado",
+  const titulos = {
+    interessado: "Interessados",
     aguardandoPagamento: "Aguardando Pagamento",
     aguardandoDocumentacao: "Aguardando Documentação",
-    semInteresse: "Não teve interesse"
+    semInteresse: "Sem Interesse"
   };
 
   for (const tipo in resultados) {
@@ -192,7 +189,7 @@ async function mostrarResultadosDashboard(filtro = "todos") {
     box.style.borderTop = `4px solid ${cores[tipo] || "#999"}`;
 
     box.innerHTML = `
-      <h3>${nomes[tipo] || tipo}</h3>
+      <h3>${titulos[tipo] || tipo}</h3>
       <p><strong>${resultados[tipo].length}</strong> resultado(s)</p>
       <button onclick='verDetalhesResultado(${JSON.stringify(resultados[tipo])})'>Ver Detalhes</button>
     `;
@@ -210,3 +207,5 @@ window.verDetalhesResultado = function(lista) {
   const texto = lista.map(item => `Loja: ${item.nomeLoja}\nCNPJ: ${item.cnpj}`).join('\n\n');
   alert(texto);
 };
+
+atualizarDashboard();
