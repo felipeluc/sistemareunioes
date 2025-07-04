@@ -1,43 +1,49 @@
-import { db } from './firebase-config.js';
 import {
   collection,
-  query,
-  where,
   getDocs,
   updateDoc,
   doc,
-  Timestamp
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import { db } from "./firebase-config.js";
 
 const userName = localStorage.getItem("usuarioLogado") || "Consultor";
 document.getElementById("userName").textContent = userName;
 
-const reunioesRef = collection(db, 'reunioes');
-const consultoresDisponiveis = ["Leticia", "Glaucia", "Marcelo", "Gabriel"];
+const reunioesPendentesEl = document.getElementById("reunioesPendentes");
+const reunioesAgendadasEl = document.getElementById("reunioesAgendadas");
+const reunioesRealizadasEl = document.getElementById("reunioesRealizadas");
 
-async function carregarPendentes() {
-  const q = query(reunioesRef, where("consultor", "==", userName), where("status", "==", "pendente"));
+async function carregarReunioes() {
+  reunioesPendentesEl.innerHTML = "<p>Carregando...</p>";
+  reunioesAgendadasEl.innerHTML = "";
+  reunioesRealizadasEl.innerHTML = "";
+
+  const q = query(collection(db, "reunioes"), where("consultor", "==", userName));
   const snapshot = await getDocs(q);
-  const container = document.getElementById("reunioesPendentes");
-  container.innerHTML = "";
+
+  let pendentes = "";
+  let agendadas = "";
+  let realizadas = "";
 
   snapshot.forEach(docSnap => {
     const r = docSnap.data();
-    const card = document.createElement("div");
-    card.className = "card";
+    const id = docSnap.id;
 
-    const selectTransferir = consultoresDisponiveis.map(c => `<option value="${c}">${c}</option>`).join('');
+    const card = document.createElement("div");
+    card.classList.add("card");
 
     card.innerHTML = `
       <h3>${r.nomeLoja || "Sem nome"}</h3>
       <p><strong>Segmento:</strong> ${r.segmento}</p>
       <p><strong>Data:</strong> ${r.data || "-"}</p>
       <p><strong>Horário:</strong> ${r.hora || r.horario || "-"}</p>
-      <button class="btn" onclick="aceitarReuniao('${docSnap.id}')">Aceitar</button>
-      <select class="transfer-select" onchange="transferirReuniao('${docSnap.id}', this)">
-        <option value="">Transferir para...</option>
-        ${selectTransferir}
-      </select>
+      ${r.status === "pendente" ? `
+        <button class="btn" onclick="aceitarReuniao('${id}')">Aceitar</button>
+        <button class="btn" onclick="transferirParaAngela('${id}')">Transferir</button>
+      ` : ""}
       <button class="btn" onclick="abrirCard(this)">Ver Detalhes</button>
       <div class="card-details">
         <p><strong>Cidade:</strong> ${r.cidade || ""}</p>
@@ -45,69 +51,19 @@ async function carregarPendentes() {
         <p><strong>Criado em:</strong> ${r.criadoEm?.toDate().toLocaleString() || ""}</p>
       </div>
     `;
-    container.appendChild(card);
-  });
-}
 
-async function carregarAgendadas() {
-  const q = query(reunioesRef, where("consultor", "==", userName), where("status", "==", "agendado"));
-  const snapshot = await getDocs(q);
-  const container = document.getElementById("reunioesAgendadas");
-  container.innerHTML = "";
-
-  snapshot.forEach(docSnap => {
-    const r = docSnap.data();
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <h3>${r.nomeLoja}</h3>
-      <p><strong>Segmento:</strong> ${r.segmento}</p>
-      <p><strong>Data:</strong> ${r.data || "-"}</p>
-      <p><strong>Horário:</strong> ${r.hora || r.horario || "-"}</p>
-      <select onchange="alterarStatus('${docSnap.id}', this.value)" class="status-select">
-        <option value="">Atualizar status</option>
-        <option value="fechou">Fechou</option>
-        <option value="nao_interesse">Não teve interesse</option>
-        <option value="aguardando_pagamento">Aguardando pagamento</option>
-        <option value="aguardando_documentacao">Aguardando documentação</option>
-      </select>
-    `;
-    container.appendChild(card);
-  });
-}
-
-async function carregarRealizadas() {
-  const q = query(reunioesRef, where("consultor", "==", userName));
-  const snapshot = await getDocs(q);
-  const container = document.getElementById("reunioesRealizadas");
-  container.innerHTML = "";
-
-  snapshot.forEach(docSnap => {
-    const r = docSnap.data();
-    if (["fechou", "nao_interesse", "aguardando_pagamento", "aguardando_documentacao"].includes(r.status)) {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <h3>${r.nomeLoja}</h3>
-        <p><strong>Data:</strong> ${r.data || "-"}</p>
-        <p><strong>Status:</strong> ${r.status}</p>
-        <button class="btn" onclick="abrirCard(this)">Ver Detalhes</button>
-        <div class="card-details">
-          <p><strong>Segmento:</strong> ${r.segmento}</p>
-          <p><strong>Cidade:</strong> ${r.cidade}</p>
-          <p><strong>Observações:</strong> ${r.observacoes || ""}</p>
-          <select onchange="alterarStatus('${docSnap.id}', this.value)" class="status-select">
-            <option value="">Editar status</option>
-            <option value="fechou">Fechou</option>
-            <option value="nao_interesse">Não teve interesse</option>
-            <option value="aguardando_pagamento">Aguardando pagamento</option>
-            <option value="aguardando_documentacao">Aguardando documentação</option>
-          </select>
-        </div>
-      `;
-      container.appendChild(card);
+    if (r.status === "pendente") {
+      reunioesPendentesEl.appendChild(card);
+    } else if (["aceito", "interessado", "aguardando pagamento", "aguardando documentação"].includes(r.status)) {
+      reunioesAgendadasEl.appendChild(card);
+    } else if (["nao teve interesse", "realizada"].includes(r.status)) {
+      reunioesRealizadasEl.appendChild(card);
     }
   });
+
+  if (!reunioesPendentesEl.hasChildNodes()) reunioesPendentesEl.innerHTML = "<p>Nenhuma pendente.</p>";
+  if (!reunioesAgendadasEl.hasChildNodes()) reunioesAgendadasEl.innerHTML = "<p>Nenhuma agendada.</p>";
+  if (!reunioesRealizadasEl.hasChildNodes()) reunioesRealizadasEl.innerHTML = "<p>Nenhuma realizada.</p>";
 }
 
 window.abrirCard = (btn) => {
@@ -117,29 +73,14 @@ window.abrirCard = (btn) => {
 
 window.aceitarReuniao = async (id) => {
   const ref = doc(db, "reunioes", id);
-  await updateDoc(ref, { status: "agendado" });
-  await carregarPendentes();
-  await carregarAgendadas();
+  await updateDoc(ref, { status: "aceito" });
+  await carregarReunioes();
 };
 
-window.transferirReuniao = async (id, selectElement) => {
-  const novoConsultor = selectElement.value;
-  if (novoConsultor && novoConsultor !== userName) {
-    const ref = doc(db, "reunioes", id);
-    await updateDoc(ref, { consultor: novoConsultor, status: "transferencia" });
-    await carregarPendentes();
-  }
-};
-
-window.alterarStatus = async (id, novoStatus) => {
-  if (!novoStatus) return;
+window.transferirParaAngela = async (id) => {
   const ref = doc(db, "reunioes", id);
-  await updateDoc(ref, { status: novoStatus });
-  await carregarAgendadas();
-  await carregarRealizadas();
+  await updateDoc(ref, { status: "transferencia" });
+  await carregarReunioes();
 };
 
-// Carregar tudo ao abrir
-carregarPendentes();
-carregarAgendadas();
-carregarRealizadas();
+carregarReunioes();
