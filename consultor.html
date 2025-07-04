@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Consultor | Comercial SouFacil</title>
   <link rel="stylesheet" href="style.css" />
   <style>
@@ -12,24 +12,17 @@
       background: #f2f2f7;
       display: flex;
       height: 100vh;
-      overflow: hidden;
     }
 
     .sidebar {
-      width: 260px;
-      background: #ffffff;
-      border-right: 1px solid #e0e0e0;
+      width: 240px;
+      background: #fff;
+      border-right: 1px solid #ccc;
       padding: 2rem 1rem;
       display: flex;
       flex-direction: column;
-      border-radius: 0 20px 20px 0;
-      box-shadow: 4px 0 12px rgba(0,0,0,0.05);
-    }
-
-    .sidebar h2 {
-      font-size: 1.6rem;
-      margin-bottom: 2rem;
-      text-align: center;
+      gap: 1rem;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.05);
     }
 
     .sidebar button {
@@ -41,11 +34,6 @@
       text-align: left;
       cursor: pointer;
       transition: background 0.2s ease;
-      margin-bottom: 0.5rem;
-    }
-
-    .sidebar button:hover {
-      background: #007aff20;
     }
 
     .sidebar button.active {
@@ -59,92 +47,90 @@
       overflow-y: auto;
     }
 
-    .content-section {
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section {
       display: none;
     }
 
-    .content-section.active {
+    .section.active {
       display: block;
-    }
-
-    .section-title {
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
     }
 
     .card {
-      background: white;
-      padding: 1rem;
+      background: #fff;
       border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       margin-bottom: 1rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .card strong {
-      display: block;
-      font-size: 1.1rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .card small {
-      color: #555;
     }
 
     .card button, .card select {
       margin-top: 0.5rem;
-      margin-right: 0.5rem;
-      padding: 0.5rem 0.9rem;
-      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
       border-radius: 10px;
       border: none;
-      background: #007aff;
-      color: white;
+      font-size: 0.9rem;
       cursor: pointer;
     }
 
-    .card select {
-      background: white;
-      color: #333;
-      border: 1px solid #ccc;
+    .card button {
+      background: #007aff;
+      color: white;
+      margin-right: 0.5rem;
     }
 
     .card button:hover {
       background: #005dd9;
+    }
+
+    .card select {
+      border: 1px solid #ccc;
+      background: white;
+    }
+
+    .lists {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
     }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <h2>SouFacil</h2>
-    <p id="nomeConsultor"></p>
     <button onclick="mostrarSecao('pendentes')" class="active">Pendentes</button>
     <button onclick="mostrarSecao('agendadas')">Agendadas</button>
     <button onclick="mostrarSecao('realizadas')">Realizadas</button>
   </div>
 
   <div class="main-content">
-    <section id="pendentes" class="content-section active">
-      <h2 class="section-title">Reuniões Pendentes</h2>
+    <h1 id="nomeConsultor">Bem-vindo(a)</h1>
+
+    <div id="pendentes" class="section active">
+      <h2>Reuniões Pendentes</h2>
       <div id="listaPendentes"></div>
-    </section>
+    </div>
 
-    <section id="agendadas" class="content-section">
-      <h2 class="section-title">Reuniões Agendadas</h2>
+    <div id="agendadas" class="section">
+      <h2>Reuniões Agendadas</h2>
       <div id="listaAgendadas"></div>
-    </section>
+    </div>
 
-    <section id="realizadas" class="content-section">
-      <h2 class="section-title">Reuniões Realizadas</h2>
+    <div id="realizadas" class="section">
+      <h2>Reuniões Realizadas</h2>
       <div id="listaRealizadas"></div>
-    </section>
+    </div>
   </div>
 
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="script-consultor.js"></script>
   <script>
     function mostrarSecao(id) {
-      document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(id).classList.add('active');
 
       document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
