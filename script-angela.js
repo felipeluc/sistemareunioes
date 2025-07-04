@@ -13,10 +13,7 @@ import { db } from './firebase-config.js';
 
 const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
-const graficoReunioes = document.getElementById("graficoReunioes");
-const graficoLojas = document.getElementById("graficoLojas");
 
-// Agendamento
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -43,14 +40,13 @@ form.addEventListener("submit", async (e) => {
     await addDoc(collection(db, "reunioes"), data);
     alert("Reunião agendada com sucesso!");
     form.reset();
-    carregarDashboard();
+    carregarTransferencias(); // atualiza lista após agendamento também
   } catch (err) {
     console.error("Erro ao salvar:", err);
     alert("Erro ao agendar reunião");
   }
 });
 
-// Transferências
 async function carregarTransferencias() {
   const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
   const snapshot = await getDocs(q);
@@ -58,133 +54,57 @@ async function carregarTransferencias() {
   listaTransferencias.innerHTML = "";
 
   if (snapshot.empty) {
-    listaTransferencias.innerHTML = "<p>Nenhuma reunião transferida no momento.</p>";
+    listaTransferencias.innerHTML = "<p>Nenhuma transferência encontrada.</p>";
     return;
   }
 
-  snapshot.forEach(docSnap => {
+  snapshot.forEach((docSnap) => {
     const dados = docSnap.data();
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <h3>${dados.nomeLoja || "Loja sem nome"}</h3>
-      <p><b>Data:</b> ${dados.data || "-"}</p>
-      <p><b>Horário:</b> ${dados.hora || "-"}</p>
-      <p><b>Segmento:</b> ${dados.segmento || "-"}</p>
+    const id = docSnap.id;
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <strong>${dados.nomeLoja || "Loja sem nome"}</strong>
+      <p><b>Cidade:</b> ${dados.cidade || "-"}</p>
+      <p><b>Estado:</b> ${dados.estado || "-"}</p>
       <p><b>Solicitado por:</b> ${dados.transferidoPor || "Desconhecido"}</p>
     `;
 
     const select = document.createElement("select");
     select.innerHTML = `
-      <option value="">Selecionar consultor</option>
+      <option value="">Selecionar novo consultor</option>
       <option value="Leticia">Leticia</option>
       <option value="Glaucia">Glaucia</option>
       <option value="Marcelo">Marcelo</option>
       <option value="Gabriel">Gabriel</option>
     `;
 
-    const btn = document.createElement("button");
-    btn.textContent = "Transferir";
-    btn.onclick = async () => {
+    const botaoReenviar = document.createElement("button");
+    botaoReenviar.textContent = "Transferir";
+    botaoReenviar.onclick = async () => {
       const novoConsultor = select.value;
       if (!novoConsultor) {
-        alert("Selecione um consultor para transferir.");
+        alert("Selecione um consultor para transferir");
         return;
       }
-      await updateDoc(doc(db, "reunioes", docSnap.id), {
+
+      await updateDoc(doc(db, "reunioes", id), {
         consultor: novoConsultor,
         status: "pendente",
         transferidoPor: null
       });
+
+      alert("Reunião transferida com sucesso");
       carregarTransferencias();
-      carregarDashboard();
     };
 
-    card.appendChild(select);
-    card.appendChild(btn);
-    listaTransferencias.appendChild(card);
+    div.appendChild(select);
+    div.appendChild(botaoReenviar);
+
+    listaTransferencias.appendChild(div);
   });
 }
 
-// Dashboard
-function carregarDashboard() {
-  graficoReunioes.innerHTML = "";
-  graficoLojas.innerHTML = "";
-
-  const filtroContainer = document.createElement("div");
-  filtroContainer.style.display = "flex";
-  filtroContainer.style.gap = "1rem";
-  filtroContainer.style.marginBottom = "1rem";
-
-  const filtroConsultor = document.createElement("select");
-  filtroConsultor.innerHTML = `
-    <option value="">Todos os consultores</option>
-    <option value="Leticia">Leticia</option>
-    <option value="Glaucia">Glaucia</option>
-    <option value="Marcelo">Marcelo</option>
-    <option value="Gabriel">Gabriel</option>
-  `;
-
-  const filtroMes = document.createElement("select");
-  const meses = [
-    "01","02","03","04","05","06","07","08","09","10","11","12"
-  ];
-  const anoAtual = new Date().getFullYear();
-  filtroMes.innerHTML = `<option value="">Todos os meses</option>` + 
-    meses.map(m => `<option value="${anoAtual}-${m}">${m}/${anoAtual}</option>`).join("");
-
-  filtroConsultor.onchange = atualizar;
-  filtroMes.onchange = atualizar;
-
-  filtroContainer.appendChild(filtroConsultor);
-  filtroContainer.appendChild(filtroMes);
-  graficoReunioes.appendChild(filtroContainer);
-
-  atualizar();
-
-  async function atualizar() {
-    const q = query(collection(db, "reunioes"));
-    const snapshot = await getDocs(q);
-
-    let total = 0;
-    let totalLojas = 0;
-
-    snapshot.forEach(docSnap => {
-      const dados = docSnap.data();
-      const data = dados.data || "";
-
-      const filtroOk = (
-        (!filtroConsultor.value || dados.consultor === filtroConsultor.value) &&
-        (!filtroMes.value || data.startsWith(filtroMes.value))
-      );
-
-      if (filtroOk) {
-        total++;
-        totalLojas += parseInt(dados.qtdLojas || 0);
-      }
-    });
-
-    graficoReunioes.innerHTML = "";
-    graficoReunioes.appendChild(filtroContainer);
-
-    const cardReunioes = document.createElement("div");
-    cardReunioes.className = "card";
-    cardReunioes.innerHTML = `
-      <h3>Total de Reuniões</h3>
-      <p style="font-size: 2rem;">${total}</p>
-    `;
-
-    graficoReunioes.appendChild(cardReunioes);
-
-    graficoLojas.innerHTML = `
-      <div class="card">
-        <h3>Total de Lojas</h3>
-        <p style="font-size: 2rem;">${totalLojas}</p>
-      </div>
-    `;
-  }
-}
-
-// Início
 carregarTransferencias();
-carregarDashboard();
