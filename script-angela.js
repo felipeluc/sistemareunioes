@@ -15,6 +15,8 @@ const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
 const graficoReunioes = document.getElementById("graficoReunioes");
 const graficoLojas = document.getElementById("graficoLojas");
+const dashboardHoje = document.getElementById("dashboardHoje");
+const dashboardProximos = document.getElementById("dashboardProximos");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -43,6 +45,7 @@ form.addEventListener("submit", async (e) => {
     alert("Reunião agendada com sucesso!");
     form.reset();
     atualizarDashboard();
+    carregarTransferencias();
   } catch (err) {
     console.error("Erro ao salvar:", err);
     alert("Erro ao agendar reunião");
@@ -59,6 +62,13 @@ async function carregarTransferencias() {
     const dados = docSnap.data();
     const div = document.createElement("div");
     div.className = "card";
+    div.style.border = "1px solid #ddd";
+    div.style.borderRadius = "12px";
+    div.style.boxShadow = "0 2px 5px rgba(0,0,0,0.05)";
+    div.style.padding = "1rem";
+    div.style.marginBottom = "1rem";
+    div.style.background = "#fff";
+
     div.innerHTML = `
       <strong>${dados.nomeLoja}</strong>
       <p><b>Cidade:</b> ${dados.cidade}</p>
@@ -71,7 +81,7 @@ async function carregarTransferencias() {
         <option value="Marcelo">Marcelo</option>
         <option value="Gabriel">Gabriel</option>
       </select>
-      <button class="btn-transferir">Transferir</button>
+      <button class="btn-transferir" style="margin-top: 0.5rem;">Transferir</button>
     `;
 
     const select = div.querySelector(".novo-consultor");
@@ -94,12 +104,12 @@ async function carregarTransferencias() {
   });
 }
 
-carregarTransferencias();
-
 function atualizarDashboard() {
   contarReunioesPorPeriodo();
   contarLojasPorPeriodo();
   mostrarResultadosDashboard();
+  mostrarReunioesHoje();
+  mostrarProximasReunioes();
 }
 
 async function contarReunioesPorPeriodo() {
@@ -198,5 +208,52 @@ window.verDetalhesResultado = function(lista) {
 
   alert(texto);
 };
+
+async function mostrarReunioesHoje() {
+  const snapshot = await getDocs(collection(db, "reunioes"));
+  const hoje = new Date().toISOString().split("T")[0];
+
+  dashboardHoje.innerHTML = "";
+
+  snapshot.forEach((docSnap) => {
+    const r = docSnap.data();
+    if (r.data === hoje && r.status === "pendente") {
+      const card = document.createElement("div");
+      card.className = "dashboard-box";
+      card.innerHTML = `
+        <h3>${r.nomeLoja}</h3>
+        <p>${r.hora} - ${r.cidade}/${r.estado}</p>
+      `;
+      dashboardHoje.appendChild(card);
+    }
+  });
+}
+
+async function mostrarProximasReunioes() {
+  const snapshot = await getDocs(collection(db, "reunioes"));
+  const hoje = new Date();
+  const proximosDias = new Date();
+  proximosDias.setDate(hoje.getDate() + 7);
+
+  dashboardProximos.innerHTML = "";
+
+  snapshot.forEach((docSnap) => {
+    const r = docSnap.data();
+    const dataReuniao = new Date(r.data);
+    if (
+      r.status === "pendente" &&
+      dataReuniao > hoje &&
+      dataReuniao <= proximosDias
+    ) {
+      const card = document.createElement("div");
+      card.className = "dashboard-box";
+      card.innerHTML = `
+        <h3>${r.nomeLoja}</h3>
+        <p>${r.data} - ${r.hora} - ${r.cidade}/${r.estado}</p>
+      `;
+      dashboardProximos.appendChild(card);
+    }
+  });
+}
 
 atualizarDashboard();
