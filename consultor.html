@@ -23,14 +23,13 @@
       display: flex;
       flex-direction: column;
       border-radius: 0 20px 20px 0;
-      box-shadow: 4px 0 12px rgba(0,0,0,0.08);
+      box-shadow: 4px 0 12px rgba(0,0,0,0.05);
     }
 
     .sidebar h2 {
       font-size: 1.6rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
       text-align: center;
-      color: #007aff;
     }
 
     .sidebar button {
@@ -60,18 +59,18 @@
       overflow-y: auto;
     }
 
-    .section-title {
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
     .content-section {
       display: none;
     }
 
     .content-section.active {
       display: block;
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
     }
 
     .card {
@@ -83,13 +82,13 @@
     }
 
     .card strong {
-      font-size: 1.1rem;
       display: block;
-      margin-bottom: 0.4rem;
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
     }
 
     .card small {
-      color: #666;
+      color: #555;
     }
 
     .card button, .card select {
@@ -113,20 +112,12 @@
     .card button:hover {
       background: #005dd9;
     }
-
-    #nomeConsultor {
-      text-align: center;
-      font-weight: bold;
-      margin-bottom: 2rem;
-      font-size: 1rem;
-      color: #333;
-    }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <h2>SouFacil</h2>
-    <div id="nomeConsultor"></div>
+    <p id="nomeConsultor"></p>
     <button onclick="mostrarSecao('pendentes')" class="active">Pendentes</button>
     <button onclick="mostrarSecao('agendadas')">Agendadas</button>
     <button onclick="mostrarSecao('realizadas')">Realizadas</button>
@@ -165,3 +156,157 @@
   </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comercial SouFacil</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(to bottom right, #e9ecf3, #f9f9fb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background: white;
+      border-radius: 24px;
+      padding: 2rem 2.5rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .login-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #1c1c1e;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .login-form label {
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .login-form select,
+    .login-form input {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border-radius: 12px;
+      border: 1px solid #d1d1d6;
+      background: #f9f9fb;
+      color: #1c1c1e;
+      appearance: none;
+    }
+
+    .login-form button {
+      margin-top: 1rem;
+      padding: 0.9rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 14px;
+      border: none;
+      background: #007aff;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .login-form button:hover {
+      background: #005dd9;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1 class="login-title">Comercial SouFacil</h1>
+    <form class="login-form" onsubmit="login(); return false;">
+      <label for="user">Usuário</label>
+      <select id="user">
+        <option value="">Selecione</option>
+        <option value="Ana Carolina">Ana Carolina</option>
+        <option value="Felipe">Felipe</option>
+        <option value="Leticia">Leticia</option>
+        <option value="Glaucia">Glaucia</option>
+        <option value="Marcelo">Marcelo</option>
+        <option value="Gabriel">Gabriel</option>
+        <option value="Angela">Angela</option>
+      </select>
+
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" placeholder="Digite sua senha" />
+
+      <div id="login-error" class="error"></div>
+
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
+
+  <script>
+    const users = {
+      "Ana Carolina": "Ana1234",
+      "Felipe": "Felipe1515",
+      "Glaucia": "Glaucia1234",
+      "Leticia": "Le1234",
+      "Marcelo": "Marcelo1234",
+      "Gabriel": "Gabriel1234",
+      "Angela": "Angela1234"
+    };
+
+    function login() {
+      const username = document.getElementById("user").value;
+      const password = document.getElementById("senha").value;
+      const errorEl = document.getElementById("login-error");
+
+      errorEl.textContent = "";
+
+      if (!username || !password) {
+        errorEl.textContent = "Preencha todos os campos.";
+        return;
+      }
+
+      if (users[username] !== password) {
+        errorEl.textContent = "Usuário ou senha incorretos.";
+        return;
+      }
+
+      // ✅ Salvar no localStorage com chave padrão
+      localStorage.setItem("usuarioLogado", username);
+
+      // ✅ Redirecionar para a tela correta
+      if (["Leticia", "Glaucia", "Marcelo", "Gabriel"].includes(username)) {
+        window.location.href = "consultor.html";
+      } else if (username === "Angela") {
+        window.location.href = "angela.html";
+      } else {
+        window.location.href = "gerente.html";
+      }
+    }
+  </script>
+
+  <script type="module" src="firebase-config.js"></script>
+</body>
+</html>
+
