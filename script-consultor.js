@@ -1,19 +1,20 @@
 import {
   collection,
+  getDocs,
   query,
   where,
-  getDocs,
   updateDoc,
   doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { db } from './firebase-config.js';
+import { db } from "./firebase-config.js";
 
 const usuario = localStorage.getItem("usuarioLogado");
-document.getElementById("nomeConsultor").textContent = `Bem-vindo, ${usuario}`;
+document.getElementById("nomeConsultor").innerText = `Bem-vindo(a), ${usuario}`;
 
-// Função principal
-carregarReunioes();
+const listaPendentes = document.getElementById("listaPendentes");
+const listaAgendadas = document.getElementById("listaAgendadas");
+const listaRealizadas = document.getElementById("listaRealizadas");
 
 async function carregarReunioes() {
   const q = query(collection(db, "reunioes"), where("consultor", "==", usuario));
@@ -23,64 +24,65 @@ async function carregarReunioes() {
   const agendadas = [];
   const realizadas = [];
 
-  snapshot.forEach(docSnap => {
+  snapshot.forEach((docSnap) => {
     const dados = docSnap.data();
-    const id = docSnap.id;
+    dados.id = docSnap.id;
 
-    if (dados.status === "pendente") pendentes.push({ ...dados, id });
-    else if (dados.status === "agendado") agendadas.push({ ...dados, id });
-    else if (dados.status === "realizado") realizadas.push({ ...dados, id });
+    if (dados.status === "pendente") pendentes.push(dados);
+    else if (dados.status === "agendada") agendadas.push(dados);
+    else if (dados.status === "realizada") realizadas.push(dados);
   });
 
-  mostrarLista(pendentes, "listaPendentes", true, false);
-  mostrarLista(agendadas, "listaAgendadas", false, true);
-  mostrarLista(realizadas, "listaRealizadas", false, false);
+  mostrarLista(listaPendentes, pendentes, "pendente");
+  mostrarLista(listaAgendadas, agendadas, "agendada");
+  mostrarLista(listaRealizadas, realizadas, "realizada");
 }
 
-function mostrarLista(lista, containerId, permitirAcoes, permitirStatus) {
-  const container = document.getElementById(containerId);
+function mostrarLista(container, lista, tipo) {
   container.innerHTML = "";
-
   if (lista.length === 0) {
-    container.innerHTML = "<p style='color:#888;'>Nenhuma reunião encontrada.</p>";
+    container.innerHTML = "<p>Nenhuma reunião encontrada.</p>";
     return;
   }
 
-  lista.forEach(dados => {
+  lista.forEach((dados) => {
     const div = document.createElement("div");
     div.className = "card";
 
     div.innerHTML = `
-      <strong>${dados.nomeLoja}</strong>
-      <small>${dados.cidade} - ${dados.estado || ""}</small><br>
-      <small>Horário: ${dados.horario || dados.hora || ""}</small><br>
-      <small>Segmento: ${dados.segmento || ""}</small><br>
+      <strong>${dados.nomeLoja || "Sem nome"}</strong>
+      <div><b>Segmento:</b> ${dados.segmento || "-"}</div>
+      <div><b>Data:</b> ${dados.data || "-"}</div>
+      <div><b>Horário:</b> ${dados.hora || "-"}</div>
     `;
 
-    if (permitirAcoes) {
+    if (tipo === "pendente") {
       const btnAceitar = document.createElement("button");
       btnAceitar.textContent = "Aceitar";
-      btnAceitar.onclick = () => atualizarStatus(dados.id, "agendado");
+      btnAceitar.onclick = () => aceitar(dados.id);
+      div.appendChild(btnAceitar);
 
       const btnTransferir = document.createElement("button");
       btnTransferir.textContent = "Transferir";
-      btnTransferir.onclick = () => atualizarStatus(dados.id, "transferencia");
-
-      div.appendChild(btnAceitar);
+      btnTransferir.onclick = () => transferir(dados.id);
       div.appendChild(btnTransferir);
+
+      const btnDetalhes = document.createElement("button");
+      btnDetalhes.textContent = "Ver Detalhes";
+      btnDetalhes.onclick = () => verDetalhes(dados);
+      div.appendChild(btnDetalhes);
     }
 
-    if (permitirStatus) {
+    if (tipo === "agendada") {
       const select = document.createElement("select");
       select.innerHTML = `
         <option value="">Selecionar status</option>
-        <option value="realizado">Realizado</option>
+        <option value="interessado">Interessado</option>
+        <option value="aguardandoPagamento">Aguardando Pagamento</option>
+        <option value="aguardandoDocumentacao">Aguardando Documentação</option>
+        <option value="semInteresse">Não teve interesse</option>
       `;
-      select.onchange = () => {
-        if (select.value) {
-          atualizarStatus(dados.id, select.value);
-        }
-      };
+      select.onchange = () => atualizarStatus(dados.id, select.value);
       div.appendChild(select);
     }
 
@@ -88,8 +90,41 @@ function mostrarLista(lista, containerId, permitirAcoes, permitirStatus) {
   });
 }
 
-async function atualizarStatus(id, novoStatus) {
-  const docRef = doc(db, "reunioes", id);
-  await updateDoc(docRef, { status: novoStatus });
+async function aceitar(id) {
+  const ref = doc(db, "reunioes", id);
+  await updateDoc(ref, { status: "agendada" });
   carregarReunioes();
 }
+
+async function transferir(id) {
+  const ref = doc(db, "reunioes", id);
+  await updateDoc(ref, { status: "transferencia" });
+  carregarReunioes();
+}
+
+function verDetalhes(dados) {
+  alert(`
+Loja: ${dados.nomeLoja}
+Cidade: ${dados.cidade}
+Estado: ${dados.estado}
+Contato: ${dados.contato}
+Segmento: ${dados.segmento}
+Link: ${dados.link}
+Observações: ${dados.observacoes || "-"}
+  `);
+}
+
+async function atualizarStatus(id, resultado) {
+  if (!resultado) return;
+
+  const ref = doc(db, "reunioes", id);
+  await updateDoc(ref, {
+    status: "realizada",
+    resultado: resultado,
+    realizadaEm: new Date().toISOString()
+  });
+
+  carregarReunioes();
+}
+
+carregarReunioes();
