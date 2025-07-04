@@ -104,9 +104,9 @@ function atualizarDashboard() {
   mostrarResultadosDashboard();
 }
 
-function formatarDataBrasileira(dataISO) {
-  const [ano, mes, dia] = dataISO.split("-");
-  return `${dia}/${mes}/${ano}`;
+function formatarDataBR(isoString) {
+  const dataObj = new Date(isoString);
+  return dataObj.toLocaleDateString('pt-BR');
 }
 
 async function mostrarDashboardHoje() {
@@ -115,16 +115,19 @@ async function mostrarDashboardHoje() {
   const hoje = new Date().toISOString().slice(0, 10);
 
   dashboardHoje.innerHTML = "";
+  dashboardHoje.style.maxHeight = "300px";
+  dashboardHoje.style.overflowY = "auto";
 
   snapshot.forEach((doc) => {
     const dados = doc.data();
     if (dados.data === hoje) {
       const div = document.createElement("div");
       div.className = "card";
+      const dataFormatada = formatarDataBR(dados.data);
       div.innerHTML = `
         <strong>${dados.nomeLoja}</strong>
         <p>${dados.cidade} - ${dados.estado}</p>
-        <p>${formatarDataBrasileira(dados.data)} às ${dados.hora}</p>
+        <p>${dataFormatada} às ${dados.hora}</p>
       `;
       dashboardHoje.appendChild(div);
     }
@@ -137,16 +140,19 @@ async function mostrarDashboardProximos() {
   const hoje = new Date().toISOString().slice(0, 10);
 
   dashboardProximos.innerHTML = "";
+  dashboardProximos.style.maxHeight = "300px";
+  dashboardProximos.style.overflowY = "auto";
 
   snapshot.forEach((doc) => {
     const dados = doc.data();
     if (dados.data > hoje) {
       const div = document.createElement("div");
       div.className = "card";
+      const dataFormatada = formatarDataBR(dados.data);
       div.innerHTML = `
         <strong>${dados.nomeLoja}</strong>
         <p>${dados.cidade} - ${dados.estado}</p>
-        <p>${formatarDataBrasileira(dados.data)} às ${dados.hora}</p>
+        <p>${dataFormatada} às ${dados.hora}</p>
       `;
       dashboardProximos.appendChild(div);
     }
