@@ -1,47 +1,51 @@
-import { db } from './firebase.js';
-import { collection, getDocs, doc, updateDoc, addDoc, query, where, Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-lite.js';
+import { db } from './firebase-config.js';
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  doc,
+  updateDoc,
+  addDoc,
+  Timestamp
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const userName = localStorage.getItem('usuarioLogado') || 'Consultor';
 document.getElementById('userName').textContent = userName;
-
-const showSection = (id) => {
-  document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-};
 
 const reunioesRef = collection(db, 'reunioes');
 const consultoresDisponiveis = ["Leticia", "Glaucia", "Marcelo", "Gabriel"];
 
 async function carregarPendentes() {
-  const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName), where("status", "==", "pendente")));
+  const q = query(reunioesRef, where("consultor", "==", userName), where("status", "==", "pendente"));
+  const snapshot = await getDocs(q);
   const container = document.getElementById('reunioesPendentes');
   container.innerHTML = '';
+
   snapshot.forEach(docSnap => {
     const r = docSnap.data();
     const card = document.createElement('div');
     card.className = 'card';
-    const selectTransferir = consultoresDisponiveis.map(c => `<option value="${c}">${c}</option>`).join('');
+    const selectTransferir = consultoresDisponiveis.map(c =>
+      `<option value="${c}">${c}</option>`).join('');
     card.innerHTML = `
       <h3>${r.nomeLoja || 'Sem nome'}</h3>
-      <p><strong>Segmento:</strong> ${r.segmento}</p>
-      <p><strong>Data:</strong> ${r.data || ''}</p>
-      <p><strong>Horário:</strong> ${r.hora || ''}</p>
+      <p><strong>Segmento:</strong> ${r.segmento || ''}</p>
+      <p><strong>Data:</strong> ${r.data || '---'} | <strong>Hora:</strong> ${r.horario || r.hora || '---'}</p>
       <button class="btn" onclick="aceitarReuniao('${docSnap.id}')">Aceitar</button>
       <select class="transfer-select" onchange="transferirReuniao('${docSnap.id}', this)">
         <option value="">Transferir para...</option>
         ${selectTransferir}
       </select>
       <button class="btn" onclick="abrirCard(this)">Ver Detalhes</button>
-      <div class="card-details" style="display:none">
+      <div class="card-details">
         <p><strong>Cidade:</strong> ${r.cidade || ''}</p>
-        <p><strong>Link:</strong> ${r.link || ''}</p>
-        <p><strong>Estado:</strong> ${r.estado || ''}</p>
-        <p><strong>Qtd Lojas:</strong> ${r.qtdLojas || ''}</p>
-        <p><strong>CNPJ:</strong> ${r.cnpj || ''}</p>
-        <p><strong>Origem:</strong> ${r.origem || ''}</p>
-        <p><strong>Canal:</strong> ${r.canal || ''}</p>
         <p><strong>Contato:</strong> ${r.contato || ''}</p>
-        <p><strong>Responsável:</strong> ${r.responsavelConversa || ''}</p>
+        <p><strong>Canal:</strong> ${r.canal || ''}</p>
+        <p><strong>Responsável pela conversa:</strong> ${r.responsavelConversa || ''}</p>
+        <p><strong>Origem:</strong> ${r.origem || ''}</p>
+        <p><strong>Link:</strong> <a href="${r.link || '#'}" target="_blank">Abrir</a></p>
+        <p><strong>Criado em:</strong> ${r.criadoEm?.toDate().toLocaleString() || ''}</p>
       </div>
     `;
     container.appendChild(card);
@@ -49,8 +53,8 @@ async function carregarPendentes() {
 }
 
 window.abrirCard = (btn) => {
-  const cardDetails = btn.closest('.card').querySelector('.card-details');
-  cardDetails.style.display = cardDetails.style.display === 'none' ? 'block' : 'none';
+  const card = btn.closest('.card');
+  card.classList.toggle('open');
 };
 
 window.aceitarReuniao = async (id) => {
@@ -64,24 +68,25 @@ window.transferirReuniao = async (id, selectElement) => {
   const novoConsultor = selectElement.value;
   if (novoConsultor && novoConsultor !== userName) {
     const ref = doc(db, 'reunioes', id);
-    await updateDoc(ref, { consultor: novoConsultor });
+    await updateDoc(ref, { consultor: novoConsultor, status: 'transferencia' });
     carregarPendentes();
   }
 };
 
 async function carregarAgendadas() {
-  const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName), where("status", "==", "agendado")));
+  const q = query(reunioesRef, where("consultor", "==", userName), where("status", "==", "agendado"));
+  const snapshot = await getDocs(q);
   const container = document.getElementById('reunioesAgendadas');
   container.innerHTML = '';
+
   snapshot.forEach(docSnap => {
     const r = docSnap.data();
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
       <h3>${r.nomeLoja}</h3>
+      <p><strong>Data:</strong> ${r.data || '---'} | <strong>Hora:</strong> ${r.horario || r.hora || '---'}</p>
       <p><strong>Segmento:</strong> ${r.segmento}</p>
-      <p><strong>Data:</strong> ${r.data}</p>
-      <p><strong>Horário:</strong> ${r.hora}</p>
       <select onchange="alterarStatus('${docSnap.id}', this.value)" class="status-select">
         <option value="">Atualizar status</option>
         <option value="fechou">Fechou</option>
@@ -105,6 +110,7 @@ async function carregarRealizadas() {
   const snapshot = await getDocs(query(reunioesRef, where("consultor", "==", userName)));
   const container = document.getElementById('reunioesRealizadas');
   container.innerHTML = '';
+
   snapshot.forEach(docSnap => {
     const r = docSnap.data();
     if (["fechou", "nao_interesse", "aguardando_pagamento", "aguardando_documentacao"].includes(r.status)) {
@@ -112,10 +118,10 @@ async function carregarRealizadas() {
       card.className = 'card';
       card.innerHTML = `
         <h3>${r.nomeLoja}</h3>
-        <p><strong>Data:</strong> ${r.data}</p>
+        <p><strong>Data:</strong> ${r.data || ''}</p>
         <p><strong>Status:</strong> ${r.status}</p>
         <button class="btn" onclick="abrirCard(this)">Ver Detalhes</button>
-        <div class="card-details" style="display:none">
+        <div class="card-details">
           <p><strong>Segmento:</strong> ${r.segmento}</p>
           <p><strong>Cidade:</strong> ${r.cidade}</p>
           <p><strong>Observações:</strong> ${r.observacoes || ''}</p>
@@ -133,41 +139,7 @@ async function carregarRealizadas() {
   });
 }
 
-window.salvarFechamento = async () => {
-  const data = {
-    nomeLojista: document.getElementById('nomeLojista').value,
-    contato: document.getElementById('contato').value,
-    cidade: document.getElementById('cidade').value,
-    estado: document.getElementById('estado').value,
-    qtdLojas: +document.getElementById('qtdLojas').value,
-    cnpj: document.getElementById('cnpj').value,
-    faturamento: +document.getElementById('faturamento').value,
-    temCrediario: document.getElementById('temCrediario').value,
-    valorCrediario: +document.getElementById('valorCrediario').value,
-    origem: document.getElementById('origem').value,
-    valorAdesao: +document.getElementById('valorAdesao').value,
-    criadoEm: Timestamp.now(),
-    consultor: userName
-  };
-  await addDoc(collection(db, 'fechamentos'), data);
-  alert("Fechamento salvo!");
-};
-
-window.carregarDashboard = async () => {
-  const inicio = new Date(document.getElementById('dataInicio').value);
-  const fim = new Date(document.getElementById('dataFim').value);
-  fim.setHours(23,59,59);
-  const snapshot = await getDocs(query(collection(db, 'fechamentos')));
-  let total = 0;
-  snapshot.forEach(docSnap => {
-    const d = docSnap.data();
-    if (d.criadoEm?.seconds * 1000 >= inicio.getTime() && d.criadoEm?.seconds * 1000 <= fim.getTime()) {
-      if (d.consultor === userName) total++;
-    }
-  });
-  document.getElementById('infoDashboard').innerHTML = `<p><strong>Fechamentos no período:</strong> ${total}</p>`;
-};
-
+// Inicializar tudo
 carregarPendentes();
 carregarAgendadas();
 carregarRealizadas();
