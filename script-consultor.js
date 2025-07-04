@@ -50,8 +50,8 @@ function mostrarLista(container, lista, tipo) {
     div.className = "card";
 
     div.innerHTML = `
-      <strong>${dados.nomeLoja}</strong>
-      <div><b>Segmento:</b> ${dados.segmento}</div>
+      <strong>${dados.nomeLoja || "Sem nome"}</strong>
+      <div><b>Segmento:</b> ${dados.segmento || "-"}</div>
       <div><b>Data:</b> ${dados.data || "-"}</div>
       <div><b>Horário:</b> ${dados.hora || "-"}</div>
     `;
@@ -110,7 +110,8 @@ Estado: ${dados.estado}
 Contato: ${dados.contato}
 Segmento: ${dados.segmento}
 Link: ${dados.link}
-    `);
+Observações: ${dados.observacoes || "-"}
+  `);
 }
 
 async function atualizarStatus(id, resultado) {
