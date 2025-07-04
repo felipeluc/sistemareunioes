@@ -1,3 +1,4 @@
+// script-angela.js
 import {
   collection,
   addDoc,
@@ -13,6 +14,8 @@ import { db } from './firebase-config.js';
 
 const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
+const graficoReunioes = document.getElementById("graficoReunioes");
+const graficoLojas = document.getElementById("graficoLojas");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -40,8 +43,7 @@ form.addEventListener("submit", async (e) => {
     await addDoc(collection(db, "reunioes"), data);
     alert("Reunião agendada com sucesso!");
     form.reset();
-    carregarTransferencias();
-    carregarDashboard();
+    atualizarDashboard();
   } catch (err) {
     console.error("Erro ao salvar:", err);
     alert("Erro ao agendar reunião");
@@ -54,153 +56,149 @@ async function carregarTransferencias() {
 
   listaTransferencias.innerHTML = "";
 
-  if (snapshot.empty) {
-    listaTransferencias.innerHTML = "<p>Nenhuma transferência no momento.</p>";
-    return;
-  }
-
   snapshot.forEach((docSnap) => {
     const dados = docSnap.data();
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const solicitadoPor = dados.transferidoPor || "Desconhecido";
-
-    card.innerHTML = `
-      <strong>${dados.nomeLoja || "Sem nome"}</strong>
-      <div><b>Data:</b> ${dados.data || "-"}</div>
-      <div><b>Horário:</b> ${dados.hora || "-"}</div>
-      <div><b>Solicitado por:</b> ${solicitadoPor}</div>
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <strong>${dados.nomeLoja}</strong>
+      <p><b>Cidade:</b> ${dados.cidade}</p>
+      <p><b>Estado:</b> ${dados.estado}</p>
+      <p><b>Solicitado por:</b> ${dados.transferidoPor || "Desconhecido"}</p>
+      <select class="novo-consultor">
+        <option value="">Transferir para...</option>
+        <option value="Leticia">Leticia</option>
+        <option value="Glaucia">Glaucia</option>
+        <option value="Marcelo">Marcelo</option>
+        <option value="Gabriel">Gabriel</option>
+      </select>
+      <button class="btn-transferir">Transferir</button>
     `;
 
-    const select = document.createElement("select");
-    select.innerHTML = `
-      <option value="">Selecionar novo consultor</option>
-      <option value="Leticia">Leticia</option>
-      <option value="Glaucia">Glaucia</option>
-      <option value="Marcelo">Marcelo</option>
-      <option value="Gabriel">Gabriel</option>
-    `;
-    card.appendChild(select);
+    const select = div.querySelector(".novo-consultor");
+    const btn = div.querySelector(".btn-transferir");
 
-    const btn = document.createElement("button");
-    btn.textContent = "Transferir";
     btn.onclick = async () => {
-      if (!select.value) return alert("Selecione um consultor");
-      const ref = doc(db, "reunioes", docSnap.id);
-      await updateDoc(ref, {
-        consultor: select.value,
+      const novoConsultor = select.value;
+      if (!novoConsultor) return alert("Selecione o consultor de destino");
+
+      await updateDoc(doc(db, "reunioes", docSnap.id), {
+        consultor: novoConsultor,
         status: "pendente",
         transferidoPor: null
       });
+
       carregarTransferencias();
     };
 
-    card.appendChild(btn);
-    listaTransferencias.appendChild(card);
+    listaTransferencias.appendChild(div);
   });
 }
 
-async function carregarDashboard() {
-  const hoje = new Date();
-  const hojeStr = hoje.toISOString().split("T")[0];
+carregarTransferencias();
 
-  const proximaData = new Date();
-  proximaData.setDate(hoje.getDate() + 7);
-  const proximaStr = proximaData.toISOString().split("T")[0];
+function atualizarDashboard() {
+  contarReunioesPorPeriodo();
+  contarLojasPorPeriodo();
+  mostrarResultadosDashboard();
+}
 
-  const q = query(collection(db, "reunioes"));
+async function contarReunioesPorPeriodo() {
+  const q = collection(db, "reunioes");
   const snapshot = await getDocs(q);
 
-  const hojeLista = [];
-  const proximosLista = [];
-  const resultados = {
-    interessado: [],
-    aguardandoPagamento: [],
-    aguardandoDocumentacao: [],
-    semInteresse: []
-  };
+  let total = 0;
+  snapshot.forEach(() => total++);
 
-  snapshot.forEach((docSnap) => {
-    const r = docSnap.data();
-    if (r.data === hojeStr) hojeLista.push(r);
-    if (r.data > hojeStr && r.data <= proximaStr) proximosLista.push(r);
-    if (r.status === "realizada" && r.resultado) {
-      resultados[r.resultado].push(r);
+  graficoReunioes.innerHTML = `
+    <div class="dashboard-box">
+      <h3>Total de Reuniões</h3>
+      <p>${total}</p>
+    </div>
+  `;
+}
+
+async function contarLojasPorPeriodo() {
+  const q = collection(db, "reunioes");
+  const snapshot = await getDocs(q);
+
+  let total = 0;
+  snapshot.forEach((doc) => {
+    const dados = doc.data();
+    if (dados.qtdLojas) total += parseInt(dados.qtdLojas);
+  });
+
+  graficoLojas.innerHTML = `
+    <div class="dashboard-box">
+      <h3>Total de Lojas</h3>
+      <p>${total}</p>
+    </div>
+  `;
+}
+
+async function mostrarResultadosDashboard(filtro = "todos") {
+  const q = collection(db, "reunioes");
+  const snapshot = await getDocs(q);
+
+  const resultados = {};
+
+  snapshot.forEach((doc) => {
+    const r = doc.data();
+    if (r.status === "realizada") {
+      if (filtro !== "todos" && r.resultado !== filtro) return;
+
+      if (!resultados[r.resultado]) resultados[r.resultado] = [];
+      resultados[r.resultado].push({
+        nomeLoja: r.nomeLoja || "Sem nome",
+        cnpj: r.cnpj || "Não informado",
+      });
     }
   });
 
-  renderizarListaDashboard("dashboardHoje", hojeLista);
-  renderizarListaDashboard("dashboardProximos", proximosLista);
-  renderizarResultados("dashboardResultados", resultados);
-}
-
-function renderizarListaDashboard(id, lista) {
-  const container = document.getElementById(id);
+  const container = document.getElementById("resultadosDashboard");
   container.innerHTML = "";
 
-  if (lista.length === 0) {
-    container.innerHTML = "<p>Nenhuma reunião encontrada.</p>";
+  const cores = {
+    interessado: "#4caf50",
+    aguardandoPagamento: "#fbbc05",
+    aguardandoDocumentacao: "#00bcd4",
+    semInteresse: "#f44336"
+  };
+
+  for (const tipo in resultados) {
+    const box = document.createElement("div");
+    box.className = "dashboard-box";
+    box.style.borderTop = `4px solid ${cores[tipo] || "#999"}`;
+
+    const titulo = {
+      interessado: "Interessados",
+      aguardandoPagamento: "Aguardando Pagamento",
+      aguardandoDocumentacao: "Aguardando Documentação",
+      semInteresse: "Sem Interesse"
+    };
+
+    box.innerHTML = `
+      <h3>${titulo[tipo] || tipo}</h3>
+      <p><strong>${resultados[tipo].length}</strong> resultado(s)</p>
+      <button onclick='verDetalhesResultado(${JSON.stringify(resultados[tipo])})'>Ver Detalhes</button>
+    `;
+
+    container.appendChild(box);
+  }
+}
+
+// Ver detalhes do resultado (nome da loja e CNPJ)
+window.verDetalhesResultado = function(lista) {
+  if (!Array.isArray(lista) || lista.length === 0) {
+    alert("Nenhuma informação disponível.");
     return;
   }
 
-  lista.forEach((r) => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <strong>${r.nomeLoja || "Sem nome"}</strong>
-      <div><b>Data:</b> ${r.data || "-"}</div>
-      <div><b>Horário:</b> ${r.hora || "-"}</div>
-      <div><b>Consultor:</b> ${r.consultor || "-"}</div>
-    `;
-    container.appendChild(card);
-  });
-}
+  const texto = lista
+    .map(item => `Loja: ${item.nomeLoja}\nCNPJ: ${item.cnpj}`)
+    .join('\n\n');
 
-function renderizarResultados(id, resultados) {
-  const container = document.getElementById(id);
-  container.innerHTML = "";
+  alert(texto);
+};
 
-  for (const tipo in resultados) {
-    const lista = resultados[tipo];
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const detalhesId = `detalhes-${tipo}`;
-    card.innerHTML = `
-      <b>${tipo.charAt(0).toUpperCase() + tipo.slice(1)}:</b> ${lista.length}
-      <button onclick="document.getElementById('${detalhesId}').classList.toggle('hidden')">Ver detalhes</button>
-      <ul id="${detalhesId}" class="hidden" style="margin-top: 0.5rem; padding-left: 1rem;"></ul>
-    `;
-
-    const ul = document.createElement("ul");
-    ul.id = detalhesId;
-    ul.className = "hidden";
-    lista.forEach((r) => {
-      const li = document.createElement("li");
-      li.textContent = `${r.nomeLoja || "Sem nome"} - ${r.cnpj || "Sem CNPJ"}`;
-      ul.appendChild(li);
-    });
-
-    card.appendChild(ul);
-    container.appendChild(card);
-  }
-}
-
-// estilo ocultar detalhes
-const style = document.createElement("style");
-style.textContent = `.hidden { display: none; }`;
-document.head.appendChild(style);
-
-document.addEventListener("DOMContentLoaded", () => {
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach(() => {
-      const dashboardVisivel = document.getElementById("dashboard").classList.contains("active");
-      if (dashboardVisivel) carregarDashboard();
-    });
-  });
-
-  observer.observe(document.getElementById("dashboard"), { attributes: true });
-});
-
-carregarTransferencias();
+atualizarDashboard();
