@@ -9,13 +9,16 @@ import {
 
 import { db } from "./firebase-config.js";
 
-const usuario = localStorage.getItem("usuarioLogado");
+// Recupera o nome do usuário logado
+const usuario = localStorage.getItem("usuarioLogado") || "Consultor";
 document.getElementById("nomeConsultor").innerText = `Bem-vindo(a), ${usuario}`;
 
+// Elementos do DOM
 const listaPendentes = document.getElementById("listaPendentes");
 const listaAgendadas = document.getElementById("listaAgendadas");
 const listaRealizadas = document.getElementById("listaRealizadas");
 
+// Carrega todas as reuniões do consultor logado
 async function carregarReunioes() {
   const q = query(collection(db, "reunioes"), where("consultor", "==", usuario));
   const snapshot = await getDocs(q);
@@ -38,6 +41,7 @@ async function carregarReunioes() {
   mostrarLista(listaRealizadas, realizadas, "realizada");
 }
 
+// Exibe a lista de reuniões em cada seção
 function mostrarLista(container, lista, tipo) {
   container.innerHTML = "";
   if (lista.length === 0) {
@@ -90,24 +94,27 @@ function mostrarLista(container, lista, tipo) {
   });
 }
 
+// Atualiza o status para "agendada" ao aceitar
 async function aceitar(id) {
   const ref = doc(db, "reunioes", id);
   await updateDoc(ref, {
     status: "agendada",
-    transferidoPor: null // limpa o campo se tiver vindo de transferência
+    transferidoPor: null
   });
   carregarReunioes();
 }
 
+// Atualiza o status para "transferencia"
 async function transferir(id) {
   const ref = doc(db, "reunioes", id);
   await updateDoc(ref, {
     status: "transferencia",
-    transferidoPor: usuario // ✅ adiciona quem está pedindo
+    transferidoPor: usuario
   });
   carregarReunioes();
 }
 
+// Exibe os detalhes da reunião
 function verDetalhes(dados) {
   alert(`
 Loja: ${dados.nomeLoja}
@@ -120,6 +127,7 @@ Observações: ${dados.observacoes || "-"}
   `);
 }
 
+// Atualiza status para "realizada" e registra o resultado
 async function atualizarStatus(id, resultado) {
   if (!resultado) return;
 
@@ -133,4 +141,5 @@ async function atualizarStatus(id, resultado) {
   carregarReunioes();
 }
 
+// Inicializa o carregamento
 carregarReunioes();
