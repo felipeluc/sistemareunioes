@@ -112,6 +112,8 @@
       border-radius: 14px;
       padding: 1rem;
       box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
     }
 
     .dashboard-column h3 {
@@ -119,6 +121,12 @@
       margin-bottom: 1rem;
       font-size: 1.2rem;
       color: #333;
+    }
+
+    .dashboard-scroll {
+      overflow-y: auto;
+      max-height: 300px;
+      scroll-behavior: smooth;
     }
 
     .card {
@@ -148,10 +156,6 @@
       margin-top: 0.5rem;
       padding-left: 1.2rem;
     }
-
-    .hidden {
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -175,8 +179,8 @@
           <option value="Marcelo">Marcelo</option>
           <option value="Gabriel">Gabriel</option>
         </select>
-        <input type="date" id="dataReuniao" placeholder="Data da Reunião" required />
-        <input type="time" id="hora" placeholder="Horário" required />
+        <input type="date" id="dataReuniao" required />
+        <input type="time" id="hora" required />
         <input type="text" id="nomeLoja" placeholder="Nome da Loja" required />
         <input type="text" id="cidade" placeholder="Cidade" required />
         <input type="url" id="linkReuniao" placeholder="Link da Reunião" required />
@@ -202,11 +206,11 @@
       <div class="dashboard-columns">
         <div class="dashboard-column">
           <h3>Hoje</h3>
-          <div id="dashboardHoje"></div>
+          <div id="dashboardHoje" class="dashboard-scroll"></div>
         </div>
         <div class="dashboard-column">
           <h3>Próximos Dias</h3>
-          <div id="dashboardProximos"></div>
+          <div id="dashboardProximos" class="dashboard-scroll"></div>
         </div>
         <div class="dashboard-column">
           <h3>Resultados</h3>
@@ -222,12 +226,10 @@
     function mostrarSecao(id) {
       document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
       document.getElementById(id).classList.add('active');
-
       document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
-      const buttons = document.querySelectorAll('.sidebar button');
-      if (id === 'agendar') buttons[0].classList.add('active');
-      if (id === 'transferencias') buttons[1].classList.add('active');
-      if (id === 'dashboard') buttons[2].classList.add('active');
+      if (id === 'agendar') document.querySelectorAll('.sidebar button')[0].classList.add('active');
+      if (id === 'transferencias') document.querySelectorAll('.sidebar button')[1].classList.add('active');
+      if (id === 'dashboard') document.querySelectorAll('.sidebar button')[2].classList.add('active');
     }
   </script>
 </body>
