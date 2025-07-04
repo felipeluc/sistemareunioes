@@ -13,7 +13,12 @@ import { db } from './firebase-config.js';
 
 const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
+const graficoReunioes = document.getElementById("graficoReunioes");
+const graficoLojas = document.getElementById("graficoLojas");
+const filtroConsultor = document.getElementById("filtroConsultor");
+const filtroMes = document.getElementById("filtroMes");
 
+// Agendamento de reunião
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -40,68 +45,85 @@ form.addEventListener("submit", async (e) => {
     await addDoc(collection(db, "reunioes"), data);
     alert("Reunião agendada com sucesso!");
     form.reset();
-    carregarTransferencias();
+    carregarDashboard();
   } catch (err) {
     console.error("Erro ao salvar:", err);
     alert("Erro ao agendar reunião");
   }
 });
 
+// Mostrar transferências
 async function carregarTransferencias() {
-  listaTransferencias.innerHTML = "";
-
   const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
   const snapshot = await getDocs(q);
 
-  snapshot.forEach((docSnap) => {
-    const dados = docSnap.data();
-    const id = docSnap.id;
+  listaTransferencias.innerHTML = "";
 
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <strong>${dados.nomeLoja || "Sem nome"}</strong>
-      <div><b>Segmento:</b> ${dados.segmento || "-"}</div>
-      <div><b>Data:</b> ${dados.data || "-"}</div>
-      <div><b>Horário:</b> ${dados.hora || "-"}</div>
-      <div><b>Solicitado por:</b> ${dados.transferidoPor || "Desconhecido"}</div>
-      <label>Reenviar para:</label>
-      <select id="consultor-${id}">
-        <option value="">Selecionar</option>
-        ${["Leticia", "Glaucia", "Marcelo", "Gabriel"]
-          .filter(nome => nome !== dados.transferidoPor)
-          .map(nome => `<option value="${nome}">${nome}</option>`)
-          .join("")}
-      </select>
-      <button onclick="transferirNovamente('${id}', '${dados.transferidoPor || ""}')">Transferir</button>
+  if (snapshot.empty) {
+    listaTransferencias.innerHTML = "<p>Nenhuma reunião transferida no momento.</p>";
+    return;
+  }
+
+  snapshot.forEach(docSnap => {
+    const dados = docSnap.data();
+    const card = document.createElement("div");
+    card.className = "card-dashboard";
+    card.innerHTML = `
+      <h3>${dados.nomeLoja || "Loja sem nome"}</h3>
+      <p><b>Data:</b> ${dados.data || "-"}</p>
+      <p><b>Horário:</b> ${dados.hora || "-"}</p>
+      <p><b>Segmento:</b> ${dados.segmento || "-"}</p>
+      <p><b>Solicitado por:</b> ${dados.consultor || "Desconhecido"}</p>
     `;
-    listaTransferencias.appendChild(div);
+
+    const btn = document.createElement("button");
+    btn.textContent = "Reatribuir";
+    btn.onclick = async () => {
+      const novoConsultor = prompt("Para qual consultor deseja transferir?", "Leticia");
+      if (!novoConsultor) return;
+      await updateDoc(doc(db, "reunioes", docSnap.id), {
+        consultor: novoConsultor,
+        status: "pendente"
+      });
+      carregarTransferencias();
+    };
+
+    card.appendChild(btn);
+    listaTransferencias.appendChild(card);
   });
 }
 
-window.transferirNovamente = async (id, transferidoPor) => {
-  const select = document.getElementById(`consultor-${id}`);
-  const novoConsultor = select.value;
+// Carregar dashboard com filtro
+export async function carregarDashboard() {
+  const snapshot = await getDocs(collection(db, "reunioes"));
+  const mesSelecionado = filtroMes.value;
+  const consultorSelecionado = filtroConsultor.value;
 
-  if (!novoConsultor) {
-    alert("Selecione um consultor.");
-    return;
-  }
+  let totalReunioes = 0;
+  let totalLojas = 0;
 
-  if (novoConsultor === transferidoPor) {
-    alert("Não é possível reenviar para o mesmo consultor que solicitou a transferência.");
-    return;
-  }
+  snapshot.forEach((docSnap) => {
+    const dados = docSnap.data();
+    const dataStr = dados.data; // formato: yyyy-mm-dd
 
-  const ref = doc(db, "reunioes", id);
-  await updateDoc(ref, {
-    consultor: novoConsultor,
-    status: "pendente",
-    transferidoPor: null
+    if (mesSelecionado && (!dataStr || dataStr.split("-")[1] !== mesSelecionado)) return;
+    if (consultorSelecionado && dados.consultor !== consultorSelecionado) return;
+
+    totalReunioes++;
+    totalLojas += parseInt(dados.qtdLojas || 0);
   });
 
-  alert("Transferência realizada.");
-  carregarTransferencias();
-};
+  graficoReunioes.innerHTML = `
+    <h3>Total de Reuniões</h3>
+    <p>${totalReunioes}</p>
+  `;
 
+  graficoLojas.innerHTML = `
+    <h3>Total de Lojas</h3>
+    <p>${totalLojas}</p>
+  `;
+}
+
+// Inicialização
 carregarTransferencias();
+carregarDashboard();
