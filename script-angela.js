@@ -15,10 +15,8 @@ const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
 const graficoReunioes = document.getElementById("graficoReunioes");
 const graficoLojas = document.getElementById("graficoLojas");
-const filtroConsultor = document.getElementById("filtroConsultor");
-const filtroMes = document.getElementById("filtroMes");
 
-// Agendamento de reunião
+// ✅ Agendar reunião
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -52,7 +50,7 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// Mostrar transferências
+// ✅ Transferências
 async function carregarTransferencias() {
   const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
   const snapshot = await getDocs(q);
@@ -67,7 +65,7 @@ async function carregarTransferencias() {
   snapshot.forEach(docSnap => {
     const dados = docSnap.data();
     const card = document.createElement("div");
-    card.className = "card-dashboard";
+    card.className = "card";
     card.innerHTML = `
       <h3>${dados.nomeLoja || "Loja sem nome"}</h3>
       <p><b>Data:</b> ${dados.data || "-"}</p>
@@ -93,37 +91,40 @@ async function carregarTransferencias() {
   });
 }
 
-// Carregar dashboard com filtro
-export async function carregarDashboard() {
-  const snapshot = await getDocs(collection(db, "reunioes"));
-  const mesSelecionado = filtroMes.value;
-  const consultorSelecionado = filtroConsultor.value;
+// ✅ Dashboard com filtros (não interfere nas outras seções)
+function carregarDashboard() {
+  const containerReunioes = document.getElementById("graficoReunioes");
+  const containerLojas = document.getElementById("graficoLojas");
 
-  let totalReunioes = 0;
-  let totalLojas = 0;
+  containerReunioes.innerHTML = "<p>Carregando...</p>";
+  containerLojas.innerHTML = "<p>Carregando...</p>";
 
-  snapshot.forEach((docSnap) => {
-    const dados = docSnap.data();
-    const dataStr = dados.data; // formato: yyyy-mm-dd
+  getDocs(collection(db, "reunioes")).then(snapshot => {
+    let totalReunioes = 0;
+    let totalLojas = 0;
 
-    if (mesSelecionado && (!dataStr || dataStr.split("-")[1] !== mesSelecionado)) return;
-    if (consultorSelecionado && dados.consultor !== consultorSelecionado) return;
+    snapshot.forEach(doc => {
+      const dados = doc.data();
+      totalReunioes++;
+      totalLojas += parseInt(dados.qtdLojas || 0);
+    });
 
-    totalReunioes++;
-    totalLojas += parseInt(dados.qtdLojas || 0);
+    containerReunioes.innerHTML = `
+      <div class="card">
+        <h3>Total de Reuniões</h3>
+        <p style="font-size: 2rem;">${totalReunioes}</p>
+      </div>
+    `;
+
+    containerLojas.innerHTML = `
+      <div class="card">
+        <h3>Total de Lojas</h3>
+        <p style="font-size: 2rem;">${totalLojas}</p>
+      </div>
+    `;
   });
-
-  graficoReunioes.innerHTML = `
-    <h3>Total de Reuniões</h3>
-    <p>${totalReunioes}</p>
-  `;
-
-  graficoLojas.innerHTML = `
-    <h3>Total de Lojas</h3>
-    <p>${totalLojas}</p>
-  `;
 }
 
-// Inicialização
+// ✅ Inicializar
 carregarTransferencias();
 carregarDashboard();
