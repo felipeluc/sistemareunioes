@@ -1,4 +1,3 @@
-// script-angela.js
 import {
   collection,
   addDoc,
@@ -150,7 +149,7 @@ async function mostrarResultadosDashboard(filtro = "todos") {
       if (!resultados[r.resultado]) resultados[r.resultado] = [];
       resultados[r.resultado].push({
         nomeLoja: r.nomeLoja || "Sem nome",
-        cnpj: r.cnpj || "Não informado",
+        cnpj: r.cnpj || "Não informado"
       });
     }
   });
@@ -165,20 +164,20 @@ async function mostrarResultadosDashboard(filtro = "todos") {
     semInteresse: "#f44336"
   };
 
+  const titulos = {
+    interessado: "Interessados",
+    aguardandoPagamento: "Aguardando Pagamento",
+    aguardandoDocumentacao: "Aguardando Documentação",
+    semInteresse: "Sem Interesse"
+  };
+
   for (const tipo in resultados) {
     const box = document.createElement("div");
     box.className = "dashboard-box";
     box.style.borderTop = `4px solid ${cores[tipo] || "#999"}`;
 
-    const titulo = {
-      interessado: "Interessados",
-      aguardandoPagamento: "Aguardando Pagamento",
-      aguardandoDocumentacao: "Aguardando Documentação",
-      semInteresse: "Sem Interesse"
-    };
-
     box.innerHTML = `
-      <h3>${titulo[tipo] || tipo}</h3>
+      <h3>${titulos[tipo] || tipo}</h3>
       <p><strong>${resultados[tipo].length}</strong> resultado(s)</p>
       <button onclick='verDetalhesResultado(${JSON.stringify(resultados[tipo])})'>Ver Detalhes</button>
     `;
@@ -187,7 +186,6 @@ async function mostrarResultadosDashboard(filtro = "todos") {
   }
 }
 
-// Ver detalhes do resultado (nome da loja e CNPJ)
 window.verDetalhesResultado = function(lista) {
   if (!Array.isArray(lista) || lista.length === 0) {
     alert("Nenhuma informação disponível.");
