@@ -1,4 +1,3 @@
-// script-angela.js
 import {
   collection,
   addDoc,
@@ -159,19 +158,20 @@ async function mostrarResultadosDashboard(filtro = "todos") {
     if (r.status === "realizada") {
       const resultado = r.resultado;
 
-      // Verifica se está dentro dos valores válidos esperados
+      // Somente considerar resultados válidos
       const validos = ["interessado", "aguardandoPagamento", "aguardandoDocumentacao", "semInteresse"];
       if (!validos.includes(resultado)) return;
 
       if (!resultados[resultado]) resultados[resultado] = [];
       resultados[resultado].push({
         nomeLoja: r.nomeLoja || "Sem nome",
-        cnpj: r.cnpj || "Não informado",
+        cnpj: r.cnpj || "Não informado"
       });
     }
   });
 
   dashboardResultados.innerHTML = "";
+
   const cores = {
     interessado: "#4caf50",
     aguardandoPagamento: "#fbbc05",
@@ -179,7 +179,7 @@ async function mostrarResultadosDashboard(filtro = "todos") {
     semInteresse: "#f44336"
   };
 
-  const titulo = {
+  const nomes = {
     interessado: "Interessado",
     aguardandoPagamento: "Aguardando Pagamento",
     aguardandoDocumentacao: "Aguardando Documentação",
@@ -192,7 +192,7 @@ async function mostrarResultadosDashboard(filtro = "todos") {
     box.style.borderTop = `4px solid ${cores[tipo] || "#999"}`;
 
     box.innerHTML = `
-      <h3>${titulo[tipo] || tipo}</h3>
+      <h3>${nomes[tipo] || tipo}</h3>
       <p><strong>${resultados[tipo].length}</strong> resultado(s)</p>
       <button onclick='verDetalhesResultado(${JSON.stringify(resultados[tipo])})'>Ver Detalhes</button>
     `;
