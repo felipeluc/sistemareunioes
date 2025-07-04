@@ -1,1 +1,224 @@
-<!-- Página dos gerentes (em breve) -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerente | Comercial SouFacil</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #f2f2f7;
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: #ffffff;
+      border-right: 1px solid #e0e0e0;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      border-radius: 0 20px 20px 0;
+      box-shadow: 4px 0 12px rgba(0,0,0,0.05);
+    }
+
+    .sidebar h2 {
+      font-size: 1.6rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .sidebar button {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .sidebar button:hover {
+      background: #007aff20;
+    }
+
+    .sidebar button.active {
+      background: #007aff;
+      color: white;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .content-section {
+      display: none;
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    .dashboard-columns {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .dashboard-column {
+      flex: 1;
+      background: white;
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .dashboard-column h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      color: #333;
+    }
+
+    .card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 14px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .card button {
+      margin-top: 0.5rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 10px;
+      border: none;
+      background: #007aff;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .card button:hover {
+      background: #005dd9;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      max-width: 500px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .modal h3 {
+      margin-top: 0;
+    }
+
+    .modal button {
+      margin-top: 1rem;
+      background: #ccc;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>SouFacil</h2>
+    <button onclick="mostrarSecao('dashboardAngela')" class="active">Dashboard Angela</button>
+    <button onclick="mostrarSecao('dashboardGeral')">Dashboard Geral</button>
+  </div>
+
+  <div class="main-content">
+    <h1 id="nomeGerente">Bem-vindo(a), Ana Carolina</h1>
+
+    <section id="dashboardAngela" class="content-section active">
+      <h2>Dashboard Angela</h2>
+      <div id="dashboardAngelaContent"></div>
+    </section>
+
+    <section id="dashboardGeral" class="content-section">
+      <h2>Dashboard Geral</h2>
+      <div class="dashboard-columns">
+        <div class="dashboard-column">
+          <h3>Hoje</h3>
+          <div id="dashboardHoje"></div>
+        </div>
+        <div class="dashboard-column">
+          <h3>Próximos Dias</h3>
+          <div id="dashboardProximos"></div>
+        </div>
+        <div class="dashboard-column">
+          <h3>Transferências</h3>
+          <div id="dashboardTransferencias"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalOverlay" class="modal-overlay" style="display:none">
+    <div class="modal">
+      <h3>Detalhes da Reunião</h3>
+      <div id="modalContent"></div>
+      <button onclick="fecharModal()">Fechar</button>
+    </div>
+  </div>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="script-gerente.js"></script>
+  <script>
+    function mostrarSecao(id) {
+      document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
+      const buttons = document.querySelectorAll('.sidebar button');
+      if (id === 'dashboardAngela') buttons[0].classList.add('active');
+      if (id === 'dashboardGeral') buttons[1].classList.add('active');
+    }
+
+    function mostrarDetalhes(reuniao) {
+      const container = document.getElementById("modalContent");
+      container.innerHTML = `
+        <p><b>Loja:</b> ${reuniao.nomeLoja}</p>
+        <p><b>Cidade:</b> ${reuniao.cidade}</p>
+        <p><b>Estado:</b> ${reuniao.estado}</p>
+        <p><b>Data:</b> ${reuniao.data} ${reuniao.hora}</p>
+        <p><b>Link:</b> ${reuniao.link}</p>
+        <p><b>Segmento:</b> ${reuniao.segmento}</p>
+        <p><b>Origem:</b> ${reuniao.origem}</p>
+        <p><b>Responsável Conversa:</b> ${reuniao.responsavelConversa}</p>
+        <p><b>Contato:</b> ${reuniao.contato}</p>
+        <p><b>CNPJ:</b> ${reuniao.cnpj}</p>
+        <p><b>Consultor:</b> ${reuniao.consultor}</p>
+      `;
+      document.getElementById("modalOverlay").style.display = "flex";
+    }
+
+    function fecharModal() {
+      document.getElementById("modalOverlay").style.display = "none";
+    }
+  </script>
+</body>
+</html>
