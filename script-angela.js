@@ -43,7 +43,7 @@ form.addEventListener("submit", async (e) => {
     alert("Reunião agendada com sucesso!");
     form.reset();
     carregarTransferencias();
-    atualizarDashboard();
+    carregarDashboard();
   } catch (err) {
     console.error("Erro ao salvar:", err);
     alert("Erro ao agendar reunião");
@@ -51,9 +51,9 @@ form.addEventListener("submit", async (e) => {
 });
 
 async function carregarTransferencias() {
-  listaTransferencias.innerHTML = "<p>Carregando...</p>";
   const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
   const snapshot = await getDocs(q);
+
   listaTransferencias.innerHTML = "";
 
   if (snapshot.empty) {
@@ -63,14 +63,13 @@ async function carregarTransferencias() {
 
   snapshot.forEach((docSnap) => {
     const dados = docSnap.data();
-    const id = docSnap.id;
-    const solicitadoPor = dados.transferidoPor || "desconhecido";
-
     const card = document.createElement("div");
     card.className = "card";
+
+    const solicitadoPor = dados.transferidoPor || "Desconhecido";
+
     card.innerHTML = `
-      <strong>${dados.nomeLoja || "Loja sem nome"}</strong>
-      <div><b>Segmento:</b> ${dados.segmento || "-"}</div>
+      <strong>${dados.nomeLoja || "Sem nome"}</strong>
       <div><b>Data:</b> ${dados.data || "-"}</div>
       <div><b>Horário:</b> ${dados.hora || "-"}</div>
       <div><b>Solicitado por:</b> ${solicitadoPor}</div>
@@ -84,82 +83,103 @@ async function carregarTransferencias() {
       <option value="Marcelo">Marcelo</option>
       <option value="Gabriel">Gabriel</option>
     `;
+    card.appendChild(select);
 
-    const btnTransferir = document.createElement("button");
-    btnTransferir.textContent = "Transferir";
-    btnTransferir.onclick = async () => {
-      const novoConsultor = select.value;
-      if (!novoConsultor) return alert("Selecione um consultor");
-      await updateDoc(doc(db, "reunioes", id), {
-        consultor: novoConsultor,
+    const btn = document.createElement("button");
+    btn.textContent = "Transferir";
+    btn.onclick = async () => {
+      if (!select.value) return alert("Selecione um consultor");
+      const ref = doc(db, "reunioes", docSnap.id);
+      await updateDoc(ref, {
+        consultor: select.value,
         status: "pendente",
         transferidoPor: null
       });
-      alert("Transferido com sucesso");
       carregarTransferencias();
     };
 
-    card.appendChild(select);
-    card.appendChild(btnTransferir);
+    card.appendChild(btn);
     listaTransferencias.appendChild(card);
   });
 }
 
-// Dashboard novo
-async function atualizarDashboard() {
+async function carregarDashboard() {
   const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
+  const hojeStr = hoje.toISOString().split("T")[0];
 
-  const snapshot = await getDocs(collection(db, "reunioes"));
-  const hojeList = [];
-  const futuroList = [];
-  const resultados = {};
+  const proximaData = new Date();
+  proximaData.setDate(hoje.getDate() + 7);
+  const proximaStr = proximaData.toISOString().split("T")[0];
 
-  snapshot.forEach(docSnap => {
-    const dados = docSnap.data();
-    const dataReuniao = new Date(dados.data);
+  const q = query(collection(db, "reunioes"));
+  const snapshot = await getDocs(q);
 
-    if (!isNaN(dataReuniao)) {
-      dataReuniao.setHours(0, 0, 0, 0);
+  const hojeLista = [];
+  const proximosLista = [];
+  const resultados = {
+    interessado: 0,
+    aguardandoPagamento: 0,
+    aguardandoDocumentacao: 0,
+    semInteresse: 0
+  };
 
-      if (dataReuniao.getTime() === hoje.getTime()) {
-        hojeList.push(dados);
-      } else if (dataReuniao > hoje) {
-        futuroList.push(dados);
-      }
-    }
-
-    if (dados.status === "realizada" && dados.resultado) {
-      const mes = new Date(dados.realizadaEm || "").getMonth();
-      const chave = dados.resultado;
-      if (!resultados[chave]) resultados[chave] = [];
-      resultados[chave].push(dados);
+  snapshot.forEach((docSnap) => {
+    const r = docSnap.data();
+    if (r.data === hojeStr) hojeLista.push(r);
+    if (r.data > hojeStr && r.data <= proximaStr) proximosLista.push(r);
+    if (r.status === "realizada" && r.resultado) {
+      resultados[r.resultado] = (resultados[r.resultado] || 0) + 1;
     }
   });
 
-  graficoReunioes.innerHTML = `
-    <div class="card">
-      <strong>Reuniões de Hoje:</strong>
-      ${hojeList.map(r => `<div>${r.nomeLoja} - ${r.consultor}</div>`).join("") || "<p>Nenhuma</p>"}
-    </div>
-    <div class="card">
-      <strong>Próximos Dias:</strong>
-      ${futuroList.map(r => `<div>${r.nomeLoja} - ${r.data}</div>`).join("") || "<p>Nenhuma</p>"}
-    </div>
-  `;
+  renderizarListaDashboard("dashboardHoje", hojeLista);
+  renderizarListaDashboard("dashboardProximos", proximosLista);
+  renderizarResultados("dashboardResultados", resultados);
+}
 
-  graficoLojas.innerHTML = `
-    <div class="card">
-      <strong>Resultados:</strong>
-      ${Object.entries(resultados).map(([res, list]) => `
-        <details>
-          <summary>${res}: ${list.length}</summary>
-          ${list.map(l => `<div>${l.nomeLoja} - ${l.cnpj}</div>`).join("")}
-        </details>
-      `).join("") || "<p>Nenhum resultado registrado</p>"}
-    </div>
+function renderizarListaDashboard(id, lista) {
+  const container = document.getElementById(id);
+  container.innerHTML = "";
+
+  if (lista.length === 0) {
+    container.innerHTML = "<p>Nenhuma reunião encontrada.</p>";
+    return;
+  }
+
+  lista.forEach((r) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <strong>${r.nomeLoja || "Sem nome"}</strong>
+      <div><b>Data:</b> ${r.data || "-"}</div>
+      <div><b>Horário:</b> ${r.hora || "-"}</div>
+      <div><b>Consultor:</b> ${r.consultor || "-"}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderizarResultados(id, resultado) {
+  const container = document.getElementById(id);
+  container.innerHTML = `
+    <div class="card"><b>Interessado:</b> ${resultado.interessado}</div>
+    <div class="card"><b>Aguardando Pagamento:</b> ${resultado.aguardandoPagamento}</div>
+    <div class="card"><b>Aguardando Documentação:</b> ${resultado.aguardandoDocumentacao}</div>
+    <div class="card"><b>Não teve interesse:</b> ${resultado.semInteresse}</div>
   `;
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach(() => {
+      const dashboardVisivel = document.getElementById("dashboard").classList.contains("active");
+      if (dashboardVisivel) {
+        carregarDashboard();
+      }
+    });
+  });
+
+  observer.observe(document.getElementById("dashboard"), { attributes: true });
+});
+
 carregarTransferencias();
-atualizarDashboard();
