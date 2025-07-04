@@ -16,7 +16,7 @@ const listaTransferencias = document.getElementById("listaTransferencias");
 const graficoReunioes = document.getElementById("graficoReunioes");
 const graficoLojas = document.getElementById("graficoLojas");
 
-// ✅ Agendar reunião
+// Agendamento
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -43,14 +43,14 @@ form.addEventListener("submit", async (e) => {
     await addDoc(collection(db, "reunioes"), data);
     alert("Reunião agendada com sucesso!");
     form.reset();
-    carregarDashboard();
+    carregarDashboard(); // Atualiza o dashboard ao agendar
   } catch (err) {
     console.error("Erro ao salvar:", err);
     alert("Erro ao agendar reunião");
   }
 });
 
-// ✅ Transferências
+// Transferências
 async function carregarTransferencias() {
   const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
   const snapshot = await getDocs(q);
@@ -71,7 +71,7 @@ async function carregarTransferencias() {
       <p><b>Data:</b> ${dados.data || "-"}</p>
       <p><b>Horário:</b> ${dados.hora || "-"}</p>
       <p><b>Segmento:</b> ${dados.segmento || "-"}</p>
-      <p><b>Solicitado por:</b> ${dados.consultor || "Desconhecido"}</p>
+      <p><b>Solicitado por:</b> ${dados.transferidoPor || dados.consultor || "Desconhecido"}</p>
     `;
 
     const btn = document.createElement("button");
@@ -81,9 +81,11 @@ async function carregarTransferencias() {
       if (!novoConsultor) return;
       await updateDoc(doc(db, "reunioes", docSnap.id), {
         consultor: novoConsultor,
-        status: "pendente"
+        status: "pendente",
+        transferidoPor: null
       });
       carregarTransferencias();
+      carregarDashboard();
     };
 
     card.appendChild(btn);
@@ -91,40 +93,86 @@ async function carregarTransferencias() {
   });
 }
 
-// ✅ Dashboard com filtros (não interfere nas outras seções)
+// Dashboard com filtros
 function carregarDashboard() {
-  const containerReunioes = document.getElementById("graficoReunioes");
-  const containerLojas = document.getElementById("graficoLojas");
+  graficoReunioes.innerHTML = "";
+  graficoLojas.innerHTML = "";
 
-  containerReunioes.innerHTML = "<p>Carregando...</p>";
-  containerLojas.innerHTML = "<p>Carregando...</p>";
+  // Criar filtros
+  const filtroContainer = document.createElement("div");
+  filtroContainer.style.display = "flex";
+  filtroContainer.style.gap = "1rem";
+  filtroContainer.style.marginBottom = "1rem";
 
-  getDocs(collection(db, "reunioes")).then(snapshot => {
-    let totalReunioes = 0;
+  const filtroConsultor = document.createElement("select");
+  filtroConsultor.innerHTML = `
+    <option value="">Todos os consultores</option>
+    <option value="Leticia">Leticia</option>
+    <option value="Glaucia">Glaucia</option>
+    <option value="Marcelo">Marcelo</option>
+    <option value="Gabriel">Gabriel</option>
+  `;
+
+  const filtroMes = document.createElement("select");
+  const meses = [
+    "01","02","03","04","05","06","07","08","09","10","11","12"
+  ];
+  const anoAtual = new Date().getFullYear();
+  filtroMes.innerHTML = `<option value="">Todos os meses</option>` + 
+    meses.map(m => `<option value="${anoAtual}-${m}">${m}/${anoAtual}</option>`).join("");
+
+  filtroConsultor.onchange = atualizar;
+  filtroMes.onchange = atualizar;
+
+  filtroContainer.appendChild(filtroConsultor);
+  filtroContainer.appendChild(filtroMes);
+  graficoReunioes.appendChild(filtroContainer);
+
+  atualizar();
+
+  async function atualizar() {
+    const q = query(collection(db, "reunioes"));
+    const snapshot = await getDocs(q);
+
+    let total = 0;
     let totalLojas = 0;
 
-    snapshot.forEach(doc => {
-      const dados = doc.data();
-      totalReunioes++;
-      totalLojas += parseInt(dados.qtdLojas || 0);
+    snapshot.forEach(docSnap => {
+      const dados = docSnap.data();
+      const data = dados.data || "";
+
+      const filtroOk = (
+        (!filtroConsultor.value || dados.consultor === filtroConsultor.value) &&
+        (!filtroMes.value || data.startsWith(filtroMes.value))
+      );
+
+      if (filtroOk) {
+        total++;
+        totalLojas += parseInt(dados.qtdLojas || 0);
+      }
     });
 
-    containerReunioes.innerHTML = `
-      <div class="card">
-        <h3>Total de Reuniões</h3>
-        <p style="font-size: 2rem;">${totalReunioes}</p>
-      </div>
+    graficoReunioes.innerHTML = "";
+    graficoReunioes.appendChild(filtroContainer);
+
+    const cardReunioes = document.createElement("div");
+    cardReunioes.className = "card";
+    cardReunioes.innerHTML = `
+      <h3>Total de Reuniões</h3>
+      <p style="font-size: 2rem;">${total}</p>
     `;
 
-    containerLojas.innerHTML = `
+    graficoReunioes.appendChild(cardReunioes);
+
+    graficoLojas.innerHTML = `
       <div class="card">
         <h3>Total de Lojas</h3>
         <p style="font-size: 2rem;">${totalLojas}</p>
       </div>
     `;
-  });
+  }
 }
 
-// ✅ Inicializar
+// Inicialização
 carregarTransferencias();
 carregarDashboard();
