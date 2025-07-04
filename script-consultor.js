@@ -92,13 +92,19 @@ function mostrarLista(container, lista, tipo) {
 
 async function aceitar(id) {
   const ref = doc(db, "reunioes", id);
-  await updateDoc(ref, { status: "agendada" });
+  await updateDoc(ref, {
+    status: "agendada",
+    transferidoPor: null // limpa o campo se tiver vindo de transferência
+  });
   carregarReunioes();
 }
 
 async function transferir(id) {
   const ref = doc(db, "reunioes", id);
-  await updateDoc(ref, { status: "transferencia" });
+  await updateDoc(ref, {
+    status: "transferencia",
+    transferidoPor: usuario // ✅ adiciona quem está pedindo
+  });
   carregarReunioes();
 }
 
