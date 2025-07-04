@@ -115,17 +115,14 @@ async function mostrarDashboardHoje() {
 
   snapshot.forEach((doc) => {
     const dados = doc.data();
-    const dataReuniao = typeof dados.data === "string"
-      ? dados.data
-      : dados.data.toDate().toISOString().slice(0, 10);
-
-    if (dataReuniao === hoje) {
+    if (dados.data === hoje) {
       const div = document.createElement("div");
       div.className = "card";
       div.innerHTML = `
         <strong>${dados.nomeLoja}</strong>
         <p>${dados.cidade} - ${dados.estado}</p>
-        <p>${dataReuniao} às ${dados.hora}</p>
+        <p>Data: ${dados.data}</p>
+        <p>Horário: ${dados.hora}</p>
       `;
       dashboardHoje.appendChild(div);
     }
@@ -143,17 +140,14 @@ async function mostrarDashboardProximos() {
 
   snapshot.forEach((doc) => {
     const dados = doc.data();
-    const dataReuniao = typeof dados.data === "string"
-      ? dados.data
-      : dados.data.toDate().toISOString().slice(0, 10);
-
-    if (dataReuniao > hoje) {
+    if (dados.data > hoje) {
       const div = document.createElement("div");
       div.className = "card";
       div.innerHTML = `
         <strong>${dados.nomeLoja}</strong>
         <p>${dados.cidade} - ${dados.estado}</p>
-        <p>${dataReuniao} às ${dados.hora}</p>
+        <p>Data: ${dados.data}</p>
+        <p>Horário: ${dados.hora}</p>
       `;
       dashboardProximos.appendChild(div);
     }
