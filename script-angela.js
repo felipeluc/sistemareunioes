@@ -1,4 +1,3 @@
-// script-angela.js
 import {
   collection,
   addDoc,
@@ -14,10 +13,7 @@ import { db } from './firebase-config.js';
 
 const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
-const graficoReunioes = document.getElementById("graficoReunioes");
-const graficoLojas = document.getElementById("graficoLojas");
 
-// Agendamento de nova reunião
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -45,25 +41,17 @@ form.addEventListener("submit", async (e) => {
     alert("Reunião agendada com sucesso!");
     form.reset();
     carregarTransferencias();
-    atualizarDashboard();
   } catch (err) {
     console.error("Erro ao salvar:", err);
     alert("Erro ao agendar reunião");
   }
 });
 
-// Carrega reuniões com status "transferencia"
 async function carregarTransferencias() {
-  listaTransferencias.innerHTML = "<p>Carregando...</p>";
-  const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
-  const snapshot = await getDocs(q);
-
   listaTransferencias.innerHTML = "";
 
-  if (snapshot.empty) {
-    listaTransferencias.innerHTML = "<p>Sem reuniões transferidas no momento.</p>";
-    return;
-  }
+  const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
+  const snapshot = await getDocs(q);
 
   snapshot.forEach((docSnap) => {
     const dados = docSnap.data();
@@ -76,45 +64,44 @@ async function carregarTransferencias() {
       <div><b>Segmento:</b> ${dados.segmento || "-"}</div>
       <div><b>Data:</b> ${dados.data || "-"}</div>
       <div><b>Horário:</b> ${dados.hora || "-"}</div>
+      <div><b>Solicitado por:</b> ${dados.transferidoPor || "Desconhecido"}</div>
       <label>Reenviar para:</label>
       <select id="consultor-${id}">
         <option value="">Selecionar</option>
-        <option value="Leticia">Leticia</option>
-        <option value="Glaucia">Glaucia</option>
-        <option value="Marcelo">Marcelo</option>
-        <option value="Gabriel">Gabriel</option>
+        ${["Leticia", "Glaucia", "Marcelo", "Gabriel"]
+          .filter(nome => nome !== dados.transferidoPor)
+          .map(nome => `<option value="${nome}">${nome}</option>`)
+          .join("")}
       </select>
-      <button onclick="transferirNovamente('${id}')">Transferir</button>
+      <button onclick="transferirNovamente('${id}', '${dados.transferidoPor || ""}')">Transferir</button>
     `;
     listaTransferencias.appendChild(div);
   });
 }
 
-// Transferência de volta para outro consultor
-window.transferirNovamente = async function(id) {
+window.transferirNovamente = async (id, transferidoPor) => {
   const select = document.getElementById(`consultor-${id}`);
   const novoConsultor = select.value;
 
   if (!novoConsultor) {
-    alert("Selecione um consultor para transferir.");
+    alert("Selecione um consultor.");
+    return;
+  }
+
+  if (novoConsultor === transferidoPor) {
+    alert("Não é possível reenviar para o mesmo consultor que solicitou a transferência.");
     return;
   }
 
   const ref = doc(db, "reunioes", id);
   await updateDoc(ref, {
     consultor: novoConsultor,
-    status: "pendente"
+    status: "pendente",
+    transferidoPor: null
   });
 
-  alert("Reunião transferida com sucesso!");
+  alert("Transferência realizada.");
   carregarTransferencias();
-  atualizarDashboard();
-}
+};
 
-// Chamada inicial ao abrir página
 carregarTransferencias();
-
-// Atualizar dashboard (placeholder)
-function atualizarDashboard() {
-  // ⚠️ Aqui você pode atualizar os gráficos do dashboard se quiser
-}
