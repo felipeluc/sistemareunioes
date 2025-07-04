@@ -15,14 +15,21 @@
     }
 
     .sidebar {
-      width: 240px;
-      background: #fff;
-      border-right: 1px solid #ccc;
+      width: 260px;
+      background: #ffffff;
+      border-right: 1px solid #e0e0e0;
       padding: 2rem 1rem;
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      box-shadow: 2px 0 12px rgba(0,0,0,0.05);
+      border-radius: 0 20px 20px 0;
+      box-shadow: 4px 0 12px rgba(0,0,0,0.05);
+    }
+
+    .sidebar h2 {
+      font-size: 1.6rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
     }
 
     .sidebar button {
@@ -34,6 +41,12 @@
       text-align: left;
       cursor: pointer;
       transition: background 0.2s ease;
+      color: #333;
+    }
+
+    .sidebar button:hover {
+      background: #007aff20;
+      color: #000;
     }
 
     .sidebar button.active {
@@ -47,55 +60,21 @@
       overflow-y: auto;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .section {
+    .content-section {
       display: none;
     }
 
-    .section.active {
+    .content-section.active {
       display: block;
     }
 
+    /* Exemplo de estilos para cards e colunas (mantém estilo original) */
     .card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      margin-bottom: 1rem;
-    }
-
-    .card button, .card select {
-      margin-top: 0.5rem;
-      padding: 0.5rem 1rem;
-      border-radius: 10px;
-      border: none;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
-    .card button {
-      background: #007aff;
-      color: white;
-      margin-right: 0.5rem;
-    }
-
-    .card button:hover {
-      background: #005dd9;
-    }
-
-    .card select {
-      border: 1px solid #ccc;
       background: white;
-    }
-
-    .lists {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin-bottom: 1rem;
     }
   </style>
 </head>
@@ -105,39 +84,35 @@
     <button onclick="mostrarSecao('pendentes')" class="active">Pendentes</button>
     <button onclick="mostrarSecao('agendadas')">Agendadas</button>
     <button onclick="mostrarSecao('realizadas')">Realizadas</button>
+    <button onclick="mostrarSecao('fechamentos')">Fechamentos</button>
+    <button onclick="mostrarSecao('dashboard')">Dashboard</button>
   </div>
 
   <div class="main-content">
-    <h1 id="nomeConsultor">Bem-vindo(a)</h1>
+    <h1>Bem-vindo(a), Nome</h1>
 
-    <div id="pendentes" class="section active">
-      <h2>Reuniões Pendentes</h2>
-      <div id="listaPendentes"></div>
-    </div>
-
-    <div id="agendadas" class="section">
-      <h2>Reuniões Agendadas</h2>
-      <div id="listaAgendadas"></div>
-    </div>
-
-    <div id="realizadas" class="section">
-      <h2>Reuniões Realizadas</h2>
-      <div id="listaRealizadas"></div>
-    </div>
+    <!-- Seções abaixo são apenas marcadores para JS preencher dinamicamente -->
+    <section id="pendentes" class="content-section active"></section>
+    <section id="agendadas" class="content-section"></section>
+    <section id="realizadas" class="content-section"></section>
+    <section id="fechamentos" class="content-section"></section>
+    <section id="dashboard" class="content-section"></section>
   </div>
 
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="script-consultor.js"></script>
   <script>
     function mostrarSecao(id) {
-      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(id)?.classList.add('active');
 
       document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
       const buttons = document.querySelectorAll('.sidebar button');
       if (id === 'pendentes') buttons[0].classList.add('active');
       if (id === 'agendadas') buttons[1].classList.add('active');
       if (id === 'realizadas') buttons[2].classList.add('active');
+      if (id === 'fechamentos') buttons[3].classList.add('active');
+      if (id === 'dashboard') buttons[4].classList.add('active');
     }
   </script>
 </body>
