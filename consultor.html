@@ -46,7 +46,6 @@
 
     .sidebar button:hover {
       background: #007aff20;
-      color: #000;
     }
 
     .sidebar button.active {
@@ -75,6 +74,28 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       margin-bottom: 1rem;
     }
+
+    .card button, .card select {
+      margin-top: 0.5rem;
+      margin-right: 0.5rem;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.9rem;
+      border-radius: 10px;
+      border: none;
+      background: #007aff;
+      color: white;
+      cursor: pointer;
+    }
+
+    .card select {
+      background: white;
+      color: #333;
+      border: 1px solid #ccc;
+    }
+
+    .card button:hover {
+      background: #005dd9;
+    }
   </style>
 </head>
 <body>
@@ -83,37 +104,14 @@
     <button onclick="mostrarSecao('pendentes')" class="active">Pendentes</button>
     <button onclick="mostrarSecao('agendadas')">Agendadas</button>
     <button onclick="mostrarSecao('realizadas')">Realizadas</button>
-    <button onclick="mostrarSecao('fechamentos')">Fechamentos</button>
-    <button onclick="mostrarSecao('dashboard')">Dashboard</button>
   </div>
 
   <div class="main-content">
-    <h1 id="nomeConsultor">Bem-vindo(a)</h1>
+    <h1>Bem-vindo(a), Nome</h1>
 
-    <section id="pendentes" class="content-section active">
-      <h2>Reuniões Pendentes</h2>
-      <div id="listaPendentes"></div>
-    </section>
-
-    <section id="agendadas" class="content-section">
-      <h2>Reuniões Agendadas</h2>
-      <div id="listaAgendadas"></div>
-    </section>
-
-    <section id="realizadas" class="content-section">
-      <h2>Reuniões Realizadas</h2>
-      <div id="listaRealizadas"></div>
-    </section>
-
-    <section id="fechamentos" class="content-section">
-      <h2>Fechamentos</h2>
-      <div id="listaFechamentos"></div>
-    </section>
-
-    <section id="dashboard" class="content-section">
-      <h2>Dashboard</h2>
-      <div id="conteudoDashboard"></div>
-    </section>
+    <section id="pendentes" class="content-section active"></section>
+    <section id="agendadas" class="content-section"></section>
+    <section id="realizadas" class="content-section"></section>
   </div>
 
   <script type="module" src="firebase-config.js"></script>
@@ -128,8 +126,6 @@
       if (id === 'pendentes') buttons[0].classList.add('active');
       if (id === 'agendadas') buttons[1].classList.add('active');
       if (id === 'realizadas') buttons[2].classList.add('active');
-      if (id === 'fechamentos') buttons[3].classList.add('active');
-      if (id === 'dashboard') buttons[4].classList.add('active');
     }
   </script>
 </body>
