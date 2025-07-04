@@ -9,16 +9,13 @@ import {
 
 import { db } from "./firebase-config.js";
 
-// Recupera o nome do usuário logado
-const usuario = localStorage.getItem("usuarioLogado") || "Consultor";
-document.getElementById("nomeConsultor").innerText = `Bem-vindo(a), ${usuario}`;
+const usuario = localStorage.getItem("usuarioLogado");
+document.querySelector("h1").innerText = `Bem-vindo(a), ${usuario}`;
 
-// Elementos do DOM
-const listaPendentes = document.getElementById("listaPendentes");
-const listaAgendadas = document.getElementById("listaAgendadas");
-const listaRealizadas = document.getElementById("listaRealizadas");
+const secPendentes = document.getElementById("pendentes");
+const secAgendadas = document.getElementById("agendadas");
+const secRealizadas = document.getElementById("realizadas");
 
-// Carrega todas as reuniões do consultor logado
 async function carregarReunioes() {
   const q = query(collection(db, "reunioes"), where("consultor", "==", usuario));
   const snapshot = await getDocs(q);
@@ -36,16 +33,15 @@ async function carregarReunioes() {
     else if (dados.status === "realizada") realizadas.push(dados);
   });
 
-  mostrarLista(listaPendentes, pendentes, "pendente");
-  mostrarLista(listaAgendadas, agendadas, "agendada");
-  mostrarLista(listaRealizadas, realizadas, "realizada");
+  renderizarSecao(secPendentes, pendentes, "pendente");
+  renderizarSecao(secAgendadas, agendadas, "agendada");
+  renderizarSecao(secRealizadas, realizadas, "realizada");
 }
 
-// Exibe a lista de reuniões em cada seção
-function mostrarLista(container, lista, tipo) {
-  container.innerHTML = "";
+function renderizarSecao(container, lista, tipo) {
+  container.innerHTML = `<h2>Reuniões ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</h2>`;
   if (lista.length === 0) {
-    container.innerHTML = "<p>Nenhuma reunião encontrada.</p>";
+    container.innerHTML += "<p>Nenhuma reunião encontrada.</p>";
     return;
   }
 
@@ -94,7 +90,6 @@ function mostrarLista(container, lista, tipo) {
   });
 }
 
-// Atualiza o status para "agendada" ao aceitar
 async function aceitar(id) {
   const ref = doc(db, "reunioes", id);
   await updateDoc(ref, {
@@ -104,7 +99,6 @@ async function aceitar(id) {
   carregarReunioes();
 }
 
-// Atualiza o status para "transferencia"
 async function transferir(id) {
   const ref = doc(db, "reunioes", id);
   await updateDoc(ref, {
@@ -114,7 +108,6 @@ async function transferir(id) {
   carregarReunioes();
 }
 
-// Exibe os detalhes da reunião
 function verDetalhes(dados) {
   alert(`
 Loja: ${dados.nomeLoja}
@@ -127,19 +120,15 @@ Observações: ${dados.observacoes || "-"}
   `);
 }
 
-// Atualiza status para "realizada" e registra o resultado
 async function atualizarStatus(id, resultado) {
   if (!resultado) return;
-
   const ref = doc(db, "reunioes", id);
   await updateDoc(ref, {
     status: "realizada",
     resultado: resultado,
     realizadaEm: new Date().toISOString()
   });
-
   carregarReunioes();
 }
 
-// Inicializa o carregamento
 carregarReunioes();
