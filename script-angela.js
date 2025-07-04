@@ -13,8 +13,6 @@ import { db } from './firebase-config.js';
 
 const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
-const graficoReunioes = document.getElementById("graficoReunioes");
-const graficoLojas = document.getElementById("graficoLojas");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -117,10 +115,10 @@ async function carregarDashboard() {
   const hojeLista = [];
   const proximosLista = [];
   const resultados = {
-    interessado: 0,
-    aguardandoPagamento: 0,
-    aguardandoDocumentacao: 0,
-    semInteresse: 0
+    interessado: [],
+    aguardandoPagamento: [],
+    aguardandoDocumentacao: [],
+    semInteresse: []
   };
 
   snapshot.forEach((docSnap) => {
@@ -128,7 +126,7 @@ async function carregarDashboard() {
     if (r.data === hojeStr) hojeLista.push(r);
     if (r.data > hojeStr && r.data <= proximaStr) proximosLista.push(r);
     if (r.status === "realizada" && r.resultado) {
-      resultados[r.resultado] = (resultados[r.resultado] || 0) + 1;
+      resultados[r.resultado].push(r);
     }
   });
 
@@ -159,23 +157,46 @@ function renderizarListaDashboard(id, lista) {
   });
 }
 
-function renderizarResultados(id, resultado) {
+function renderizarResultados(id, resultados) {
   const container = document.getElementById(id);
-  container.innerHTML = `
-    <div class="card"><b>Interessado:</b> ${resultado.interessado}</div>
-    <div class="card"><b>Aguardando Pagamento:</b> ${resultado.aguardandoPagamento}</div>
-    <div class="card"><b>Aguardando Documentação:</b> ${resultado.aguardandoDocumentacao}</div>
-    <div class="card"><b>Não teve interesse:</b> ${resultado.semInteresse}</div>
-  `;
+  container.innerHTML = "";
+
+  for (const tipo in resultados) {
+    const lista = resultados[tipo];
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const detalhesId = `detalhes-${tipo}`;
+    card.innerHTML = `
+      <b>${tipo.charAt(0).toUpperCase() + tipo.slice(1)}:</b> ${lista.length}
+      <button onclick="document.getElementById('${detalhesId}').classList.toggle('hidden')">Ver detalhes</button>
+      <ul id="${detalhesId}" class="hidden" style="margin-top: 0.5rem; padding-left: 1rem;"></ul>
+    `;
+
+    const ul = document.createElement("ul");
+    ul.id = detalhesId;
+    ul.className = "hidden";
+    lista.forEach((r) => {
+      const li = document.createElement("li");
+      li.textContent = `${r.nomeLoja || "Sem nome"} - ${r.cnpj || "Sem CNPJ"}`;
+      ul.appendChild(li);
+    });
+
+    card.appendChild(ul);
+    container.appendChild(card);
+  }
 }
+
+// estilo ocultar detalhes
+const style = document.createElement("style");
+style.textContent = `.hidden { display: none; }`;
+document.head.appendChild(style);
 
 document.addEventListener("DOMContentLoaded", () => {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach(() => {
       const dashboardVisivel = document.getElementById("dashboard").classList.contains("active");
-      if (dashboardVisivel) {
-        carregarDashboard();
-      }
+      if (dashboardVisivel) carregarDashboard();
     });
   });
 
