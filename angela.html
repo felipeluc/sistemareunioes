@@ -6,7 +6,6 @@
   <title>Angela | Comercial SouFacil</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* MANTÉM O MESMO ESTILO DO PRIMEIRO HTML, COM ESTILO DO DASHBOARD NOVO */
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -140,6 +139,38 @@
     .dashboard-box button:hover {
       background: #005dd9;
     }
+
+    #listaTransferencias .card {
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      padding: 1rem;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      margin-bottom: 1rem;
+    }
+
+    #listaTransferencias .card select {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+    }
+
+    #listaTransferencias .card button {
+      margin-top: 0.7rem;
+      background: #007aff;
+      color: white;
+      padding: 0.5rem 0.9rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #listaTransferencias .card button:hover {
+      background: #005dd9;
+    }
   </style>
 </head>
 <body>
@@ -156,7 +187,6 @@
     <section id="agendar" class="content-section active">
       <h2>Agendar Reunião</h2>
       <form id="formAgendamento" class="form-grid">
-        <!-- MESMO FORM ANTIGO MANTIDO -->
         <select id="consultor" required>
           <option value="">Selecionar Consultor</option>
           <option value="Leticia">Leticia</option>
@@ -188,6 +218,16 @@
 
     <section id="dashboard" class="content-section">
       <h2>Dashboard</h2>
+
+      <div class="dashboard-row" style="margin-bottom: 2rem;">
+        <div class="dashboard-box" style="flex:1;" id="dashboardHoje">
+          <h3>Reuniões de Hoje</h3>
+        </div>
+        <div class="dashboard-box" style="flex:1;" id="dashboardProximos">
+          <h3>Próximos Dias</h3>
+        </div>
+      </div>
+
       <div id="graficoReunioes" class="dashboard-row"></div>
       <div id="graficoLojas" class="dashboard-row" style="margin-top: 1rem;"></div>
       <h3 style="margin-top: 2rem;">Resultados</h3>
