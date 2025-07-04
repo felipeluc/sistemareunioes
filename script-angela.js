@@ -104,14 +104,17 @@ function atualizarDashboard() {
   mostrarResultadosDashboard();
 }
 
+function formatarDataBrasileira(dataISO) {
+  const [ano, mes, dia] = dataISO.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
 async function mostrarDashboardHoje() {
   const q = collection(db, "reunioes");
   const snapshot = await getDocs(q);
   const hoje = new Date().toISOString().slice(0, 10);
 
   dashboardHoje.innerHTML = "";
-  dashboardHoje.style.maxHeight = "300px";
-  dashboardHoje.style.overflowY = "auto";
 
   snapshot.forEach((doc) => {
     const dados = doc.data();
@@ -121,8 +124,7 @@ async function mostrarDashboardHoje() {
       div.innerHTML = `
         <strong>${dados.nomeLoja}</strong>
         <p>${dados.cidade} - ${dados.estado}</p>
-        <p>Data: ${dados.data}</p>
-        <p>Horário: ${dados.hora}</p>
+        <p>${formatarDataBrasileira(dados.data)} às ${dados.hora}</p>
       `;
       dashboardHoje.appendChild(div);
     }
@@ -135,8 +137,6 @@ async function mostrarDashboardProximos() {
   const hoje = new Date().toISOString().slice(0, 10);
 
   dashboardProximos.innerHTML = "";
-  dashboardProximos.style.maxHeight = "300px";
-  dashboardProximos.style.overflowY = "auto";
 
   snapshot.forEach((doc) => {
     const dados = doc.data();
@@ -146,8 +146,7 @@ async function mostrarDashboardProximos() {
       div.innerHTML = `
         <strong>${dados.nomeLoja}</strong>
         <p>${dados.cidade} - ${dados.estado}</p>
-        <p>Data: ${dados.data}</p>
-        <p>Horário: ${dados.hora}</p>
+        <p>${formatarDataBrasileira(dados.data)} às ${dados.hora}</p>
       `;
       dashboardProximos.appendChild(div);
     }
