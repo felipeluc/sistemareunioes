@@ -68,7 +68,6 @@
       display: block;
     }
 
-    /* Exemplo de estilos para cards e colunas (mantém estilo original) */
     .card {
       background: white;
       padding: 1rem;
@@ -89,14 +88,32 @@
   </div>
 
   <div class="main-content">
-    <h1>Bem-vindo(a), Nome</h1>
+    <h1 id="nomeConsultor">Bem-vindo(a)</h1>
 
-    <!-- Seções abaixo são apenas marcadores para JS preencher dinamicamente -->
-    <section id="pendentes" class="content-section active"></section>
-    <section id="agendadas" class="content-section"></section>
-    <section id="realizadas" class="content-section"></section>
-    <section id="fechamentos" class="content-section"></section>
-    <section id="dashboard" class="content-section"></section>
+    <section id="pendentes" class="content-section active">
+      <h2>Reuniões Pendentes</h2>
+      <div id="listaPendentes"></div>
+    </section>
+
+    <section id="agendadas" class="content-section">
+      <h2>Reuniões Agendadas</h2>
+      <div id="listaAgendadas"></div>
+    </section>
+
+    <section id="realizadas" class="content-section">
+      <h2>Reuniões Realizadas</h2>
+      <div id="listaRealizadas"></div>
+    </section>
+
+    <section id="fechamentos" class="content-section">
+      <h2>Fechamentos</h2>
+      <div id="listaFechamentos"></div>
+    </section>
+
+    <section id="dashboard" class="content-section">
+      <h2>Dashboard</h2>
+      <div id="conteudoDashboard"></div>
+    </section>
   </div>
 
   <script type="module" src="firebase-config.js"></script>
