@@ -108,30 +108,31 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    .card strong {
-      display: block;
-      font-size: 1.1rem;
-      margin-bottom: 0.25rem;
+    .dashboard-grid {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
     }
 
-    .card small {
-      color: #555;
+    .dashboard-section {
+      background: white;
+      border-radius: 16px;
+      padding: 1rem;
+      flex: 1;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    .card button {
+    .dashboard-section h3 {
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+
+    .dashboard-card {
+      background: #f8f8fa;
+      border-radius: 12px;
+      padding: 0.75rem;
       margin-top: 0.5rem;
-      margin-right: 0.5rem;
-      padding: 0.5rem 0.9rem;
-      font-size: 0.9rem;
-      border-radius: 10px;
-      border: none;
-      background: #007aff;
-      color: white;
-      cursor: pointer;
-    }
-
-    .card button:hover {
-      background: #005dd9;
+      font-size: 0.95rem;
     }
   </style>
 </head>
@@ -180,15 +181,20 @@
 
     <section id="dashboard" class="content-section">
       <h2>Dashboard</h2>
-
-      <h3>Reuniões de Hoje</h3>
-      <div id="dashboardHoje"></div>
-
-      <h3>Próximos Dias</h3>
-      <div id="dashboardProximos"></div>
-
-      <h3>Resultados (Reuniões Realizadas)</h3>
-      <div id="dashboardResultados"></div>
+      <div class="dashboard-grid">
+        <div class="dashboard-section">
+          <h3>Hoje</h3>
+          <div id="dashboardHoje"></div>
+        </div>
+        <div class="dashboard-section">
+          <h3>Próximos Dias</h3>
+          <div id="dashboardProximos"></div>
+        </div>
+        <div class="dashboard-section">
+          <h3>Resultados</h3>
+          <div id="dashboardResultados"></div>
+        </div>
+      </div>
     </section>
   </div>
 
