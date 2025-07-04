@@ -13,10 +13,9 @@ import { db } from './firebase-config.js';
 
 const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
-const graficoReunioes = document.getElementById("graficoReunioes");
-const graficoLojas = document.getElementById("graficoLojas");
 const dashboardHoje = document.getElementById("dashboardHoje");
 const dashboardProximos = document.getElementById("dashboardProximos");
+const dashboardResultados = document.getElementById("dashboardResultados");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -62,13 +61,6 @@ async function carregarTransferencias() {
     const dados = docSnap.data();
     const div = document.createElement("div");
     div.className = "card";
-    div.style.border = "1px solid #ddd";
-    div.style.borderRadius = "12px";
-    div.style.boxShadow = "0 2px 5px rgba(0,0,0,0.05)";
-    div.style.padding = "1rem";
-    div.style.marginBottom = "1rem";
-    div.style.background = "#fff";
-
     div.innerHTML = `
       <strong>${dados.nomeLoja}</strong>
       <p><b>Cidade:</b> ${dados.cidade}</p>
@@ -81,7 +73,7 @@ async function carregarTransferencias() {
         <option value="Marcelo">Marcelo</option>
         <option value="Gabriel">Gabriel</option>
       </select>
-      <button class="btn-transferir" style="margin-top: 0.5rem;">Transferir</button>
+      <button class="btn-transferir">Transferir</button>
     `;
 
     const select = div.querySelector(".novo-consultor");
@@ -104,48 +96,49 @@ async function carregarTransferencias() {
   });
 }
 
+carregarTransferencias();
+
 function atualizarDashboard() {
-  contarReunioesPorPeriodo();
-  contarLojasPorPeriodo();
+  mostrarHojeEProximos();
   mostrarResultadosDashboard();
-  mostrarReunioesHoje();
-  mostrarProximasReunioes();
 }
 
-async function contarReunioesPorPeriodo() {
+async function mostrarHojeEProximos() {
   const q = collection(db, "reunioes");
   const snapshot = await getDocs(q);
 
-  let total = 0;
-  snapshot.forEach(() => total++);
+  dashboardHoje.innerHTML = "";
+  dashboardProximos.innerHTML = "";
 
-  graficoReunioes.innerHTML = `
-    <div class="dashboard-box">
-      <h3>Total de Reuniões</h3>
-      <p>${total}</p>
-    </div>
-  `;
-}
+  const hoje = new Date();
+  const hojeStr = hoje.toISOString().split("T")[0];
 
-async function contarLojasPorPeriodo() {
-  const q = collection(db, "reunioes");
-  const snapshot = await getDocs(q);
+  snapshot.forEach((docSnap) => {
+    const dados = docSnap.data();
+    if (!dados.data || dados.status !== "pendente") return;
 
-  let total = 0;
-  snapshot.forEach((doc) => {
-    const dados = doc.data();
-    if (dados.qtdLojas) total += parseInt(dados.qtdLojas);
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <strong>${dados.nomeLoja}</strong>
+      <p><b>Consultor:</b> ${dados.consultor}</p>
+      <p><b>Horário:</b> ${dados.hora}</p>
+      <p><b>Cidade:</b> ${dados.cidade}</p>
+      <p><b>Estado:</b> ${dados.estado}</p>
+    `;
+
+    if (dados.data === hojeStr) {
+      dashboardHoje.appendChild(card);
+    } else {
+      const dataReuniao = new Date(dados.data);
+      if (dataReuniao > hoje) {
+        dashboardProximos.appendChild(card);
+      }
+    }
   });
-
-  graficoLojas.innerHTML = `
-    <div class="dashboard-box">
-      <h3>Total de Lojas</h3>
-      <p>${total}</p>
-    </div>
-  `;
 }
 
-async function mostrarResultadosDashboard(filtro = "todos") {
+async function mostrarResultadosDashboard() {
   const q = collection(db, "reunioes");
   const snapshot = await getDocs(q);
 
@@ -154,18 +147,15 @@ async function mostrarResultadosDashboard(filtro = "todos") {
   snapshot.forEach((doc) => {
     const r = doc.data();
     if (r.status === "realizada") {
-      if (filtro !== "todos" && r.resultado !== filtro) return;
-
       if (!resultados[r.resultado]) resultados[r.resultado] = [];
       resultados[r.resultado].push({
         nomeLoja: r.nomeLoja || "Sem nome",
-        cnpj: r.cnpj || "Não informado"
+        cnpj: r.cnpj || "Não informado",
       });
     }
   });
 
-  const container = document.getElementById("resultadosDashboard");
-  container.innerHTML = "";
+  dashboardResultados.innerHTML = "";
 
   const cores = {
     interessado: "#4caf50",
@@ -174,28 +164,29 @@ async function mostrarResultadosDashboard(filtro = "todos") {
     semInteresse: "#f44336"
   };
 
-  const titulos = {
-    interessado: "Interessados",
-    aguardandoPagamento: "Aguardando Pagamento",
-    aguardandoDocumentacao: "Aguardando Documentação",
-    semInteresse: "Sem Interesse"
-  };
-
   for (const tipo in resultados) {
     const box = document.createElement("div");
     box.className = "dashboard-box";
     box.style.borderTop = `4px solid ${cores[tipo] || "#999"}`;
 
+    const titulo = {
+      interessado: "Interessados",
+      aguardandoPagamento: "Aguardando Pagamento",
+      aguardandoDocumentacao: "Aguardando Documentação",
+      semInteresse: "Sem Interesse"
+    };
+
     box.innerHTML = `
-      <h3>${titulos[tipo] || tipo}</h3>
+      <h3>${titulo[tipo] || tipo}</h3>
       <p><strong>${resultados[tipo].length}</strong> resultado(s)</p>
       <button onclick='verDetalhesResultado(${JSON.stringify(resultados[tipo])})'>Ver Detalhes</button>
     `;
 
-    container.appendChild(box);
+    dashboardResultados.appendChild(box);
   }
 }
 
+// Ver detalhes do resultado (nome da loja e CNPJ)
 window.verDetalhesResultado = function(lista) {
   if (!Array.isArray(lista) || lista.length === 0) {
     alert("Nenhuma informação disponível.");
@@ -208,52 +199,5 @@ window.verDetalhesResultado = function(lista) {
 
   alert(texto);
 };
-
-async function mostrarReunioesHoje() {
-  const snapshot = await getDocs(collection(db, "reunioes"));
-  const hoje = new Date().toISOString().split("T")[0];
-
-  dashboardHoje.innerHTML = "";
-
-  snapshot.forEach((docSnap) => {
-    const r = docSnap.data();
-    if (r.data === hoje && r.status === "pendente") {
-      const card = document.createElement("div");
-      card.className = "dashboard-box";
-      card.innerHTML = `
-        <h3>${r.nomeLoja}</h3>
-        <p>${r.hora} - ${r.cidade}/${r.estado}</p>
-      `;
-      dashboardHoje.appendChild(card);
-    }
-  });
-}
-
-async function mostrarProximasReunioes() {
-  const snapshot = await getDocs(collection(db, "reunioes"));
-  const hoje = new Date();
-  const proximosDias = new Date();
-  proximosDias.setDate(hoje.getDate() + 7);
-
-  dashboardProximos.innerHTML = "";
-
-  snapshot.forEach((docSnap) => {
-    const r = docSnap.data();
-    const dataReuniao = new Date(r.data);
-    if (
-      r.status === "pendente" &&
-      dataReuniao > hoje &&
-      dataReuniao <= proximosDias
-    ) {
-      const card = document.createElement("div");
-      card.className = "dashboard-box";
-      card.innerHTML = `
-        <h3>${r.nomeLoja}</h3>
-        <p>${r.data} - ${r.hora} - ${r.cidade}/${r.estado}</p>
-      `;
-      dashboardProximos.appendChild(card);
-    }
-  });
-}
 
 atualizarDashboard();
