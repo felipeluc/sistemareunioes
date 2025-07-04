@@ -13,7 +13,10 @@ import { db } from './firebase-config.js';
 
 const form = document.getElementById("formAgendamento");
 const listaTransferencias = document.getElementById("listaTransferencias");
+const graficoReunioes = document.getElementById("graficoReunioes");
+const graficoLojas = document.getElementById("graficoLojas");
 
+// Agendamento de reunião
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -40,21 +43,24 @@ form.addEventListener("submit", async (e) => {
     await addDoc(collection(db, "reunioes"), data);
     alert("Reunião agendada com sucesso!");
     form.reset();
-    carregarTransferencias(); // atualiza lista após agendamento também
+    carregarTransferencias();
+    atualizarDashboard();
   } catch (err) {
     console.error("Erro ao salvar:", err);
     alert("Erro ao agendar reunião");
   }
 });
 
+// Carrega transferências com campo 'transferidoPor'
 async function carregarTransferencias() {
+  listaTransferencias.innerHTML = "<p>Carregando...</p>";
   const q = query(collection(db, "reunioes"), where("status", "==", "transferencia"));
   const snapshot = await getDocs(q);
 
   listaTransferencias.innerHTML = "";
 
   if (snapshot.empty) {
-    listaTransferencias.innerHTML = "<p>Nenhuma transferência encontrada.</p>";
+    listaTransferencias.innerHTML = "<p>Nenhuma transferência no momento.</p>";
     return;
   }
 
@@ -62,14 +68,17 @@ async function carregarTransferencias() {
     const dados = docSnap.data();
     const id = docSnap.id;
 
-    const div = document.createElement("div");
-    div.className = "card";
+    const card = document.createElement("div");
+    card.className = "card";
 
-    div.innerHTML = `
+    const solicitadoPor = dados.transferidoPor || "desconhecido";
+
+    card.innerHTML = `
       <strong>${dados.nomeLoja || "Loja sem nome"}</strong>
-      <p><b>Cidade:</b> ${dados.cidade || "-"}</p>
-      <p><b>Estado:</b> ${dados.estado || "-"}</p>
-      <p><b>Solicitado por:</b> ${dados.transferidoPor || "Desconhecido"}</p>
+      <div><b>Segmento:</b> ${dados.segmento || "-"}</div>
+      <div><b>Data:</b> ${dados.data || "-"}</div>
+      <div><b>Horário:</b> ${dados.hora || "-"}</div>
+      <div><b>Solicitado por:</b> ${solicitadoPor}</div>
     `;
 
     const select = document.createElement("select");
@@ -81,30 +90,56 @@ async function carregarTransferencias() {
       <option value="Gabriel">Gabriel</option>
     `;
 
-    const botaoReenviar = document.createElement("button");
-    botaoReenviar.textContent = "Transferir";
-    botaoReenviar.onclick = async () => {
+    const btnTransferir = document.createElement("button");
+    btnTransferir.textContent = "Transferir";
+    btnTransferir.onclick = async () => {
       const novoConsultor = select.value;
       if (!novoConsultor) {
-        alert("Selecione um consultor para transferir");
+        alert("Selecione um consultor");
         return;
       }
-
       await updateDoc(doc(db, "reunioes", id), {
         consultor: novoConsultor,
         status: "pendente",
         transferidoPor: null
       });
-
-      alert("Reunião transferida com sucesso");
+      alert("Transferido com sucesso");
       carregarTransferencias();
     };
 
-    div.appendChild(select);
-    div.appendChild(botaoReenviar);
-
-    listaTransferencias.appendChild(div);
+    card.appendChild(select);
+    card.appendChild(btnTransferir);
+    listaTransferencias.appendChild(card);
   });
 }
 
+// Dashboard: total de reuniões e total de lojas
+async function atualizarDashboard() {
+  graficoReunioes.innerHTML = "<p>Carregando...</p>";
+  graficoLojas.innerHTML = "";
+
+  const snapshot = await getDocs(collection(db, "reunioes"));
+  let totalReunioes = 0;
+  let totalLojas = 0;
+
+  snapshot.forEach((doc) => {
+    const dados = doc.data();
+    totalReunioes++;
+    if (dados.qtdLojas) {
+      totalLojas += parseInt(dados.qtdLojas);
+    }
+  });
+
+  graficoReunioes.innerHTML = `
+    <div class="card">
+      <strong>Total de Reuniões:</strong> ${totalReunioes}
+    </div>`;
+  graficoLojas.innerHTML = `
+    <div class="card">
+      <strong>Total de Lojas:</strong> ${totalLojas}
+    </div>`;
+}
+
+// Inicia transferências e dashboard ao carregar
 carregarTransferencias();
+atualizarDashboard();
