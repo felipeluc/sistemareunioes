@@ -1,215 +1,136 @@
 import {
   collection,
+  getDocs,
   query,
   where,
-  getDocs,
-  doc,
   updateDoc,
-  Timestamp,
-  addDoc
+  doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { db } from "./firebase-config.js";
 
-// Identificar o consultor logado
-const usuario = localStorage.getItem("usuario");
+const usuario = localStorage.getItem("usuarioLogado");
+document.getElementById("nomeConsultor").innerText = `Bem-vindo(a), ${usuario}`;
 
-// Elementos do DOM
-const nomeUsuario = document.getElementById("nomeUsuario");
-const containerPendentes = document.getElementById("reunioesPendentes");
-const containerHoje = document.getElementById("reunioesHoje");
-const containerProximos = document.getElementById("reunioesProximos");
-const containerHistorico = document.getElementById("reunioesHistorico");
-const containerFechamentos = document.getElementById("listaFechamentos");
+const listaPendentes = document.getElementById("listaPendentes");
+const listaAgendadas = document.getElementById("listaAgendadas");
+const listaRealizadas = document.getElementById("listaRealizadas");
 
-// Nome na tela
-if (nomeUsuario && usuario) nomeUsuario.innerText = usuario;
-
-// Carregar todas as seções
-carregarPendentes();
-carregarAgenda();
-carregarHistorico();
-carregarFechamentos();
-
-// PENDENTES
-async function carregarPendentes() {
-  const q = query(collection(db, "reunioes"),
-    where("consultor", "==", usuario),
-    where("status", "==", "pendente")
-  );
+async function carregarReunioes() {
+  const q = query(collection(db, "reunioes"), where("consultor", "==", usuario));
   const snapshot = await getDocs(q);
-  containerPendentes.innerHTML = "";
+
+  const pendentes = [];
+  const agendadas = [];
+  const realizadas = [];
 
   snapshot.forEach((docSnap) => {
     const dados = docSnap.data();
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <strong>${dados.nomeLoja}</strong>
-      <p>${dados.cidade} - ${dados.estado}</p>
-      <p><b>Data:</b> ${dados.data} às ${dados.hora}</p>
-      <p><b>Contato:</b> ${dados.contato}</p>
-      <button class="btn-aceitar">Aceitar</button>
-      <button class="btn-transferir">Solicitar Transferência</button>
+    dados.id = docSnap.id;
+
+    if (dados.status === "pendente") pendentes.push(dados);
+    else if (dados.status === "agendada") agendadas.push(dados);
+    else if (dados.status === "realizada") realizadas.push(dados);
+  });
+
+  mostrarLista(listaPendentes, pendentes, "pendente");
+  mostrarLista(listaAgendadas, agendadas, "agendada");
+  mostrarLista(listaRealizadas, realizadas, "realizada");
+}
+
+function mostrarLista(container, lista, tipo) {
+  container.innerHTML = "";
+  if (lista.length === 0) {
+    container.innerHTML = "<p>Nenhuma reunião encontrada.</p>";
+    return;
+  }
+
+  lista.forEach((dados) => {
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <strong>${dados.nomeLoja || "Sem nome"}</strong>
+      <div><b>Segmento:</b> ${dados.segmento || "-"}</div>
+      <div><b>Data:</b> ${dados.data || "-"}</div>
+      <div><b>Horário:</b> ${dados.hora || "-"}</div>
     `;
 
-    card.querySelector(".btn-aceitar").onclick = () => abrirModalAceite(docSnap.id);
-    card.querySelector(".btn-transferir").onclick = () => solicitarTransferencia(docSnap.id);
-    containerPendentes.appendChild(card);
-  });
-}
+    if (tipo === "pendente") {
+      const btnAceitar = document.createElement("button");
+      btnAceitar.textContent = "Aceitar";
+      btnAceitar.onclick = () => aceitar(dados.id);
+      div.appendChild(btnAceitar);
 
-// ACEITAR REUNIÃO
-async function abrirModalAceite(idReuniao) {
-  const motivo = prompt("Digite o status da reunião:\n1 - Interessado\n2 - Aguardando Pagamento\n3 - Aguardando Documentação\n4 - Sem Interesse");
-  let resultado = "";
+      const btnTransferir = document.createElement("button");
+      btnTransferir.textContent = "Transferir";
+      btnTransferir.onclick = () => transferir(dados.id);
+      div.appendChild(btnTransferir);
 
-  switch (motivo) {
-    case "1": resultado = "interessado"; break;
-    case "2": resultado = "aguardandoPagamento"; break;
-    case "3": resultado = "aguardandoDocumentacao"; break;
-    case "4":
-      resultado = "semInteresse";
-      const motivoTexto = prompt("Informe o motivo:");
-      if (!motivoTexto) return alert("Motivo obrigatório.");
-      await updateDoc(doc(db, "reunioes", idReuniao), {
-        resultado,
-        motivo: motivoTexto,
-        status: "realizada",
-        atualizadoEm: Timestamp.now()
-      });
-      break;
-    default:
-      return alert("Opção inválida.");
-  }
-
-  if (resultado !== "semInteresse") {
-    await updateDoc(doc(db, "reunioes", idReuniao), {
-      resultado,
-      status: "realizada",
-      atualizadoEm: Timestamp.now()
-    });
-  }
-
-  alert("Reunião atualizada com sucesso.");
-  carregarPendentes();
-  carregarHistorico();
-}
-
-// TRANSFERIR
-async function solicitarTransferencia(id) {
-  await updateDoc(doc(db, "reunioes", id), {
-    status: "transferencia",
-    transferidoPor: usuario
-  });
-  alert("Reunião enviada para transferência.");
-  carregarPendentes();
-}
-
-// AGENDA: HOJE E PRÓXIMOS DIAS
-async function carregarAgenda() {
-  const q = query(collection(db, "reunioes"),
-    where("consultor", "==", usuario)
-  );
-  const snapshot = await getDocs(q);
-  const hoje = new Date().toISOString().split("T")[0];
-
-  containerHoje.innerHTML = "";
-  containerProximos.innerHTML = "";
-
-  snapshot.forEach((docSnap) => {
-    const dados = docSnap.data();
-    if (dados.status !== "realizada") {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <strong>${dados.nomeLoja}</strong>
-        <p>${dados.cidade} - ${dados.estado}</p>
-        <p>${dados.data} às ${dados.hora}</p>
-      `;
-
-      if (dados.data === hoje) {
-        containerHoje.appendChild(card);
-      } else if (dados.data > hoje) {
-        containerProximos.appendChild(card);
-      }
+      const btnDetalhes = document.createElement("button");
+      btnDetalhes.textContent = "Ver Detalhes";
+      btnDetalhes.onclick = () => verDetalhes(dados);
+      div.appendChild(btnDetalhes);
     }
+
+    if (tipo === "agendada") {
+      const select = document.createElement("select");
+      select.innerHTML = `
+        <option value="">Selecionar status</option>
+        <option value="interessado">Interessado</option>
+        <option value="aguardandoPagamento">Aguardando Pagamento</option>
+        <option value="aguardandoDocumentacao">Aguardando Documentação</option>
+        <option value="semInteresse">Não teve interesse</option>
+      `;
+      select.onchange = () => atualizarStatus(dados.id, select.value);
+      div.appendChild(select);
+    }
+
+    container.appendChild(div);
   });
 }
 
-// HISTÓRICO
-async function carregarHistorico() {
-  const q = query(collection(db, "reunioes"),
-    where("consultor", "==", usuario),
-    where("status", "==", "realizada")
-  );
-  const snapshot = await getDocs(q);
-  containerHistorico.innerHTML = "";
-
-  snapshot.forEach((docSnap) => {
-    const dados = docSnap.data();
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <strong>${dados.nomeLoja}</strong>
-      <p>${dados.cidade} - ${dados.estado}</p>
-      <p>${dados.data} às ${dados.hora}</p>
-      <p><b>Status:</b> ${dados.resultado}</p>
-      ${dados.motivo ? `<p><b>Motivo:</b> ${dados.motivo}</p>` : ""}
-    `;
-    containerHistorico.appendChild(card);
+async function aceitar(id) {
+  const ref = doc(db, "reunioes", id);
+  await updateDoc(ref, {
+    status: "agendada",
+    transferidoPor: null // limpa o campo se tiver vindo de transferência
   });
+  carregarReunioes();
 }
 
-// FECHAMENTOS
-document.getElementById("formFechamento").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const form = e.target;
-
-  const dados = {
-    nomeLojista: form.nomeLojista.value,
-    contato: form.contato.value,
-    cidade: form.cidade.value,
-    estado: form.estado.value,
-    qtdLojas: parseInt(form.qtdLojas.value),
-    cnpj: form.cnpj.value,
-    faturamento: form.faturamento.value,
-    temCrediario: form.temCrediario.value,
-    valorCrediario: form.valorCrediario.value,
-    origem: form.origem.value,
-    consultor: usuario,
-    criadoEm: Timestamp.now()
-  };
-
-  try {
-    await addDoc(collection(db, "fechamentos"), dados);
-    alert("Fechamento registrado com sucesso!");
-    form.reset();
-    carregarFechamentos();
-  } catch (err) {
-    console.error("Erro ao salvar fechamento", err);
-    alert("Erro ao salvar fechamento.");
-  }
-});
-
-async function carregarFechamentos() {
-  const q = query(collection(db, "fechamentos"), where("consultor", "==", usuario));
-  const snapshot = await getDocs(q);
-  containerFechamentos.innerHTML = "";
-
-  snapshot.forEach((docSnap) => {
-    const d = docSnap.data();
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <strong>${d.nomeLojista}</strong>
-      <p>${d.cidade} - ${d.estado}</p>
-      <p><b>Contato:</b> ${d.contato}</p>
-      <p><b>CNPJ:</b> ${d.cnpj}</p>
-      <p><b>Faturamento:</b> ${d.faturamento}</p>
-      <p><b>Crediário:</b> ${d.temCrediario} (${d.valorCrediario})</p>
-      <p><b>Origem:</b> ${d.origem}</p>
-    `;
-    containerFechamentos.appendChild(card);
+async function transferir(id) {
+  const ref = doc(db, "reunioes", id);
+  await updateDoc(ref, {
+    status: "transferencia",
+    transferidoPor: usuario // ✅ adiciona quem está pedindo
   });
+  carregarReunioes();
 }
+
+function verDetalhes(dados) {
+  alert(`
+Loja: ${dados.nomeLoja}
+Cidade: ${dados.cidade}
+Estado: ${dados.estado}
+Contato: ${dados.contato}
+Segmento: ${dados.segmento}
+Link: ${dados.link}
+Observações: ${dados.observacoes || "-"}
+  `);
+}
+
+async function atualizarStatus(id, resultado) {
+  if (!resultado) return;
+
+  const ref = doc(db, "reunioes", id);
+  await updateDoc(ref, {
+    status: "realizada",
+    resultado: resultado,
+    realizadaEm: new Date().toISOString()
+  });
+
+  carregarReunioes();
+}
+
+carregarReunioes();
