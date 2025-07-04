@@ -100,76 +100,57 @@
       background: #005dd9;
     }
 
-    .dashboard-row {
+    .dashboard-columns {
       display: flex;
-      flex-wrap: wrap;
       gap: 1rem;
+      margin-top: 1rem;
     }
 
-    .dashboard-box {
-      background: white;
-      padding: 1rem 1.2rem;
-      border-radius: 16px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      min-width: 220px;
-      max-width: 300px;
+    .dashboard-column {
       flex: 1;
-    }
-
-    .dashboard-box h3 {
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .dashboard-box p {
-      font-size: 1.3rem;
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-    }
-
-    .dashboard-box button {
-      background: #007aff;
-      color: white;
-      padding: 0.4rem 0.7rem;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .dashboard-box button:hover {
-      background: #005dd9;
-    }
-
-    #listaTransferencias .card {
-      border: 1px solid #ddd;
+      background: white;
       border-radius: 14px;
       padding: 1rem;
-      background: #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .dashboard-column h3 {
+      margin-top: 0;
       margin-bottom: 1rem;
+      font-size: 1.2rem;
+      color: #333;
     }
 
-    #listaTransferencias .card select {
-      width: 100%;
+    .card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 14px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .card button {
       margin-top: 0.5rem;
-      padding: 0.5rem;
-      border-radius: 10px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-    }
-
-    #listaTransferencias .card button {
-      margin-top: 0.7rem;
-      background: #007aff;
-      color: white;
-      padding: 0.5rem 0.9rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 10px;
       border: none;
+      background: #007aff;
+      color: white;
       cursor: pointer;
+      font-size: 0.9rem;
     }
 
-    #listaTransferencias .card button:hover {
+    .card button:hover {
       background: #005dd9;
+    }
+
+    .card ul {
+      margin-top: 0.5rem;
+      padding-left: 1.2rem;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
@@ -218,20 +199,20 @@
 
     <section id="dashboard" class="content-section">
       <h2>Dashboard</h2>
-
-      <div class="dashboard-row" style="margin-bottom: 2rem;">
-        <div class="dashboard-box" style="flex:1;" id="dashboardHoje">
-          <h3>Reuniões de Hoje</h3>
+      <div class="dashboard-columns">
+        <div class="dashboard-column">
+          <h3>Hoje</h3>
+          <div id="dashboardHoje"></div>
         </div>
-        <div class="dashboard-box" style="flex:1;" id="dashboardProximos">
+        <div class="dashboard-column">
           <h3>Próximos Dias</h3>
+          <div id="dashboardProximos"></div>
+        </div>
+        <div class="dashboard-column">
+          <h3>Resultados</h3>
+          <div id="dashboardResultados"></div>
         </div>
       </div>
-
-      <div id="graficoReunioes" class="dashboard-row"></div>
-      <div id="graficoLojas" class="dashboard-row" style="margin-top: 1rem;"></div>
-      <h3 style="margin-top: 2rem;">Resultados</h3>
-      <div id="resultadosDashboard" class="dashboard-row" style="margin-top: 1rem;"></div>
     </section>
   </div>
 
